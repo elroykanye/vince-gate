@@ -1,0 +1,15 @@
+{
+  "id": "cursor",
+  "label": "Cursor",
+  "status": "unverified",
+  "detect": [".cursor"],
+  "project_dir": ".cursor/rules",
+  "user_dir": null,
+  "layout": "flat",
+  "extension": ".mdc",
+  "prefix": "",
+  "frontmatter": "mdc",
+  "index": "AGENTS.md",
+  "invocation": "@{skill}",
+  "notes": "Cursor project rules are flat .mdc files with description/globs/alwaysApply frontmatter. Installed with alwaysApply false so they attach on description match or explicit @mention. Reference docs are written as sibling plain-markdown files and links are rewritten to match. Verify the rules directory against your Cursor version before relying on it."
+}

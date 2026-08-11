@@ -1,0 +1,15 @@
+{
+  "id": "gemini",
+  "label": "Gemini CLI",
+  "status": "unverified",
+  "detect": [".gemini", "GEMINI.md"],
+  "project_dir": ".gemini/commands/vince",
+  "user_dir": "~/.gemini/commands/vince",
+  "layout": "flat",
+  "extension": ".toml",
+  "prefix": "",
+  "frontmatter": "toml-command",
+  "index": "GEMINI.md",
+  "invocation": "/vince:{skill}",
+  "notes": "Gemini CLI custom commands are TOML files with description and prompt fields; the skill body becomes the prompt. Reference docs are written as sibling plain-markdown files and links are rewritten. Verify the commands directory and TOML schema against your Gemini CLI version."
+}

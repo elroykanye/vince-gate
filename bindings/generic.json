@@ -1,0 +1,14 @@
+{
+  "id": "generic",
+  "label": "Any AGENTS.md harness",
+  "status": "verified",
+  "detect": ["AGENTS.md", ".agents"],
+  "project_dir": ".agents/vince",
+  "user_dir": "~/.agents/vince",
+  "layout": "dir",
+  "entry": "SKILL.md",
+  "frontmatter": "none",
+  "index": "AGENTS.md",
+  "invocation": "read .agents/vince/{skill}/SKILL.md and follow it",
+  "notes": "The fallback that works anywhere. Plain markdown under .agents/vince/, plus a delimited block in AGENTS.md pointing at each file. No frontmatter, no auto-activation - the agent is told to read the file. Use this for any runtime without a native skills mechanism."
+}

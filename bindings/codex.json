@@ -1,0 +1,14 @@
+{
+  "id": "codex",
+  "label": "Codex CLI",
+  "status": "unverified",
+  "detect": [".codex"],
+  "project_dir": ".codex/vince",
+  "user_dir": "~/.codex/vince",
+  "layout": "dir",
+  "entry": "SKILL.md",
+  "frontmatter": "none",
+  "index": "AGENTS.md",
+  "invocation": "read .codex/vince/{skill}/SKILL.md and follow it",
+  "notes": "Codex reads AGENTS.md natively, so the skills live beside it and the AGENTS.md block routes to them. If your Codex version has a native skills or plugin mechanism, prefer that path and adjust project_dir accordingly."
+}

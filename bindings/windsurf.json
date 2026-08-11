@@ -1,0 +1,15 @@
+{
+  "id": "windsurf",
+  "label": "Windsurf",
+  "status": "unverified",
+  "detect": [".windsurf"],
+  "project_dir": ".windsurf/rules",
+  "user_dir": null,
+  "layout": "flat",
+  "extension": ".md",
+  "prefix": "",
+  "frontmatter": "windsurf",
+  "index": "AGENTS.md",
+  "invocation": "@{skill}",
+  "notes": "Windsurf workspace rules are flat markdown files with a trigger/description frontmatter block. Installed with trigger model_decision so the description drives activation. Verify the rules directory and trigger vocabulary against your Windsurf version."
+}

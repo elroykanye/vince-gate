@@ -1,0 +1,14 @@
+{
+  "id": "claude",
+  "label": "Claude Code",
+  "status": "verified",
+  "detect": [".claude"],
+  "project_dir": ".claude/skills",
+  "user_dir": "~/.claude/skills",
+  "layout": "dir",
+  "entry": "SKILL.md",
+  "frontmatter": "yaml",
+  "index": null,
+  "invocation": "/{skill}",
+  "notes": "Native skills. A directory per skill with YAML frontmatter; reference/ files load on demand. Project-scoped skills win over user-scoped ones of the same name."
+}
