@@ -17,6 +17,7 @@ add gates of its own under `dod_extras`; those are as mandatory as these.
 | No test was weakened to pass | `git diff <base>...HEAD -- '*test*' '*spec*'` | no assertions deleted or loosened without a written reason |
 | No skips introduced | grep changed tests for `.skip`, `.only`, `xfail`, `[Ignore]`, `@pytest.mark.skip`, `t.Skip(` | zero new occurrences |
 | End-to-end path proven | the wire proof from Phase 4 | real transport, no mocks in the proven path |
+| New code survives mutation | the profile's diff-scoped mutation command (or hand mutation per AC) | zero surviving mutants on changed lines, or each survivor waived in the ledger with a reason |
 | Lint / format / type check clean | the profile's static commands | no new violations vs baseline |
 
 ## Security, authorization and data isolation

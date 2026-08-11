@@ -6,9 +6,27 @@ feels polite. Every attack you run goes in the attack log whether it broke somet
 Where a command depends on the project (test runner, integration branch, isolation key,
 locales), read it from `.vince/profile.md` rather than guessing.
 
-## 1. Mutation testing by hand
+## 1. Mutation testing
 
-Cheap and devastating. One mutation at a time, run the affected tests, restore.
+Cheap and devastating, and the single most reliable way to expose a suite that tests nothing.
+Coverage does not substitute: suites at 100% coverage routinely kill single-digit percentages
+of mutants.
+
+**Reach for the tool first.** If the profile names one, run it scoped to the diff:
+
+| Stack | Tool | Diff-scoped run |
+|-------|------|-----------------|
+| JS / TS | StrykerJS | `npx stryker run --incremental` |
+| .NET | Stryker.NET | `dotnet stryker --since` |
+| Python | mutmut | `mutmut run --paths-to-mutate <changed files>` |
+| Java | PIT | `mvn pitest:mutationCoverage -DwithHistory` |
+| Go | go-mutesting | `go-mutesting <changed packages>` |
+| Rust | cargo-mutants | `cargo mutants --in-diff <patch>` |
+
+Report **which mutants survived**, not the score - the score is what gets gamed, and a single
+survivor on a changed line is a dead spot in the new tests.
+
+**By hand** where no tool exists. One mutation at a time, run the affected tests, restore.
 
 | Mutation | Catches |
 |----------|---------|

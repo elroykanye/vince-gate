@@ -169,10 +169,24 @@ For each AC in the ledger, run all four steps and log evidence for three of them
    *for the reason you expect*. Paste the failure into the evidence log. A test that was
    never seen red proves nothing, and the reviewer will treat it as dead.
 2. **GREEN.** Write the smallest implementation that satisfies it. Run it. Paste the pass.
-3. **TAMPER.** **Commit the green implementation first.** Then break it deliberately (flip
-   the condition, return the wrong constant), confirm the test goes red again, restore with
-   `git checkout -- <file>`, confirm `git status` is clean, and log the result. This is what
-   catches tests that assert nothing. Never commit or push a tamper mutation.
+3. **TAMPER.** **Commit the green implementation first.** Then break the implementation
+   deliberately and confirm the test notices. This is what catches tests that assert nothing,
+   and it is not optional: coverage is a near-worthless proxy for fault detection — suites at
+   100% coverage routinely kill only single-digit percentages of mutants.
+
+   **Use the project's mutation tool if the profile's `mutation` row names one** (Stryker,
+   mutmut, PIT, go-mutesting, cargo-mutants…), scoped to the diff — they all support
+   incremental or changed-file runs, which is what makes this affordable per task. Then treat
+   the output as work, not as a score: **every mutant that survives on a line you changed is a
+   missing assertion.** Kill it with a test, or write down in the ledger why it is not worth
+   killing. Feeding surviving mutants back into the tests is the whole difference between a
+   suite that looks tested and one that is, and the reviewer re-runs the same tool.
+
+   No tool for this stack? By hand, one mutation at a time per AC: flip the condition, return
+   the wrong constant, empty the collection, drop the isolation-key filter.
+
+   Either way: restore with `git checkout -- <file>`, confirm `git status` is clean, and log the
+   result. Never commit or push a tamper mutation.
 
    Commit-before-tamper is not optional bookkeeping: `git checkout --` on a file whose
    implementation is still uncommitted throws the implementation away along with the
@@ -315,6 +329,15 @@ and what is actually deployed, not local notes. Do this *before* the spawn, not 
 reviewer verifies the completion doc against shipped reality (its A7) and will not issue a
 clean PASS without a current one. Hold any external publishing until the verdict is PASS.
 
+**Use a different model for the review if you can.** A fresh context breaks the correlation
+introduced while generating — the reasoning trace, the local scaffolding, the sunk-cost pull of
+your own plan. It does **not** break the correlation baked into the model's own parameters: the
+blind spot that made you write the bug is the blind spot that makes you miss it. Context
+separation plus model diversity is measurably stronger than either alone. If the profile names a
+`reviewer_model`, use it; otherwise prefer a different model, ideally a different vendor, and
+record which model reviewed in the verdict. Same model is acceptable — it is still far better
+than same context — but say so.
+
 Hand off to `vince-review` in a **fresh context that can write files** — never inline in your
 own. How you get that depends on the harness, in this order of preference:
 
@@ -334,13 +357,19 @@ The reviewer inherits none of this conversation, so everything it needs goes in 
 must contain, and contain only:
 
 - an instruction to **invoke the `vince-review` skill** (the skill body does not auto-load into
-  a fresh context; if it is not told to invoke it, it reviews blind);
+  a fresh context; if it is not told to invoke it, it reviews without the method);
+- an instruction to **start with the skill's Pass 0 — read the diff and the original contract
+  before opening the ledger**;
 - the **task ID**, the **repo(s) and branch**, the **verification-ledger path**, the **task
   directory**, and the **profile path**;
 - the live-infrastructure boundary (read-only on every repo, DB, cache and cluster).
 
 Nothing persuasive: no summary of your work, no severity opinions, no "already verified" or
-"pre-existing" claims. Steering the reviewer is the one thing that defeats the point.
+"pre-existing" claims, and **no pasted ledger content** — give the path and let the reviewer
+open it when the method says to. Steering the reviewer is the one thing that defeats the point,
+and it is not a small effect: reviewers handed text asserting the code is sound miss most of
+what they would otherwise catch, and autonomous agents are more susceptible to it than people
+are. A prompt that reads like advocacy has already cost you the review you are about to pay for.
 
 **Why write-capable, and why the task dir:** the reviewer persists its verdict to
 `<task dir>/review-verdict.md` and updates it on every re-review (current verdict on top,

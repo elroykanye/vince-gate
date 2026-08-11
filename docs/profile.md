@@ -43,12 +43,32 @@ observed on — Phase 1 compares against it, and the reviewer checks the suite i
 A command that fails on a clean checkout is recorded as `broken: <output>` and reported, not
 quietly omitted.
 
+### Mutation testing
+
+The tool that measures whether the tests would notice a bug, and the **diff-scoped** invocation
+— per-task mutation runs are only affordable incrementally, and every major tool supports it
+(`stryker --incremental`, `dotnet stryker --since`, `mutmut --paths-to-mutate`,
+`pitest -DwithHistory`, `cargo mutants --in-diff`).
+
+Read by `vince-implement`'s TAMPER step and the reviewer's A2. Both treat **surviving mutants on
+changed lines as missing assertions**, not as a score: the implementer kills them or waives them
+with a reason, and the reviewer re-runs the tool rather than trusting the tamper evidence.
+`none` is a valid answer for stacks with no tool — both fall back to mutating by hand.
+
 ### Branch and delivery
 
 Integration branch (`main`, `dev`, …), branch naming, PR host, commit convention, whether AI
 attribution trailers are allowed (default: **not allowed**), and the versioning rule. The
 version rule matters more than it looks: the bump must be exactly one increment above the
 integration branch's *current* value, so the profile records which file holds it.
+
+### `reviewer_model`
+
+Which model should run `vince-review`. A fresh context breaks the correlation introduced while
+generating; it does not break the correlation baked into a model's parameters, so a different
+model — ideally a different vendor — is measurably stronger isolation than a fresh context alone.
+Blank means "same model, fresh context", which is still far better than same-context review, and
+the verdict records which model actually ran.
 
 ### Tracker
 

@@ -53,15 +53,23 @@ Reference: [`dod-gates.md`](../skills/vince-implement/reference/dod-gates.md).
 
 ## `vince-review`
 
-**The adversary.** Runs in a **fresh, write-capable context** — never inline in the implementer's.
-It reads `.vince/lessons.md` first and attacks the recorded traps hardest, because a repeat is the
+**The adversary.** Runs in a **fresh, write-capable context** — never inline in the implementer's,
+and on a **different model** where the profile's `reviewer_model` or the harness allows it. It
+reads `.vince/lessons.md` first and attacks the recorded traps hardest, because a repeat is the
 highest-probability finding there is.
+
+Pass 0 comes before everything: the reviewer writes its findings from the diff and the original
+contract alone, and only then opens the ledger. Reviewers handed a document asserting the work is
+proven miss most of what they would otherwise catch, and the ledger is exactly such a document.
+The verdict records how many findings came blind versus only after reading it — a review that
+found nothing blind is a review that read the answer sheet.
 
 | Pass | Attack |
 |------|--------|
+| **0** | **Blind** — findings derived from the diff and the original contract *before* the ledger, completion doc, commit messages or prior verdict are opened |
 | A0 | Contract re-derivation from the original source; diff against the ledger |
 | A1 | Evidence forensics — re-run every proof; git/commit/version/branch forensics |
-| A2 | Test-quality — mutation, assertion audit, RED history, skip hunt, determinism, coverage of the real path |
+| A2 | Test-quality — mutation (the project's tool, diff-scoped, where one exists), assertion audit, RED history, skip hunt, determinism, coverage of the real path |
 | A3 | Behaviour — empty/huge/null/boundary/unicode/timezone/concurrency inputs |
 | A4 | Isolation, auth and data boundaries |
 | A5 | Trap sweep — generic playbook plus the profile's `known_traps` and `.vince/lessons.md` |

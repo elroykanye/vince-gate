@@ -34,33 +34,38 @@ recorded as `unknown` with a note — never as a guess.
    suite, the baseline counts you observed (`N passed / M failed / K skipped`). If a command
    fails on a clean checkout, that is a finding to report to the user, not something to paper
    over — record it as `broken: <output>`.
-3. **Branch model.** The integration branch work merges into (`main`, `master`, `dev`,
+3. **Mutation testing.** Does the stack have a tool (StrykerJS/.NET, mutmut, PIT, go-mutesting,
+   cargo-mutants), and is it already configured here? Record the **diff-scoped** invocation, not
+   the full-suite one - per-task runs are only affordable incrementally. If nothing is
+   configured, say whether one exists for the stack and what it would take, then record `none`;
+   both skills fall back to hand mutation. Do not install one uninvited.
+4. **Branch model.** The integration branch work merges into (`main`, `master`, `dev`,
    `develop`), the branch naming convention, and whether PRs go to a forge (GitHub, GitLab,
    Bitbucket) or elsewhere. `git remote -v` and `git branch -r` tell you most of it.
-4. **Tracker and commit convention.** Is there a ticket key pattern in
+5. **Tracker and commit convention.** Is there a ticket key pattern in
    `git log --format='%s' -50`? Conventional commits? Nothing at all? Record what the history
    actually does, not what a CONTRIBUTING file wishes it did — and note the difference if they
    disagree.
-5. **Versioning.** Does a version live in a manifest, and does CI require it bumped per change?
+6. **Versioning.** Does a version live in a manifest, and does CI require it bumped per change?
    Check recent merge commits for a bumped version file.
-6. **Data isolation key.** Is this multi-tenant or multi-account? Find the field every query
+7. **Data isolation key.** Is this multi-tenant or multi-account? Find the field every query
    filters on (`tenantId`, `orgId`, `workspaceId`, `userId`) — or record `none (single-tenant)`.
    This is what the reviewer's A4 attacks; getting it wrong makes the review weaker.
-7. **Auth model.** How entry points are protected (attribute, middleware, decorator, guard),
+8. **Auth model.** How entry points are protected (attribute, middleware, decorator, guard),
    and where permission or role keys are defined and provisioned.
-8. **Locales.** Which locales ship, where the files live, and the command that checks key parity
+9. **Locales.** Which locales ship, where the files live, and the command that checks key parity
    across them. If there is no such command, say so — the gate then falls back to a diff of key
    sets.
-9. **Wire-proof rigs.** For each change type in `vince-implement`'s Phase 4 table that this
+10. **Wire-proof rigs.** For each change type in `vince-implement`'s Phase 4 table that this
    project has, the concrete rig that already exists: how to hit the API locally, how to publish
    and observe a message, how to drive the UI, how to run a migration against a copy. This
    section is the highest-value part of the profile — it is what stops the next session from
    inventing a harness.
-10. **Environments.** What exists (local, dev, staging, prod), how to read from them, and which
+11. **Environments.** What exists (local, dev, staging, prod), how to read from them, and which
     are shared (i.e. read-only under the live-infrastructure rule).
-11. **Memory targets.** Where durable project knowledge lives: `docs/decisions/`, `CLAUDE.md`,
+12. **Memory targets.** Where durable project knowledge lives: `docs/decisions/`, `CLAUDE.md`,
     Serena memories, a brain vault, ADRs, prior task dirs.
-12. **Known traps.** Ask the user, and mine the repo: recurring review comments, `HACK`/`FIXME`
+13. **Known traps.** Ask the user, and mine the repo: recurring review comments, `HACK`/`FIXME`
     clusters, past incidents, gotchas in `CLAUDE.md`. These become the reviewer's A5 sweep.
 
 ## Write the profile

@@ -24,6 +24,22 @@ observed to work, unless marked `(inferred, unverified)` or `unknown`.
 | Type check | `` | |
 | Locale parity | `` | |
 | Run locally | `` | |
+| Mutation testing | `` | tool + diff-scoped invocation; see below |
+
+## Mutation testing
+
+The tool that measures whether the tests would notice a bug, and how to run it **scoped to the
+diff** (per-task mutation runs are only affordable incrementally). Surviving mutants on changed
+lines are missing assertions, not a score to admire.
+
+- Tool: `<Stryker | mutmut | PIT | go-mutesting | cargo-mutants | none for this stack>`
+- Diff-scoped command: ``
+- Full-suite command (slow, occasional): ``
+- Baseline score on the integration branch: `<%>` on `<date>`
+- Notes: `<what it cannot cover, known-equivalent mutants>`
+
+No tool for the stack is a valid answer - record `none`, and both skills fall back to
+mutating by hand.
 
 ## Branch and delivery
 
@@ -32,6 +48,8 @@ observed to work, unless marked `(inferred, unverified)` or `unknown`.
 - PR target and host: `<GitHub | GitLab | Bitbucket | none>`
 - Commit convention: `<ticket prefix pattern | conventional commits | none>`
 - AI attribution trailers: **not allowed** (default) | allowed
+- `reviewer_model`: `<model to run vince-review with, ideally a different vendor from the
+  implementer; blank = same model, fresh context>`
 - Versioning: `<file + rule, or "not required">`
 
 ## Tracker

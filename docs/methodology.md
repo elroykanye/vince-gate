@@ -15,6 +15,19 @@ think before it starts.
 The reviewer never fixes anything, either. Finding and reproducing is the whole job; a reviewer
 that starts patching stops being able to see the work from outside.
 
+## The reviewer starts blind
+
+Separating the reviewer's context is necessary but not sufficient, because the ledger travels
+across that boundary — and the ledger is a document whose every row asserts the work is proven.
+Framing of that kind measurably suppresses what a reviewer detects, and autonomous agents are
+markedly more susceptible to it than people are.
+
+So the review opens on the diff and the original contract, with findings written down before the
+ledger is read. Commit messages, PR text and ledger prose are claims about the work, never
+evidence of it. The verdict then records how many findings were blind and how many arrived only
+after reading the ledger — which makes a review that read the answer sheet visible instead of
+indistinguishable from a thorough one.
+
 ## Evidence, not adjectives
 
 "Verified", "should work", "tests pass", "minor", "non-blocking" are banned unless followed by a
@@ -29,14 +42,27 @@ A test that was never seen red proves nothing about the implementation, and ther
 tell the difference later by reading it.
 
 TAMPER closes the other half: break the implementation on purpose and confirm the test notices.
-Dead tests are the single most common way a task passes review it should not have, and mutation
-by hand is a five-second check that catches them. The reviewer runs the same mutations, so the
+Dead tests are the single most common way a task passes review it should not have. Coverage does
+not substitute — suites at 100% coverage routinely kill single-digit percentages of mutants, so
+a green coverage number is close to no evidence at all.
+
+Where the stack has a mutation tool, TAMPER runs it scoped to the diff and treats surviving
+mutants as work: each one is an assertion the tests are missing. Where it does not, the same
+thing happens by hand, one mutation per criterion. The reviewer re-runs it either way, so the
 implementer may as well find them first.
 
 Commit the green implementation **before** tampering. `git checkout --` on an uncommitted file
 throws the implementation away with the mutation, and on a new file it fails outright and leaves
 the mutation in place — either way the next mutation runs against a broken baseline and its
 result means nothing.
+
+## Model diversity, where you can get it
+
+A fresh context removes the generator's reasoning trace and the local scaffolding that produced
+the work. It does not remove the failure modes that live in the model's parameters: the blind
+spot that wrote the bug is the blind spot that misses it. Context separation plus a different
+model — ideally a different vendor — is stronger than either alone, so the profile can name a
+`reviewer_model` and the verdict records which model actually ran.
 
 ## Levels of proof, and the one that is not negotiable
 
@@ -62,6 +88,18 @@ A reviewer that starts from "probably fine" finds nothing. Starting from FAIL me
 has an attack log behind it — what was tried, what held. A PASS with no attack log is worthless,
 and so is a fabricated finding: everything is either `CONFIRMED` (reproduced) or explicitly
 `SUSPECTED` with what could not be verified.
+
+## What this does not buy you
+
+Independent review measurably beats same-session review, and the gap is widest exactly where it
+matters most — critical errors. It still finds a minority of defects, and the category it barely
+improves is *contextual* errors: whether the code actually works in its real environment.
+
+That is not an argument against the review; it is the argument for everything around it. The
+wire proof, the mutation gate, the DoD gates and the suite baseline are all verification that
+does not depend on a model's judgement at all, and they carry as much of the weight here as the
+reviewer does. A PASS means a determined adversary with your suite and your environment could
+not break it in one pass. It has never meant "correct".
 
 ## Bounded remediation
 
