@@ -1,4 +1,8 @@
-# Install, update, drift, repair, uninstall
+# The installer CLI
+
+Every flag, every drift state, every exit code. To *get started*, use
+[INSTALL.md](../INSTALL.md) instead — it has a block you paste to your agent and the four-command
+manual equivalent.
 
 `scripts/install.py` renders the canonical skills into whatever shape your harness wants and
 tracks every byte it wrote. Python 3.8+, no dependencies, no network.

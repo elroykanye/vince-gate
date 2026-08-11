@@ -1,7 +1,8 @@
 # Vince documentation
 
-New here? Start with the [user guide](../USER-GUIDE.md) — install, first project, reading a
-verdict, and what to do when it says FAIL.
+New here? [INSTALL.md](../INSTALL.md) gets it onto your machine (paste one block into your
+agent), then the [user guide](../USER-GUIDE.md) covers first project, reading a verdict, and
+what to do when it says FAIL.
 
 - [methodology.md](methodology.md) — why the method is shaped this way, and the failure mode each
   rule exists to stop. Read this if you are deciding whether to adopt it.

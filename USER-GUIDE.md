@@ -73,8 +73,12 @@ you do not pay it for a typo.
 
 Requirements: Python 3.8+, git, and an agent harness. Nothing else.
 
+**The short way:** [INSTALL.md](INSTALL.md) has a block you paste straight into your agent; it
+clones, detects the harness, installs, verifies and reports back. The rest of this section is
+the same thing done by hand.
+
 ```bash
-git clone <your-remote>/vince-gate
+git clone https://github.com/elroykanye/vince-gate.git
 cd vince-gate
 python scripts/install.py bindings      # which harnesses this toolkit knows
 ```
@@ -438,6 +442,7 @@ no claimed proofs to re-run), but the mutation, isolation and behaviour attacks 
 
 ## Where to go next
 
+- [`INSTALL.md`](INSTALL.md) — paste-to-your-agent blocks for install, update, repair, uninstall.
 - [`docs/methodology.md`](docs/methodology.md) — why each rule exists, and the failure mode it
   stops. Read this before deciding whether to adopt.
 - [`docs/skills.md`](docs/skills.md) — every phase and attack pass in detail.

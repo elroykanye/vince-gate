@@ -13,7 +13,8 @@ base and not a linter — it is a pair of opposed roles that together make "done
 The two rules that make the rest work: **nothing is done without a PASS verdict**, and **no claim
 counts without the command and its output behind it**.
 
-New here? Start with the **[user guide](USER-GUIDE.md)**.
+New here? **[INSTALL.md](INSTALL.md)** gets it running (paste one block into your agent), then
+the **[user guide](USER-GUIDE.md)** covers using it.
 
 ## The skills
 
@@ -62,9 +63,13 @@ a Go service, a React app, or a Python pipeline.
 
 ## Install
 
-Location-independent: clone or copy this directory anywhere.
+**Fastest:** open [INSTALL.md](INSTALL.md) and paste the block into your coding agent — it
+clones, detects your harness, installs, verifies and reports back.
+
+By hand (location-independent; clone anywhere):
 
 ```bash
+git clone https://github.com/elroykanye/vince-gate.git && cd vince-gate
 python scripts/install.py install --scope user            # every project, no repo footprint
 python scripts/install.py install --target /path/to/repo  # auto-detects the harnesses in use
 python scripts/install.py status  --scope user
@@ -97,6 +102,7 @@ there is evidence.
 
 ```
 vince-gate/
+  INSTALL.md                          paste-to-your-agent install guide
   USER-GUIDE.md                       start here
   skills/                             the six skills (+ reference/ docs)
   bindings/*.json                     one per harness; no per-harness code
@@ -118,12 +124,13 @@ Artifacts live in the project Vince is working on, never in the toolkit:
 
 ## Documentation
 
-- [USER-GUIDE.md](USER-GUIDE.md) — install, first project, reading a verdict, troubleshooting, FAQ.
+- [INSTALL.md](INSTALL.md) — getting it installed: blocks you can paste to an agent, and the manual equivalents.
+- [USER-GUIDE.md](USER-GUIDE.md) — first project, reading a verdict, troubleshooting, FAQ.
 - [docs/methodology.md](docs/methodology.md) — why each rule exists and the failure mode it stops.
 - [docs/skills.md](docs/skills.md) — every phase and attack pass.
 - [docs/profile.md](docs/profile.md) — every profile field and who reads it.
 - [docs/harnesses.md](docs/harnesses.md) — the binding model; adding a runtime.
-- [docs/install.md](docs/install.md) — install, update, drift, repair, uninstall.
+- [docs/install.md](docs/install.md) — the installer CLI in full: every flag, the drift states, exit codes.
 
 ## License
 
