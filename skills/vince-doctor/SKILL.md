@@ -36,7 +36,10 @@ version is behind.
 
 ## 2. The profile
 
-`.vince/profile.md` is the load-bearing file. Validate it **by running it**, not by reading it.
+Resolve it first — `install.py where --repo <repo>` — because per-repo config lives outside the
+repo by default. A doctor that validates a path nobody uses reports a healthy fiction.
+
+The profile is the load-bearing file. Validate it **by running it**, not by reading it.
 
 **Two levels?** Check both, and check them differently — a hub profile cannot verify a command,
 so running its per-stack defaults is not its job and their being unverified is not a fault:
@@ -95,7 +98,7 @@ Scan `<task root>/active/` (default `.vince/tasks/active/`) for state that has g
 
 ## 4. The loop itself
 
-- Is `.vince/lessons.md` present and being read? A project with a dozen archived tasks and no
+- Is the resolved `lessons.md` present and being read? A project with a dozen archived tasks and no
   lessons file means `vince-learn` has never run — say so, and offer to run it over the archive.
 - Are metrics being written (`.vince/metrics.jsonl`)? Not fatal, but without them `vince-learn`
   is reasoning from memory rather than from data.

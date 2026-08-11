@@ -18,9 +18,20 @@ Decide this first, because it changes what you are allowed to claim.
 
 | You are onboarding | Mode | Writes | Template |
 |--------------------|------|--------|----------|
-| A single repo | **repo** | `<repo>/.vince/profile.md` | `profile.template.md` |
+| A single repo | **repo** | the resolved repo profile | `profile.template.md` |
 | A hub with many repos under it | **workspace** | `<workspace>/.vince/profile.md` | `workspace-profile.template.md` |
-| A repo inside a hub that already has a profile | **repo (inheriting)** | `<repo>/.vince/profile.md`, verified values only | `profile.template.md` |
+| A repo inside a hub that already has a profile | **repo (inheriting)** | the resolved repo profile, verified values only | `profile.template.md` |
+
+**Resolve the repo path first — never assume `.vince/` is in the repo:**
+
+```bash
+python <toolkit>/scripts/install.py where --repo <repo>
+```
+
+By default per-repo config lives in a store outside the repo (`~/.vince/repos/<key>/`), keyed by
+the origin remote. Work repos stay clean: nothing untracked, nothing to gitignore, nothing to
+commit by accident. A repo that already has its own `.vince/profile.md` keeps using it — that is
+the opt-in for repos you own and want the config committed for a team.
 
 Signs you are in a hub: repos live in a sibling directory (`../repos/`, `packages/`, `services/`),
 there is a repo manifest, or the user says so. If both a hub and a repo need doing, do the hub
@@ -32,8 +43,9 @@ every command you record is `(inferred, unverified)` by construction, and you sa
 Verified commands and observed baselines live in repo profiles, written on first touch. Do not
 run one repo's suite and generalise it to a stack — that is one data point wearing a uniform.
 
-Add `.vince/tasks/` to `.gitignore` unless the user wants ledgers committed. The profile itself
-is usually worth committing — it is project knowledge, not scratch.
+In **store mode** there is nothing to gitignore, because nothing lands in the repo. Only when the
+user has deliberately chosen in-repo config does `.vince/tasks/` need ignoring, and the profile
+itself is then worth committing — it is project knowledge, not scratch.
 
 ## Discovery pass — workspace mode
 

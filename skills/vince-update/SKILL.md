@@ -82,7 +82,8 @@ Installed as a Claude Code plugin instead? Then the toolkit is managed by the pl
 
 ## 5. Migrate the config — the part only this skill does
 
-For each project that has a `.vince/` directory, walk the intervening releases' upgrade notes and
+For each project with config — resolve it with `install.py where --repo <repo>`; most of it lives
+in the store, not in the repos — walk the intervening releases' upgrade notes and
 make the fields exist. Add the **section with an honest status**, never a fabricated value:
 
 | Situation | What to write |

@@ -3,6 +3,7 @@
 Written by `vince-setup` on <YYYY-MM-DD>. Every command below was run in this repo and observed
 to work, unless marked otherwise.
 
+**Repo:** `<repo path>`  ·  **Key:** `<from install.py where>`  ·  **Stored:** `<store | in-repo>`
 **Inherits from:** `<path to workspace profile, or "none — standalone repo">`
 
 When inheriting, record **only what you verified or what differs**. Do not copy the hub file:

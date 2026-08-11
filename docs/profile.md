@@ -16,15 +16,57 @@ Start from [`templates/profile.template.md`](../templates/profile.template.md), 
 [`templates/workspace-profile.template.md`](../templates/workspace-profile.template.md) for a
 hub.
 
+## Where config lives
+
+**Per-repo config is kept outside the repo by default.** Vince describes your work repos; it does
+not need to live in them, and putting it there means an untracked directory in every repo, a
+gitignore line you may not control, and something to commit by accident.
+
+```
+~/.vince/                                   the store (override with $VINCE_STORE)
+  repos/
+    github.com__acme__billing-api/
+      profile.md      lessons.md      metrics.jsonl      tasks/
+    bitbucket.org__acme__web/
+      ...
+```
+
+The key is derived from the repo's **origin remote**, which makes it stable across re-cloning and
+moving the checkout, readable enough to find and hand-edit, and — usefully — shared by task
+worktrees, so a `-wt` worktree resolves to its parent repo's config rather than a fresh empty one.
+Repos with no remote fall back to `local__<name>__<short path hash>`.
+
+**Never derive these paths yourself.** Ask:
+
+```bash
+python <toolkit>/scripts/install.py where --repo <repo>      # add --json for machine output
+```
+
+It prints the key, the mode, and the resolved profile / lessons / metrics / task root. One
+deterministic answer means every session agrees; hand-derived paths are how one repo ends up with
+config in two places.
+
+### Opting a repo *into* carrying its own config
+
+If `<repo>/.vince/profile.md` exists, it wins and everything for that repo stays in the repo.
+That is the right choice when you own the repo and want the profile committed so a team shares
+it — an open-source project, your own service. It is the wrong default for a work repo you do not
+control, which is why it is opt-in.
+
+To switch a repo to in-repo config, move its store directory into `<repo>/.vince/` and add
+`.vince/tasks/` to that repo's `.gitignore`. To switch back, move it out.
+
 ## Resolution order
 
-1. `<repo>/.vince/profile.md` — the repo being worked on.
-2. `<workspace>/.vince/profile.md` — the **hub profile**, when repos live under a workspace.
-3. Neither → run `vince-setup` first. Skills must not guess at a test command or a branch model;
-   a wrong guess produces a confident, wrong baseline.
+1. `<repo>/.vince/profile.md` — only if that repo has opted in.
+2. `<store>/repos/<key>/profile.md` — the default location for per-repo config.
+3. `<workspace>/.vince/profile.md` — the **hub profile**, when repos live under a workspace.
+4. None of them → run `vince-setup` first. Skills must not guess at a test command or a branch
+   model; a wrong guess produces a confident, wrong baseline.
 
-The profile is usually worth committing — it is project knowledge. `.vince/tasks/` usually is
-not; add it to `.gitignore` unless the user wants ledgers in history.
+In store mode there is nothing to gitignore, because nothing lands in the repo. In in-repo mode
+the profile is usually worth committing — it is project knowledge — while `.vince/tasks/` usually
+is not.
 
 ## Two levels: hub and repo
 
@@ -40,6 +82,9 @@ So there are two files, with one invariant between them:
 
 That is not a caveat, it is the design. It means a hub profile is honest about being a set of
 defaults, and it means the first task in a repo has a defined job: verify what it inherited.
+
+Note that "repo profile" means *the profile describing that repo*, wherever it is stored — by
+default in the store, not in the repo.
 
 | Lives in the **hub** profile | Lives in the **repo** profile |
 |------------------------------|-------------------------------|

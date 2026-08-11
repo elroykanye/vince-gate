@@ -5,9 +5,10 @@ across the estate, and supplies *defaults* to repos that have no profile of thei
 
 **The invariant that shapes this whole file: a hub profile cannot verify a command.** Nobody
 runs 100 suites from the hub, and a value nobody ran is not evidence. So every command here is
-`(inferred, unverified)` by construction. Verified commands and observed baselines live in
-`<repo>/.vince/profile.md`, written on the first task that touches that repo. Anything in this
-file that claims to be verified is a bug in this file.
+`(inferred, unverified)` by construction. Verified commands and observed baselines live in each
+repo's own profile — by default in the store outside the repo, resolved with
+`install.py where --repo <repo>` — written on the first task that touches that repo. Anything in
+this file that claims a verified command or a baseline is a bug in this file.
 
 ## Section status
 
@@ -68,6 +69,15 @@ inherits that stack's commands until its own profile supersedes them.
 ## Tracker
 
 - System / key pattern / how to read a ticket: ``
+- Status: `verified`
+
+## Config store
+
+Per-repo config lives outside the work repos, keyed by origin remote. Resolve any path with
+`install.py where --repo <repo>`; never derive one by hand.
+
+- Store root: `<~/.vince, or the workspace's own .vince via $VINCE_STORE>`
+- Repos opting into in-repo config: `<list, or "none — all in the store">`
 - Status: `verified`
 
 ## Task ledgers

@@ -59,7 +59,8 @@ for every repo of that stack — a wrong default costs each of them a first-touc
 
 ## The lessons file
 
-`.vince/lessons.md`, newest first. Each entry is small and actionable:
+The resolved `lessons.md` (`install.py where --repo <repo>` — it is in the store, not the repo,
+unless the repo carries its own `.vince/`), newest first. Each entry is small and actionable:
 
 ```markdown
 ## <YYYY-MM-DD> — <one-line lesson>

@@ -288,6 +288,33 @@ rules per project in the profile's *Tiering overrides* — for example, "anythin
 
 ---
 
+## Vince does not write into your repos
+
+By default, **nothing Vince produces lands in a repo you are working on**. Profiles, ledgers,
+verdicts, lessons and metrics live in a store keyed by the repo's origin remote:
+
+```
+~/.vince/repos/github.com__acme__billing-api/
+    profile.md   lessons.md   metrics.jsonl   tasks/
+```
+
+No untracked directory in a work repo, nothing to gitignore, nothing to commit by accident. Ask
+where anything is:
+
+```bash
+python <toolkit>/scripts/install.py where --repo .
+```
+
+Set `VINCE_STORE` to move the store — for a hub, pointing it at `<workspace>/.vince` keeps the
+estate's config together with the hub profile.
+
+**Want a repo to carry its own config instead?** Create `<repo>/.vince/profile.md` and it wins
+for that repo. Right for a repo you own where the team should share the profile; wrong as a
+default for work repos you do not control.
+
+Since the key comes from the remote, a task worktree (`repo-TASK-123-wt`) resolves to the same
+config as its parent — you do not get a blank profile every time Vince creates a worktree.
+
 ## Many repos: workspace profiles
 
 If your repos live under a hub — `../repos/`, `services/`, a polyrepo workspace — you get two

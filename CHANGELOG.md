@@ -6,6 +6,40 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.5.0 — 2026-08-11
+
+**Vince no longer writes into the repos it works on.** 0.3.0 made per-repo profiles effectively
+mandatory - the reviewer FAILs a baseline taken from an unverified inherited command - and then
+put them in `<repo>/.vince/`, which meant an untracked directory in every work repo. Verification
+is per-repo by nature and that does not change; where the record is *stored* is independent of
+what it describes, and that is what was wrong.
+
+**Added**
+
+- **A config store outside the repos.** Per-repo profile, lessons, metrics and task ledgers live
+  at `<store>/repos/<key>/`, defaulting to `~/.vince/` and overridable with `$VINCE_STORE` (point
+  it at `<workspace>/.vince` to keep an estate's config with its hub profile).
+- **Remote-derived repo keys.** `github.com__acme__billing-api`, from the origin remote - stable
+  across re-cloning and moving a checkout, readable enough to find and hand-edit, and shared by
+  task worktrees, so a `-wt` worktree resolves to its parent repo's config instead of a blank
+  one. Repos with no remote fall back to `local__<name>__<short path hash>`.
+- **`install.py where [--repo DIR] [--json]`** - prints the key, mode and every resolved path.
+  Path resolution is code, not model judgement, so every session agrees and the store cannot
+  fragment. The skills now call it instead of deriving paths.
+
+**Changed**
+
+- Per-repo config is in the store by default. A repo that carries its own `.vince/profile.md`
+  still wins, which is the opt-in for repos you own and want the profile committed for a team.
+- Nothing to gitignore in store mode, because nothing lands in the repo.
+
+**Upgrade notes**
+
+Existing in-repo `.vince/` directories keep working untouched - they are the opt-in path now. To
+move a repo's config out, move `<repo>/.vince/` to the path `install.py where --repo <repo>`
+prints once the in-repo `profile.md` is gone, then drop the gitignore entry. No config fields
+were added or renamed.
+
 ## v0.4.0 — 2026-08-11
 
 **Added**

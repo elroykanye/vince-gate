@@ -11,6 +11,7 @@ Location-independent: the toolkit root comes from this file's location, or $VINC
 Usage:
     python scripts/install.py bindings
     python scripts/install.py list
+    python scripts/install.py where     [--repo DIR] [--json]
     python scripts/install.py install   [--target DIR] [--scope project|user]
                                         [--binding auto|all|claude,cursor,...]
                                         [--dry-run] [--force]
@@ -76,6 +77,79 @@ def toolkit_ref() -> str:
 def version_label() -> str:
     ref = toolkit_ref()
     return f"{version()} ({ref})" if ref and ref != f"v{version()}" else version()
+
+
+def git_out(args: list) -> str:
+    import subprocess
+    try:
+        r = subprocess.run(["git"] + args, capture_output=True, text=True, timeout=10)
+        return r.stdout.strip() if r.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def normalise_remote(url: str) -> str:
+    """git@host:owner/repo.git and https://host/owner/repo -> host__owner__repo."""
+    url = url.strip().rstrip("/")
+    url = re.sub(r"^[a-z+]+://", "", url, flags=re.I)     # scheme
+    url = re.sub(r"^[^/@]+@", "", url)                    # user@
+    if url.endswith(".git"):
+        url = url[:-4]
+    url = url.replace(":", "/")                           # scp-style separator
+    parts = [p for p in re.split(r"[/\\]", url) if p]
+    return "__".join(parts).lower()
+
+
+def repo_key(repo: Path) -> str:
+    """A stable, readable identity for a repo's config.
+
+    Derived from the origin remote, so it survives re-cloning, moving the checkout, and
+    task worktrees (which share the remote and therefore share their parent repo's config).
+    Falls back to the main checkout's name plus a short path hash when there is no remote -
+    readable first, unique second, because you have to be able to find your own config.
+    """
+    url = git_out(["-C", str(repo), "remote", "get-url", "origin"])
+    if url:
+        key = normalise_remote(url)
+        if key:
+            return key
+    common = git_out(["-C", str(repo), "rev-parse", "--path-format=absolute",
+                      "--git-common-dir"])
+    root = Path(common).parent if common else Path(repo).resolve()
+    digest = hashlib.sha256(str(root).replace("\\", "/").lower().encode()).hexdigest()[:8]
+    return f"local__{root.name.lower()}__{digest}"
+
+
+def store_root() -> Path:
+    """Where per-repo config lives when it is kept out of the repo itself."""
+    env = os.environ.get("VINCE_STORE")
+    return Path(env).expanduser().resolve() if env else (Path.home() / ".vince")
+
+
+def resolve_config(repo: Path) -> dict:
+    """Every path the skills need for one repo, resolved deterministically.
+
+    In-repo config wins when it exists, so a repo that deliberately carries its own .vince/
+    keeps doing so; otherwise everything lives in the store and the work repo stays clean.
+    """
+    repo = Path(repo).expanduser().resolve()
+    in_repo = repo / ".vince"
+    key = repo_key(repo)
+    store = store_root() / "repos" / key
+    mode = "in-repo" if (in_repo / "profile.md").is_file() else "store"
+    base = in_repo if mode == "in-repo" else store
+    return {
+        "repo": repo,
+        "key": key,
+        "mode": mode,
+        "store_root": store_root(),
+        "base": base,
+        "profile": base / "profile.md",
+        "lessons": base / "lessons.md",
+        "metrics": base / "metrics.jsonl",
+        "task_root": base / "tasks",
+        "in_repo_dir": in_repo,
+    }
 
 
 def load_bindings() -> dict:
@@ -442,6 +516,31 @@ def cmd_bindings(_args) -> int:
         print()
     print("status 'unverified' means the paths follow the runtime's documented convention but")
     print("were not confirmed against a live install. Run with --dry-run and check the paths.")
+    return 0
+
+
+def cmd_where(args) -> int:
+    """Resolve config paths for a repo. Deterministic, so every session agrees."""
+    cfg = resolve_config(Path(args.repo))
+    if args.json:
+        print(json.dumps({k: str(v) for k, v in cfg.items()}, indent=2))
+        return 0
+
+    exists = lambda p: "exists" if Path(p).exists() else "not created yet"
+    print(f"repo        : {cfg['repo']}")
+    print(f"repo key    : {cfg['key']}")
+    print(f"config mode : {cfg['mode']}"
+          + ("   (this repo carries its own .vince/)" if cfg["mode"] == "in-repo"
+             else "   (nothing is written into the repo)"))
+    print(f"store root  : {cfg['store_root']}"
+          + ("" if os.environ.get("VINCE_STORE") else "   (default; set VINCE_STORE to move it)"))
+    print()
+    for label, key in (("profile", "profile"), ("lessons", "lessons"),
+                       ("metrics", "metrics"), ("task root", "task_root")):
+        print(f"  {label:<10} {cfg[key]}   [{exists(cfg[key])}]")
+    if cfg["mode"] == "store" and cfg["in_repo_dir"].exists():
+        print(f"\n  note: {cfg['in_repo_dir']} exists but has no profile.md; "
+              "store mode is still in effect")
     return 0
 
 
@@ -856,6 +955,11 @@ def main(argv=None) -> int:
 
     p = sub.add_parser("bindings", help="list the harness bindings this toolkit knows")
     p.set_defaults(func=cmd_bindings)
+
+    p = sub.add_parser("where", help="print the resolved config paths for a repo")
+    p.add_argument("--repo", default=".", help="repo to resolve (default: current directory)")
+    p.add_argument("--json", action="store_true", help="machine-readable output")
+    p.set_defaults(func=cmd_where)
 
     args = parser.parse_args(argv)
     return args.func(args)

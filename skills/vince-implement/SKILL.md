@@ -57,11 +57,25 @@ Before reading a single line of implementation code, pin down what "done" means.
    this skill reads from them. **Neither exists? Run `vince-setup` first** — one pass, then
    continue. Never guess at the test command or the branch model.
 
+   **Resolve the paths, do not assume them.** Vince keeps per-repo config *outside* work repos
+   by default, so `.vince/` may not be in the repo at all:
+
+   ```bash
+   python <toolkit>/scripts/install.py where --repo <repo>
+   ```
+
+   It prints the repo key, the config mode, and the resolved profile / lessons / metrics / task
+   root. Use exactly those paths. Deriving your own is how one repo ends up with config in two
+   places — and the key is remote-derived, so a task worktree resolves to its parent repo's
+   config rather than a fresh empty one.
+
    **In a workspace with many repos there are two profiles**, and both apply:
 
    - `<workspace>/.vince/profile.md` — the hub: branch model, tracker, isolation key, estate
      gates and traps, and *unverified per-stack defaults*.
-   - `<repo>/.vince/profile.md` — this repo: verified commands and its observed baseline.
+   - the resolved repo profile — this repo: verified commands and its observed baseline. It
+     lives in the store (`~/.vince/repos/<key>/profile.md`) unless the repo carries its own
+     `.vince/`.
 
    Merge them: scalars in the repo profile override the hub; `dod_extras` and `known_traps` are
    **additive and the hub's are not removable**; lessons from both levels are read. And the rule
@@ -144,10 +158,14 @@ not negotiable by convenience.
    and it costs almost nothing, because you were running them anyway:
 
    - Run each inherited command you need. Watch it work.
-   - Write `<repo>/.vince/profile.md` containing **only what you verified plus what differs** —
-     the commands that worked, the baseline you just observed and the commit it was taken on,
-     this repo's locales, its mutation tool, its rigs. Do not copy the hub file; two copies of
-     the same fact is two places to drift.
+   - Write the **resolved** repo profile (`install.py where`) containing **only what you verified
+     plus what differs** — the commands that worked, the baseline you just observed and the
+     commit it was taken on, this repo's locales, its mutation tool, its rigs. Do not copy the
+     hub file; two copies of the same fact is two places to drift.
+   - **This does not write anything into the repo** unless the repo already carries its own
+     `.vince/`. Work repos stay clean: no untracked directory, nothing to gitignore, nothing to
+     commit by accident. If you believe this repo *should* carry its own config — you own it and
+     the team should share the profile — that is the user's call to make, not yours.
    - An inherited command that does not work is not a blocker, it is *Self-healing*: re-derive
      once, verify, record it in the **repo** profile with a *Corrections* line, and tell the user
      the hub default was wrong for this repo — that is a fix the whole estate benefits from.
