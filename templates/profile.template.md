@@ -1,0 +1,128 @@
+# Vince profile — <project name>
+
+Written by `vince-setup` on <YYYY-MM-DD>. Every command below was run in this repo and
+observed to work, unless marked `(inferred, unverified)` or `unknown`.
+
+## Project
+
+- Root: `<abs or repo-relative path>`
+- Stack: `<languages, frameworks, runtimes>`
+- Shape: `<single service | monorepo | one repo of a polyrepo>`
+- Sibling repos (polyrepo only): `<where they live, dependency order>`
+
+## Commands
+
+| Purpose | Command | Notes |
+|---------|---------|-------|
+| Install / restore | `` | |
+| Build | `` | |
+| Unit suite | `` | baseline: `N passed / M failed / K skipped` on `<commit>` |
+| Integration suite | `` | |
+| E2E suite | `` | |
+| Lint | `` | |
+| Format check | `` | |
+| Type check | `` | |
+| Locale parity | `` | |
+| Run locally | `` | |
+
+## Branch and delivery
+
+- Integration branch: `<main | dev | ...>`
+- Branch naming: `<pattern>`
+- PR target and host: `<GitHub | GitLab | Bitbucket | none>`
+- Commit convention: `<ticket prefix pattern | conventional commits | none>`
+- AI attribution trailers: **not allowed** (default) | allowed
+- Versioning: `<file + rule, or "not required">`
+
+## Tracker
+
+- System: `<GitHub Issues | Jira | Linear | none>`
+- Key pattern: `<e.g. ABC-1234, or n/a>`
+- How to read a ticket: `<MCP tool, CLI command, or URL pattern>`
+
+## Task ledgers
+
+- `task_root`: `.vince/tasks/` (`active/<task-id>/`, `archive/<task-id>/`)
+- Committed to git: `no` (default) | `yes`
+
+## Data and security
+
+- Isolation key: `<tenantId | orgId | userId | none (single-tenant)>`
+- Where it is enforced: `<repository layer, middleware, RLS, ...>`
+- Auth model: `<how entry points are protected>`
+- Permission/role keys defined in: `<path>`
+- Datastores: `<engine + what owns what>`
+
+## Frontend
+
+- Locales shipped: `<list>` — files at `<path>`
+- Breakpoints: `<list>`
+- Component/E2E test runner: `<runner>`
+- Running app URL for live review: `<url>` — credentials in `<location, never echoed>`
+
+## Wire-proof rigs
+
+The concrete way to prove each change type end to end in this project. One row per change type
+that exists here; delete the rest.
+
+| Change type | Rig |
+|-------------|-----|
+| HTTP API | |
+| Async / queue | |
+| Background job | |
+| CLI | |
+| Library / package | |
+| Frontend | |
+| Data migration | |
+| Infra / config | |
+
+## Environments
+
+| Environment | How to reach it | Shared? (read-only) |
+|-------------|-----------------|---------------------|
+| local | | no |
+| dev | | yes |
+| prod | | yes |
+
+## Memory targets
+
+Where durable project knowledge lives — read before designing, write after deciding.
+
+- Decisions: `<path>`
+- Runbooks / recipes: `<path>`
+- Conventions: `<path>`
+- Prior task dirs: `<task_root>/archive/`
+
+## Extra definition-of-done gates (`dod_extras`)
+
+Project-specific gates that `vince-implement` Phase 5 must walk in addition to the catalog.
+
+| Gate | Verify | PASS condition |
+|------|--------|----------------|
+| | | |
+
+## Known traps
+
+Things that have bitten in this codebase before. The reviewer sweeps these in A5, and
+`vince-learn` adds a line here whenever a finding class appears for the second time.
+
+- 
+
+## Corrections
+
+Repairs made to this profile while a task was running (`vince-implement` self-healing,
+`vince-doctor`). Newest first. Each line: what was wrong, what it is now, what proved it.
+
+- 
+
+## Docs destination
+
+- `docs_destination`: `<wiki space + skill/script that files it | docs-site path | PR body | none>`
+
+## Tiering overrides
+
+Optional. Narrows or widens `vince-implement`'s T1/T2/T3 rules for this project - e.g. "anything
+under `migrations/` is always T3", or "translation-only edits are T1". Defaults apply to anything
+not listed.
+
+- 
