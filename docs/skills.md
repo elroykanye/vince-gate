@@ -1,6 +1,6 @@
 # Skill catalog
 
-Six skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
+Seven skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
 [harnesses.md](harnesses.md)). They are designed to be invoked by name (`/vince-implement`) or to
 auto-activate on their description triggers.
 
@@ -12,6 +12,7 @@ auto-activate on their description triggers.
 | `vince-document` | at completion, before publishing |
 | `vince-doctor` | when anything about the setup smells wrong |
 | `vince-learn` | after a PASS, and once over the history when adopting Vince |
+| `vince-update` | when a new release lands, or to roll back to an older one |
 
 ## `vince-setup`
 
@@ -106,6 +107,27 @@ One-offs are deliberately *not* promoted — noise is what makes these files sto
 It also reads `.vince/metrics.jsonl` (one line per task, written at close) to report which
 attacks earn their time in this codebase, whether rounds-to-PASS is trending down, and whether a
 tier is being abused. Under about five tasks it says so rather than inventing a trend.
+
+## `vince-update`
+
+Moves an install between releases. The file half is `install.py`'s job; this skill owns the parts
+that need judgement.
+
+It compares installed / toolkit / available tags, reads `CHANGELOG.md` **between** the versions
+and reports what actually changes, then runs a pre-flight that **stops** on three things rather
+than working around them: uncommitted work in the toolkit clone, files edited in place at the
+target (someone's improvement that never went home — copy it into the toolkit, do not `--force`
+over it), and a task in flight (changing the skills mid-task changes the rules mid-task).
+
+Then the part nothing else does: **config migration.** A release that adds a profile field does
+not add it to existing profiles, so the new skills read a field that is not there and fall back
+silently. This walks each intervening release's *Upgrade notes* and makes the sections exist —
+running what is cheap and safe to run, and marking the rest `unknown — <tried>` or
+`blocked — <what is needed>` rather than inventing values. It then names every field it left
+open and what would resolve it.
+
+Rollback is the same procedure with an older tag. Project artifacts are never touched: older
+skills read newer profiles fine, so a rollback needs no migration and must not strip fields.
 
 ## `vince-document`
 

@@ -358,9 +358,22 @@ language. Several harnesses read `AGENTS.md`, so that block alone is often enoug
 
 ## Keeping it healthy
 
-Vince degrades quietly: a renamed test script, a retired branch, a harness update that moves the
-skills directory. Nothing announces itself, and each one makes the next task's evidence a little
-more fictional.
+Two different jobs, two skills: **`/vince-doctor`** when something is broken, **`/vince-update`**
+when a newer release exists. Update runs doctor's checks; doctor never changes version.
+
+```
+/vince-update      # compares versions, reads the changelog between them, reinstalls,
+                   # and migrates your .vince config so the new fields actually exist
+```
+
+That last part is the one worth knowing about. A release that adds a profile field does not add
+it to *your* profile — the new skills read it, find nothing, and fall back silently. Upgrading
+by hand with `git pull` leaves that gap; the skill closes it, and tells you which fields it had
+to leave `unknown` or `blocked`.
+
+Vince also degrades quietly on its own: a renamed test script, a retired branch, a harness update
+that moves the skills directory. Nothing announces itself, and each one makes the next task's
+evidence a little more fictional.
 
 ```bash
 python scripts/install.py doctor --scope user          # or --target <project>

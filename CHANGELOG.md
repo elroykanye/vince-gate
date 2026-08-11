@@ -6,7 +6,27 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
-## v0.3.0 — 2026-08-11
+## v0.4.0 — 2026-08-11
+
+**Added**
+
+- **`vince-update`.** Moves an install between releases, and owns the half `install.py` cannot:
+  reading the changelog *between* the installed and target versions, stopping on uncommitted
+  toolkit work / in-place edits / a task in flight rather than forcing past them, reinstalling at
+  the scope and bindings the manifest recorded, and then **migrating `.vince` config** so a new
+  release's fields exist instead of being silently absent. New fields arrive `unknown` or
+  `blocked` with what would resolve them - never invented. Rollback is the same flow with an
+  older tag, and deliberately does not strip config, since older skills read newer profiles fine.
+
+**Changed**
+
+- The release checklist now requires **actionable upgrade notes** naming every config field or
+  section a release adds, because `vince-update` reads them to migrate existing projects.
+
+**Upgrade notes**
+
+No new config fields. `vince-update` itself installs like any other skill; after upgrading, use
+it instead of `git pull` + reinstall so config migration happens too.
 
 Workspace profiles, for estates with many repos under one hub. Driven by a real limitation: a
 hub cannot run a hundred suites, so a hub-level profile that claims verified commands is lying.
@@ -123,7 +143,9 @@ Rewritten to be stack-agnostic from a set of skills originally built for one pla
 2. Bump `VERSION` **in the same commit as the last change of the line** — in 0.2.0 the bump
    landed last, so three commits carried 0.2.0 features while claiming 0.1.0. `install.py` now
    prints the git ref for exactly this reason, but the bump still belongs with the work.
-3. Update this file.
+3. Update this file. **Upgrade notes are not optional and must be actionable**: name every
+   config field or section the release adds, because `vince-update` reads them to migrate
+   existing projects. "Nothing breaks" is a complete note only when nothing was added.
 4. Bump `version` in `.claude-plugin/plugin.json` — plugin users only receive updates when that
    string changes.
 5. Tag annotated and push: `git tag -a vX.Y.Z -m "…" && git push origin vX.Y.Z`.
