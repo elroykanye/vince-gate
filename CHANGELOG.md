@@ -6,6 +6,42 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.3.0 — 2026-08-11
+
+Workspace profiles, for estates with many repos under one hub. Driven by a real limitation: a
+hub cannot run a hundred suites, so a hub-level profile that claims verified commands is lying.
+
+**Added**
+
+- **Two-level profiles.** `<workspace>/.vince/profile.md` carries the repo map, stack
+  definitions, branch model, tracker, isolation key, environments and estate-wide gates;
+  `<repo>/.vince/profile.md` carries verified commands and the observed baseline.
+- **The invariant, stated everywhere it is read: a hub profile cannot verify a command.** Every
+  per-stack command in a hub profile is `(inferred, unverified)` by construction, and confidence
+  does not survive inheritance.
+- **First-touch promotion.** The first task in a repo runs what it inherited, writes that repo's
+  profile with the commands that actually worked and the baseline actually observed, and records
+  any hub default that was wrong. It costs nothing extra - the task was running them anyway.
+- **Merge semantics.** Scalars override; `dod_extras` and `known_traps` are additive and the
+  hub's cannot be removed by a repo; lessons are read at both levels and routed by scope.
+- **Section status vocabulary**: `verified`, `inferred, unverified`, `unknown - <tried>`,
+  `blocked - <what is needed>`. Wire-proof rigs and mutation tooling are usually legitimately
+  blocked at onboarding; a blank section reads as nobody thought about it, `blocked` reads as a
+  gap with an unblock.
+- `vince-setup` gains workspace mode; `vince-doctor` validates both levels and reports hub
+  profiles claiming impossible verification, plus repos worked in that never got a profile;
+  `vince-learn` routes lessons by scope.
+- **Per-repo baselines on multi-repo tasks.** The ledger carries one row per repo in dependency
+  order. A suite never run in repo B cannot tell you whether you broke repo B - and a baseline
+  taken with an unverified inherited command is now a reviewer FAIL condition.
+- `templates/workspace-profile.template.md`.
+
+**Upgrade notes**
+
+Nothing breaks. A single-repo profile keeps working unchanged and needs no `Inherits from`
+header. Adopt the hub model by running `vince-setup` at the workspace root; existing repo
+profiles are already in the right shape.
+
 ## v0.2.1 — 2026-08-11
 
 Version selection. v0.1.0 and v0.2.0 shipped without git tags, so there was no way to install or

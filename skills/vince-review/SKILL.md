@@ -34,6 +34,21 @@ suite command, the integration branch, the isolation key, the locales, the versi
 the wire-proof rigs. No profile means the implementer skipped `vince-setup`; note it and
 derive what you can from the repo itself.
 
+**In a workspace with many repos, read both profiles** — the hub and this repo's — and know
+which values came from where. A hub profile cannot verify a command, so anything inherited is
+unverified by construction, and that is an attack surface:
+
+- The suite command used for the baseline was inherited and never verified in this repo → the
+  baseline may be measuring nothing. Run it yourself. A baseline nobody watched succeed is not
+  a baseline.
+- First task in this repo and no `<repo>/.vince/profile.md` was written → the promotion step was
+  skipped. The commands stay unverified for the next task too. Finding.
+- A repo profile that is a wholesale copy of the hub → drift waiting to happen, and usually a
+  sign the values were copied rather than run.
+- An estate-wide `dod_extras` gate or `known_traps` entry silently absent from the task's gate
+  walk → the hub's are **additive and not removable**. Dropping one is a finding, not a repo
+  preference.
+
 **Read `.vince/lessons.md` before you start.** It is the record of what previous reviews caught
 in this codebase, and it is not the implementer's narrative — it is your predecessors'. Two uses:
 attack the recorded traps first, because a repeat is the highest-probability finding there is;
@@ -287,6 +302,8 @@ You **must** return FAIL if any of these hold:
 - Pass 0 was skipped — a review that read the ledger first cannot claim the isolation it depends
   on, and its PASS does not stand;
 - any evidence in the ledger is not reproducible;
+- a multi-repo task with no observed baseline for a repo it changed;
+- a baseline taken with an inherited command that was never verified in that repo;
 - any new skipped, disabled or deleted test;
 - any user-observable AC proven only at unit level, with no wire proof;
 - the isolation key missing from any new query or message;

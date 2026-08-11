@@ -38,6 +38,25 @@ result, does.
 Promotion to a gate is a commitment: every future task in this project pays for it. Ask whether
 the cost is worth the class of bug it stops. If it is not, a `known_traps` line is enough.
 
+## Which level does it belong to?
+
+In a workspace with many repos there are two lessons files and two profiles, and putting a
+lesson in the wrong one is how these files rot: estate-wide knowledge trapped in one repo helps
+nobody, and one repo's quirk in the hub file is noise every other repo reads forever.
+
+Route by asking **would this be true in a sibling repo?**
+
+| Signal | Goes to |
+|--------|---------|
+| A trap in one repo's code or its stack's tooling | that repo's `.vince/lessons.md` / profile |
+| A pattern seen in two or more repos | the hub's — and say which repos |
+| A hub default that was wrong for a repo | the **hub** profile's *Corrections*, because the default is what needs fixing |
+| A convention, contract or platform behaviour | the hub |
+
+The one people get wrong: an inherited command that failed in a repo is not just that repo's
+correction. Fix it in the repo profile *and* consider whether the hub's stack default is wrong
+for every repo of that stack — a wrong default costs each of them a first-touch detour.
+
 ## The lessons file
 
 `.vince/lessons.md`, newest first. Each entry is small and actionable:

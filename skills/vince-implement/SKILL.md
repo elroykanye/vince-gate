@@ -51,15 +51,28 @@ follow the profile. Any "no" makes it T2, and T2 means a real `vince-review`.
 
 Before reading a single line of implementation code, pin down what "done" means.
 
-1. **Load the project profile and the lessons file.** `.vince/profile.md` at the project root
-   names this project's tracker, branch model, test commands, isolation key, locales,
-   versioning rule and wire-proof rigs; `.vince/lessons.md` holds what previous reviews caught
-   in this codebase. Every project-specific decision in this skill reads from them. **No
-   profile? Run `vince-setup` first** — one pass, then continue. Never guess at the test
-   command or the branch model.
+1. **Load the profile(s) and the lessons.** `.vince/profile.md` names this project's tracker,
+   branch model, test commands, isolation key, locales, versioning rule and wire-proof rigs;
+   `.vince/lessons.md` holds what previous reviews caught. Every project-specific decision in
+   this skill reads from them. **Neither exists? Run `vince-setup` first** — one pass, then
+   continue. Never guess at the test command or the branch model.
+
+   **In a workspace with many repos there are two profiles**, and both apply:
+
+   - `<workspace>/.vince/profile.md` — the hub: branch model, tracker, isolation key, estate
+     gates and traps, and *unverified per-stack defaults*.
+   - `<repo>/.vince/profile.md` — this repo: verified commands and its observed baseline.
+
+   Merge them: scalars in the repo profile override the hub; `dod_extras` and `known_traps` are
+   **additive and the hub's are not removable**; lessons from both levels are read. And the rule
+   that matters most:
+
+   > **A value inherited from the hub is `(inferred, unverified)` no matter how confident it
+   > looks.** A hub cannot run a hundred suites, so nothing in it was ever executed. Treat every
+   > inherited command as a hypothesis you are about to test, not as a fact.
 
    Read the lessons *before* you design, not after you are reviewed: a repeat of a recorded
-   lesson is the cheapest FAIL there is, and the reviewer reads the same file looking for
+   lesson is the cheapest FAIL there is, and the reviewer reads the same files looking for
    exactly that.
 
 2. **Find the work's home and its contract.** Not everything is a ticket, and the contract
@@ -109,8 +122,10 @@ not negotiable by convenience.
 
 ## Phase 1 — Recon (no code changes yet)
 
-1. Identify the owning repo and, in a polyrepo, the dependency order: shared lib, then
-   service, then consumer, then frontend. Write that order down.
+1. Identify the owning repo — in a hub, via the profile's repo map rather than by guessing at
+   names. In a polyrepo, write down the dependency order: shared lib, then service, then
+   consumer, then frontend. **A multi-repo task needs a baseline per repo**, not one for the
+   task; a suite you never ran in repo B cannot tell you whether you broke repo B.
 2. Navigate with symbol tools where the language and harness have them (an LSP, Serena's
    `find_symbol` / `find_referencing_symbols`, your editor's index), not blind grep.
 3. Read the repo's own `CLAUDE.md`/`AGENTS.md` and load only the docs your scope touches.
@@ -123,6 +138,25 @@ not negotiable by convenience.
    command, and record pass/fail/skip counts in the ledger. Without a baseline you cannot
    tell your new red from an inherited red, and neither can the reviewer. Record the count
    of existing skipped/quarantined tests too.
+
+6. **First touch in this repo? Promote what you inherited.** If the commands came from a hub
+   profile and this repo has none of its own, you are the one who turns hypotheses into facts —
+   and it costs almost nothing, because you were running them anyway:
+
+   - Run each inherited command you need. Watch it work.
+   - Write `<repo>/.vince/profile.md` containing **only what you verified plus what differs** —
+     the commands that worked, the baseline you just observed and the commit it was taken on,
+     this repo's locales, its mutation tool, its rigs. Do not copy the hub file; two copies of
+     the same fact is two places to drift.
+   - An inherited command that does not work is not a blocker, it is *Self-healing*: re-derive
+     once, verify, record it in the **repo** profile with a *Corrections* line, and tell the user
+     the hub default was wrong for this repo — that is a fix the whole estate benefits from.
+   - Cannot determine something (no rig, no credentials)? `unknown — <what you tried>` or
+     `blocked — <what is needed>`. Never a plausible-looking guess.
+
+   After this, the repo is self-describing and the hub is back to being defaults. Skipping it
+   means the next task re-runs the same discovery and the unverified values stay unverified
+   forever.
 
 STOP conditions in this phase: the suite does not run at all; the repo is not the owner;
 the change requires a write to shared/live infrastructure. Report, ask, wait.

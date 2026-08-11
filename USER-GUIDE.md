@@ -288,6 +288,47 @@ rules per project in the profile's *Tiering overrides* — for example, "anythin
 
 ---
 
+## Many repos: workspace profiles
+
+If your repos live under a hub — `../repos/`, `services/`, a polyrepo workspace — you get two
+profiles, not one, and the split is deliberate:
+
+```
+workspace/.vince/profile.md      the estate: repo map, stacks, branch model, tracker,
+                                 isolation key, estate-wide gates and traps
+workspace/.vince/tasks/          ledgers live here, because work spans repos
+repos/service-a/.vince/profile.md   verified commands + observed baseline for that repo
+repos/service-b/.vince/profile.md
+```
+
+Run `/vince-setup` at the workspace first; it detects hub mode and writes the estate profile.
+Repo profiles then only carry what differs.
+
+**The rule that makes this honest:** a hub profile *cannot verify a command*. Nobody runs a
+hundred suites from the hub, so every per-stack command there is `(inferred, unverified)` by
+construction, and the file says so. Which means:
+
+- The hub gives you **defaults per stack** — matched by marker (`*.csproj`, `package.json` with
+  React, `pyproject.toml`), not per repo.
+- The **first task in a repo verifies what it inherited** and writes that repo's profile with the
+  commands that actually ran and the baseline actually observed. It costs nothing extra, because
+  the task was going to run them anyway.
+- After that, the repo is self-describing and the hub is back to being defaults.
+
+Estate-wide `dod_extras` and `known_traps` are **additive**: a repo can add gates and traps but
+cannot drop one the hub imposes. Removing an estate gate is a decision at the hub, with a reason.
+
+Multi-repo tasks carry **one baseline per repo** on the ledger, in dependency order (shared lib →
+service → consumer → frontend). A suite you never ran in repo B cannot tell you whether you broke
+repo B.
+
+### Say "blocked", not nothing
+
+Wire-proof rigs and mutation tooling usually cannot be set up at onboarding — they need running
+infrastructure or credentials. Mark them `blocked — needs dev cluster credentials` rather than
+leaving them blank. A blank section reads as "nobody thought about it"; a blocked one reads as a
+known gap with an unblock, and `vince-doctor` will keep surfacing it until it clears.
+
 ## Working across harnesses and with a team
 
 The skills are plain markdown. A **binding** renders them into the shape a given harness wants:
@@ -386,6 +427,7 @@ Almost everything project-specific belongs in `.vince/profile.md`, not in a skil
 - **Have a different model review** → `reviewer_model`.
 - **Record a trap** → `known_traps`. The reviewer sweeps these in its A5 pass.
 - **Change tier rules** → *Tiering overrides*.
+- **Share config across many repos** → a workspace profile; see [Many repos](#many-repos-workspace-profiles).
 - **Point at your decisions/runbooks** → the `memory` section. Both skills read it, and an
   implementation contradicting a recorded decision is a finding even when tests pass.
 - **Name your wire-proof rigs** → `wire_proofs`. The highest-value section in the file.

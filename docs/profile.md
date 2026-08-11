@@ -12,18 +12,92 @@ It has two companions in the same directory: `.vince/lessons.md` (what reviews h
 read before designing) and `.vince/metrics.jsonl` (one line per completed task). Both are written
 by `vince-learn`.
 
-Start from [`templates/profile.template.md`](../templates/profile.template.md).
+Start from [`templates/profile.template.md`](../templates/profile.template.md), or
+[`templates/workspace-profile.template.md`](../templates/workspace-profile.template.md) for a
+hub.
 
 ## Resolution order
 
 1. `<repo>/.vince/profile.md` — the repo being worked on.
-2. `<workspace>/.vince/profile.md` — a workspace-level profile supplying defaults for repos with
-   none (useful in a polyrepo workspace where the repos share a stack).
-3. No profile → run `vince-setup` first. Skills must not guess at a test command or a branch
-   model; a wrong guess produces a confident, wrong baseline.
+2. `<workspace>/.vince/profile.md` — the **hub profile**, when repos live under a workspace.
+3. Neither → run `vince-setup` first. Skills must not guess at a test command or a branch model;
+   a wrong guess produces a confident, wrong baseline.
 
 The profile is usually worth committing — it is project knowledge. `.vince/tasks/` usually is
 not; add it to `.gitignore` unless the user wants ledgers in history.
+
+## Two levels: hub and repo
+
+A workspace with many repos cannot have one profile, and it cannot have only per-repo profiles
+either — the branch model, tracker, isolation key and estate-wide traps are the same everywhere,
+and re-deriving them per repo is both wasteful and a source of drift.
+
+So there are two files, with one invariant between them:
+
+> **A hub profile cannot verify a command.** Nobody runs a hundred suites from the hub, and a
+> value nobody ran is not evidence. Every command in a hub profile is `(inferred, unverified)`
+> by construction. Verified commands and observed baselines exist **only** in a repo profile.
+
+That is not a caveat, it is the design. It means a hub profile is honest about being a set of
+defaults, and it means the first task in a repo has a defined job: verify what it inherited.
+
+| Lives in the **hub** profile | Lives in the **repo** profile |
+|------------------------------|-------------------------------|
+| Repo map, stack definitions, repo count | Verified commands, actually run |
+| Per-stack *default* commands (unverified) | Observed suite baseline + the commit it was taken on |
+| Integration branch, branch naming, PR host | Repo-specific overrides of any hub default |
+| Commit convention, versioning rule, `reviewer_model` | This repo's mutation tool and its diff-scoped command |
+| Tracker and how to read a ticket | This repo's wire-proof rigs |
+| Isolation key and auth model | This repo's locales |
+| Environments, memory targets | Repo-specific traps and gates |
+| `task_root` (usually the workspace, since work spans repos) | |
+
+### Merge semantics
+
+Precise, because "the repo one wins" is only half true:
+
+- **Scalars override.** A field present in the repo profile replaces the hub value entirely —
+  branch, versioning rule, isolation key, `reviewer_model`, commands.
+- **`dod_extras` and `known_traps` are additive, and the hub's are not removable.** A repo adds
+  gates and traps; it cannot drop one the estate imposes. Dropping an estate-wide gate is a
+  decision for whoever owns the hub profile, recorded there with a reason.
+- **Confidence does not survive inheritance.** A value taken from the hub arrives
+  `(inferred, unverified)` regardless of how confident it looks. It becomes verified only by
+  being run in that repo and written into the repo profile.
+- **Lessons stack.** `<workspace>/.vince/lessons.md` and `<repo>/.vince/lessons.md` are both
+  read. `vince-learn` routes each new lesson by scope: true of the platform → hub; true of one
+  repo → repo.
+
+### First touch: the promotion step
+
+The first task in a repo whose values are inherited has an extra job, and it is small:
+
+1. Run the inherited commands. Watch them work.
+2. Record the observed suite baseline (`N passed / M failed / K skipped`) and the commit.
+3. Write `<repo>/.vince/profile.md` with the verified values — only what you verified, not a
+   copy of the hub file.
+4. Anything that fails, re-derive once and record under *Corrections*; anything you cannot
+   determine stays `unknown` or `blocked`, never a guess.
+
+After that the repo is self-describing and the hub is back to being defaults. This is the
+mechanism that makes a hub profile safe: the unverified values have a defined moment where they
+stop being unverified, rather than being trusted forever.
+
+### Section status vocabulary
+
+Both files mark each section. `blocked` is the one people skip, and it is the most useful:
+
+| Marker | Means |
+|--------|-------|
+| `verified` | someone ran it and watched it work |
+| `inferred, unverified` | derived from code or CI without running it |
+| `unknown — <what was tried>` | could not determine |
+| `blocked — <what is needed>` | needs access, infra or credentials somebody else holds |
+
+A blank section reads as "nobody thought about it". `blocked — needs cluster credentials for the
+dev namespace` reads as a known gap with an owner and an unblock. Wire-proof rigs and mutation
+tooling are the two that are most often legitimately blocked at setup time — say so rather than
+leaving them empty or inventing something plausible.
 
 ## Fields
 

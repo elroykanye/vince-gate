@@ -1,9 +1,16 @@
 # <task-id or task name> Verification Ledger
 
-Repo(s): `<repo>@<branch>`            Baseline suite: `<N passed / M failed / K skipped>`
+Tier: `<T1 | T2 | T3>` (`<the rule that put it there>`)
+Profile: `<repo profile>` inheriting `<hub profile, if any>`
 Worktree: `<path>` (off `origin/<integration>`; remove on completion)
-Profile: `<path to .vince/profile.md>`
 Reviewer verdict: NOT-RUN | FAIL | PASS (`<date>`, see `review-verdict.md`)
+
+One row per repo the task touches, in dependency order (shared lib → service → consumer →
+frontend). Each repo needs its **own** observed baseline:
+
+| # | Repo | Branch | Baseline suite (passed/failed/skipped) | Commands verified here? |
+|---|------|--------|----------------------------------------|-------------------------|
+| 1 | | | | verified this task / already in repo profile |
 
 ## Contract
 

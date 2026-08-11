@@ -1,7 +1,26 @@
 # Vince profile — <project name>
 
-Written by `vince-setup` on <YYYY-MM-DD>. Every command below was run in this repo and
-observed to work, unless marked `(inferred, unverified)` or `unknown`.
+Written by `vince-setup` on <YYYY-MM-DD>. Every command below was run in this repo and observed
+to work, unless marked otherwise.
+
+**Inherits from:** `<path to workspace profile, or "none — standalone repo">`
+
+When inheriting, record **only what you verified or what differs**. Do not copy the hub file:
+two copies of one fact is two places to drift. Scalars here override the hub; its `dod_extras`
+and `known_traps` are additive and cannot be removed from here.
+
+Mark each field:
+
+| Marker | Means |
+|--------|-------|
+| (unmarked) | verified — you ran it and watched it work |
+| `(inferred, unverified)` | derived without running it, or inherited and not yet run |
+| `unknown — <what was tried>` | could not determine |
+| `blocked — <what is needed>` | needs access, infra or credentials someone else holds |
+
+`blocked` is the one people skip and the most useful. Wire-proof rigs and mutation tooling are
+the two most often legitimately blocked at setup time — say `blocked — needs dev cluster
+credentials` rather than leaving the section blank or inventing something plausible.
 
 ## Project
 

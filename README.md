@@ -55,6 +55,13 @@ DoD gates, known traps, tier overrides — lives in **`.vince/profile.md`**, wri
 `vince-setup` and read by every other skill. Swap the profile and the same discipline applies to
 a Go service, a React app, or a Python pipeline.
 
+**Many repos under one hub?** Two profiles: an estate-level one for the repo map, stacks, branch
+model, tracker and estate-wide gates, and a per-repo one for verified commands and baselines. The
+invariant that keeps it honest is that a hub profile *cannot verify a command* — nobody runs a
+hundred suites from a hub, so its per-stack values are unverified by construction and the first
+task in a repo is what promotes them. See
+[Many repos](USER-GUIDE.md#many-repos-workspace-profiles).
+
 ## Self-healing and self-improving
 
 - **Healing.** A stale profile is worse than none, because it is trusted. When a recorded command

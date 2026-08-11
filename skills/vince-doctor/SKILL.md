@@ -36,7 +36,26 @@ version is behind.
 
 ## 2. The profile
 
-`.vince/profile.md` is the load-bearing file. Validate it **by running it**, not by reading it:
+`.vince/profile.md` is the load-bearing file. Validate it **by running it**, not by reading it.
+
+**Two levels?** Check both, and check them differently — a hub profile cannot verify a command,
+so running its per-stack defaults is not its job and their being unverified is not a fault:
+
+| Check | Hub profile | Repo profile |
+|-------|-------------|--------------|
+| Commands | do **not** mark verified; confirm they are labelled `inferred, unverified` | run every one |
+| Baseline | must not claim one | run the suite, compare, restamp |
+| Repo map | resolve a sample of repos | n/a |
+| Integration branch | resolves in a sample of repos | resolves here |
+| Paths | exist | exist |
+| Sections | none blank — `blocked`/`unknown` instead | same |
+
+Two hub-level findings worth reporting on their own: **a hub profile claiming a verified
+command or a baseline** (structurally impossible — someone pasted it), and **repos that have
+been worked in but never got a repo profile**, which means first-touch promotion is being
+skipped and the estate's values stay unverified indefinitely. List those repos.
+
+Then, for the profile at hand:
 
 | Field | Check | If it fails |
 |-------|-------|-------------|

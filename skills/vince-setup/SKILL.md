@@ -12,19 +12,63 @@ A profile is only useful if it is **true**. Every command you record must be one
 ran and watched succeed in this repo. A profile full of plausible-looking commands is worse than
 no profile, because the next session will trust it.
 
-## Where the profile goes
+## Which mode are you in?
 
-`<project root>/.vince/profile.md`, where the project root is the repo you are onboarding. In a
-polyrepo workspace, each repo gets its own profile; a workspace-level profile at the workspace
-root supplies defaults for repos that have none.
+Decide this first, because it changes what you are allowed to claim.
 
-Add `.vince/tasks/` to the repo's `.gitignore` unless the user wants ledgers committed. The
-profile itself is usually worth committing — it is project knowledge, not scratch.
+| You are onboarding | Mode | Writes | Template |
+|--------------------|------|--------|----------|
+| A single repo | **repo** | `<repo>/.vince/profile.md` | `profile.template.md` |
+| A hub with many repos under it | **workspace** | `<workspace>/.vince/profile.md` | `workspace-profile.template.md` |
+| A repo inside a hub that already has a profile | **repo (inheriting)** | `<repo>/.vince/profile.md`, verified values only | `profile.template.md` |
 
-## Discovery pass
+Signs you are in a hub: repos live in a sibling directory (`../repos/`, `packages/`, `services/`),
+there is a repo manifest, or the user says so. If both a hub and a repo need doing, do the hub
+first — the repo profile is then only what differs.
+
+**The invariant for workspace mode: a hub profile cannot verify a command.** You are not going to
+run a hundred suites from the hub, and a value nobody ran is not evidence. So in workspace mode
+every command you record is `(inferred, unverified)` by construction, and you say so in the file.
+Verified commands and observed baselines live in repo profiles, written on first touch. Do not
+run one repo's suite and generalise it to a stack — that is one data point wearing a uniform.
+
+Add `.vince/tasks/` to `.gitignore` unless the user wants ledgers committed. The profile itself
+is usually worth committing — it is project knowledge, not scratch.
+
+## Discovery pass — workspace mode
+
+Skip to the next section for a single repo.
+
+1. **Map the estate.** Where the repos live, how many, and how to find the owning repo for a
+   piece of work (a manifest file, a naming convention, a domain map). This is the section that
+   saves the most time later, and it is one you *can* verify.
+2. **Identify the stacks**, not the repos. Group by marker — `*.csproj`, `package.json` with
+   React, `pyproject.toml`, `go.mod`. For each stack record the *default* commands, read out of
+   manifests and CI config. Mark the block `inferred, unverified` and mean it.
+3. **Estate-wide facts you genuinely can verify**: integration branch, branch naming, PR host,
+   commit convention (`git log` across a few repos), tracker, isolation key, environments,
+   memory targets. These are legitimately `verified`.
+4. **Dependency order** between repo classes: shared lib → service → consumer → frontend.
+5. **`task_root`**: usually the workspace, because work spans repos.
+6. **Estate-wide gates and traps** — the additive sections. Ask the user what breaks repeatedly;
+   it is usually known and unwritten.
+7. **Sections you cannot start** — wire-proof rigs and mutation tooling are the usual two, since
+   they need infra, credentials or a running environment. Mark them
+   `blocked — <what is needed>`, not blank. A blank section reads as "nobody thought about it";
+   `blocked — needs cluster credentials for the dev namespace` reads as a gap with an unblock.
+
+Then stop. Do not attempt per-repo verification from the hub; that is first-touch work, and
+claiming it here is exactly the failure this mode is designed to avoid.
+
+## Discovery pass — repo mode
 
 Work through these, running things rather than assuming. Anything you cannot determine is
 recorded as `unknown` with a note — never as a guess.
+
+**Inheriting from a hub?** Read the hub profile first, then record **only what differs or what
+you verified**. A repo profile that copies the hub file wholesale creates two places to update
+and guarantees drift. Run the inherited commands, write down the ones that worked and the
+baseline you observed, and leave everything else to inheritance.
 
 1. **Stack and layout.** Manifests (`package.json`, `*.csproj`, `pyproject.toml`, `go.mod`,
    `Cargo.toml`, `pom.xml`, `build.gradle`), the directory layout, whether it is one service or
@@ -106,6 +150,12 @@ If the project has harness directories the current install does not cover (`.cur
 harness gets no gate at all unless that binding is installed too.
 
 ## Verify before you finish
+
+In **workspace mode**, verification is about the estate, not the suites: confirm the repo map
+resolves (pick three repos at random and find them), confirm the integration branch exists in a
+couple of repos, and confirm every path you recorded exists. Do **not** claim a verified suite.
+
+In **repo mode**:
 
 1. Re-run the recorded unit-suite command from a clean state and confirm the baseline counts
    match what you wrote.
