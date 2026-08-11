@@ -6,6 +6,35 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.6.0 — 2026-08-12
+
+**Added**
+
+- **`vince-cleanup`.** Recovers a workspace after a session ended without tearing down: leaked
+  git worktrees, processes still holding directories open, background jobs nobody stopped, stray
+  build and scratch output. `vince-implement` already told a session to sweep up after itself and
+  `vince-doctor` reported orphaned worktrees, but neither handles processes and neither helps once
+  the session that made the mess is gone.
+
+  It is the only skill that kills processes and deletes directories, so it is built to refuse:
+  inventory first, attribute every item as yours / unknown / someone else's and act only on the
+  first, never kill by process name, never `--force` past a dirty or unpushed worktree, never
+  `rm -rf` a worktree at all. It also owns the diagnosis nothing else had - which process holds a
+  directory open when a remove fails (`handle.exe` / `Win32_Process`, `lsof` / `fuser`), worked in
+  escalation order instead of reaching for force.
+- **A *Session resources* block in the ledger.** One row per worktree and long-running process,
+  written *as it is created* rather than at the end, where a crashed session never reaches it.
+  This is the attribution that lets cleanup act confidently instead of asking about everything.
+- **The Stop hook catches leaked worktrees**: a ledger reading `PASS` whose recorded worktree is
+  still on disk means teardown was skipped. Only `PASS` ledgers are checked, and a path that is
+  gone or still a template placeholder is never a leak.
+
+**Upgrade notes**
+
+No new profile fields. Existing ledgers keep working; the *Session resources* block is additive
+and only affects tasks started after the upgrade. If you use the Stop hook, it now blocks on
+leaked worktrees as well as unproven rows - `VINCE_STOP_DISABLE=1` still turns it off entirely.
+
 ## v0.5.0 — 2026-08-11
 
 **Vince no longer writes into the repos it works on.** 0.3.0 made per-repo profiles effectively

@@ -1,6 +1,6 @@
 # Skill catalog
 
-Seven skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
+Eight skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
 [harnesses.md](harnesses.md)). They are designed to be invoked by name (`/vince-implement`) or to
 auto-activate on their description triggers.
 
@@ -12,6 +12,7 @@ auto-activate on their description triggers.
 | `vince-document` | at completion, before publishing |
 | `vince-doctor` | when anything about the setup smells wrong |
 | `vince-learn` | after a PASS, and once over the history when adopting Vince |
+| `vince-cleanup` | when a session left worktrees, processes or output behind |
 | `vince-update` | when a new release lands, or to roll back to an older one |
 
 ## `vince-setup`
@@ -107,6 +108,25 @@ One-offs are deliberately *not* promoted — noise is what makes these files sto
 It also reads `.vince/metrics.jsonl` (one line per task, written at close) to report which
 attacks earn their time in this codebase, whether rounds-to-PASS is trending down, and whether a
 tier is being abused. Under about five tasks it says so rather than inventing a trend.
+
+## `vince-cleanup`
+
+Post-hoc recovery. `vince-implement` tells a session to sweep up after itself and `vince-doctor`
+reports orphaned worktrees; this is for when the session that made the mess is gone — it crashed,
+was interrupted, or predates the rule.
+
+It is the only skill here that kills processes and deletes directories, so it is built to refuse:
+inventory everything first, **attribute** each item (yours / unknown / someone else's) and act
+only on the first bucket, never kill by process name, never `--force` past a dirty or unpushed
+worktree, never `rm -rf` a worktree at all, and delete only output you can name the regenerating
+command for. Unknown items are reported, not resolved.
+
+It also owns the diagnosis nothing else did: **which process is holding a directory open** when a
+remove fails — `handle.exe` / `Win32_Process` on Windows, `lsof`/`fuser` elsewhere — worked in
+escalation order rather than reaching for force.
+
+Attribution comes from the ledger's *Session resources* block, which `vince-implement` now writes
+as it creates each worktree and background job. Without it, cleanup can only ask.
 
 ## `vince-update`
 

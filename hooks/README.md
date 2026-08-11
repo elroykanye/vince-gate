@@ -16,6 +16,13 @@ It blocks when a recent ledger under `.vince/tasks/active/` has any `AC-`/`DOD-`
 is `NOT-PROVEN`, `RED`, `GREEN` or `TAMPER-PASSED` (i.e. not yet `PROVEN`), or whose
 `Reviewer verdict:` line is absent, `NOT-RUN` or `FAIL`.
 
+It also blocks on a **leaked worktree**: a ledger that reads `PASS` while a worktree it recorded
+in *Session resources* still exists on disk. That is teardown that did not happen, and it is
+cheap to catch at the moment it happens rather than weeks later when the disk is full and nobody
+remembers which task made the directory. Only `PASS` ledgers are checked — before that the
+worktree is supposed to be there — and a path that no longer exists, or is still a template
+placeholder, is never treated as a leak.
+
 It deliberately stays out of the way when: there is no `.vince/tasks/active/` directory, no
 ledger has been touched in the last 24 hours (`VINCE_STOP_MAX_AGE_HOURS`), every row is `PROVEN`
 and the verdict is `PASS`, or the stop was already blocked once (`stop_hook_active`) — that last

@@ -12,6 +12,17 @@ frontend). Each repo needs its **own** observed baseline:
 |---|------|--------|----------------------------------------|-------------------------|
 | 1 | | | | verified this task / already in repo profile |
 
+## Session resources
+
+Everything this task created that outlives a command, recorded **as you create it** - this is
+what lets `vince-cleanup` act later instead of asking about everything. Tear all of it down
+before reporting done.
+
+| Resource | Where | Started | Torn down |
+|----------|-------|---------|-----------|
+| worktree | `<path>` (repo `<repo>`, branch `<branch>`) | `<date>` | no |
+| background job | `<what it is, pid or harness job id>` | `<date>` | no |
+
 ## Contract
 
 Every acceptance criterion and definition-of-done item, verbatim from the source. One row each.

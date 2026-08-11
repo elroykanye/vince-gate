@@ -92,9 +92,12 @@ Scan `<task root>/active/` (default `.vince/tasks/active/`) for state that has g
 - A dir under `active/` whose branch is gone or merged — a candidate for `archive/`. Moving it
   is the user's call; propose, do not sweep.
 - Orphaned worktrees from tasks that ended without teardown: `git worktree list`, cross-checked
-  against the ledger headers. Report them with what is uncommitted in each. **Never remove a
-  worktree that is dirty or has unpushed commits**, and never remove one you cannot tie to a
-  completed task.
+  against the ledgers' *Session resources* blocks. Report them with what is uncommitted in each.
+  **Never remove a worktree that is dirty or has unpushed commits**, and never remove one you
+  cannot tie to a completed task.
+- Leaked processes and undeletable directories are `vince-cleanup`'s job, not this skill's —
+  report what you noticed and hand off. Doctor diagnoses the setup; cleanup reclaims resources,
+  and it kills things, so it gets its own deliberate invocation.
 
 ## 4. The loop itself
 

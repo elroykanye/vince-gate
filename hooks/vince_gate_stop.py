@@ -65,12 +65,26 @@ def recent_ledgers(root: Path):
     return out
 
 
+def leaked_worktrees(text: str):
+    """Paths the ledger recorded as worktrees that still exist on disk.
+
+    Only meaningful once the task has passed: before that the worktree is supposed to be there.
+    Conservative by design - a path that no longer exists, or that cannot be parsed, is not a leak.
+    """
+    out = []
+    for m in re.finditer(r"^\s*(?:\|\s*)?worktree\b[^|\n]*\|?\s*`([^`]+)`", text, re.M | re.I):
+        candidate = m.group(1).strip()
+        if candidate and not candidate.startswith("<") and Path(candidate).is_dir():
+            out.append(candidate)
+    return out
+
+
 def inspect(ledger: Path):
-    """Return (unproven_ids, verdict) for one ledger."""
+    """Return (unproven_ids, verdict, leaked) for one ledger."""
     try:
         text = ledger.read_text(encoding="utf-8", errors="replace")
     except OSError:
-        return [], None
+        return [], None, []
 
     verdict = None
     m = re.search(r"^Reviewer[ -]verdict:\s*(NOT-RUN|FAIL|PASS)", text, re.M | re.I)
@@ -90,7 +104,7 @@ def inspect(ledger: Path):
             continue
         if status.upper().startswith(BLOCKING_STATUSES):
             unproven.append(f"{row_id} ({status})")
-    return unproven, verdict
+    return unproven, verdict, leaked_worktrees(text)
 
 
 def main() -> int:
@@ -105,9 +119,9 @@ def main() -> int:
     if payload.get("stop_hook_active"):
         return 0
 
-    problems = []
+    problems, leaks = [], []
     for ledger in recent_ledgers(project_root(payload)):
-        unproven, verdict = inspect(ledger)
+        unproven, verdict, worktrees = inspect(ledger)
         task = ledger.parent.name
         if unproven:
             problems.append(f"  {task}: {len(unproven)} row(s) not PROVEN - {', '.join(unproven[:4])}")
@@ -115,17 +129,28 @@ def main() -> int:
             problems.append(f"  {task}: reviewer verdict is {verdict or 'absent'}")
         elif verdict == "FAIL":
             problems.append(f"  {task}: reviewer verdict is FAIL")
+        elif verdict == "PASS":
+            # Passed and finished, but a worktree it recorded is still on disk: teardown was
+            # skipped. Cheap to catch now, tedious to track down weeks later.
+            for wt in worktrees:
+                leaks.append(f"  {task}: worktree still on disk - {wt}")
 
-    if not problems:
+    if not problems and not leaks:
         return 0
 
-    print(
-        "vince-gate: this task is not done yet.\n"
-        + "\n".join(problems)
-        + "\n\nFinish the ledger and get a PASS from vince-review, or tell the user plainly "
-          "what is unproven and why you are stopping. Do not report the task complete.",
-        file=sys.stderr,
-    )
+    lines = ["vince-gate: this session is not finished."]
+    if problems:
+        lines += ["", "Not done:"] + problems
+        lines += ["", "Finish the ledger and get a PASS from vince-review, or tell the user "
+                      "plainly what is unproven and why you are stopping."]
+    if leaks:
+        lines += ["", "Not cleaned up:"] + leaks
+        lines += ["", "Tear it down (`git -C <repo> worktree remove <path>` then `prune`) and "
+                      "mark it torn down in the ledger's Session resources block. If it refuses "
+                      "because the tree is dirty or has unpushed commits, that is a STOP - "
+                      "report it, do not force. Stuck because something is holding the "
+                      "directory open? That is vince-cleanup."]
+    print("\n".join(lines), file=sys.stderr)
     return 2  # exit 2 blocks the stop and feeds stderr back to the model
 
 

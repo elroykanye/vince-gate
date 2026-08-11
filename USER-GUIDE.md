@@ -385,8 +385,21 @@ language. Several harnesses read `AGENTS.md`, so that block alone is often enoug
 
 ## Keeping it healthy
 
-Two different jobs, two skills: **`/vince-doctor`** when something is broken, **`/vince-update`**
-when a newer release exists. Update runs doctor's checks; doctor never changes version.
+Three jobs, three skills: **`/vince-doctor`** when something is broken, **`/vince-cleanup`** when
+a session left resources behind, **`/vince-update`** when a newer release exists.
+
+```
+/vince-cleanup     # leaked worktrees, processes holding directories open, stray output
+```
+
+Sessions end badly — crashes, interrupts, a window closed. What survives is a git worktree full
+of throwaway state, a dev server or watcher still holding a directory (so it will not delete),
+and build output nobody needs. Cleanup inventories all of it, works out what belongs to a
+finished task, and removes only that. Anything it cannot attribute it reports rather than
+touching — a `node` process it did not start might be your editor's language server.
+
+If a directory will not delete, that skill is where the diagnosis lives: it finds the process
+holding the handle instead of escalating to force. Update runs doctor's checks; doctor never changes version.
 
 ```
 /vince-update      # compares versions, reads the changelog between them, reinstalls,

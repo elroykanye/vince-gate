@@ -32,6 +32,7 @@ the **[user guide](USER-GUIDE.md)** covers using it.
 | `vince-document` | Completion documentation in the task dir, validated against what actually shipped, published only after PASS. |
 | `vince-doctor` | Self-healing: repairs a drifted install, validates the profile by *running* it, finds unreviewed work and leaked worktrees. |
 | `vince-learn` | Self-improving: turns review findings into `known_traps`, `dod_extras` gates and lessons, so the next task is stopped at the gate rather than caught at review. |
+| `vince-cleanup` | Recovers a workspace after a session ended without tearing down: leaked worktrees, processes holding directories open, stray output. Attributes before it touches anything. |
 | `vince-update` | Moves an install to another release safely — reads the changelog between versions, refuses to trample in-place edits, and migrates `.vince` config so a new version's fields exist instead of silently defaulting. |
 
 ## Works with any harness
@@ -148,7 +149,7 @@ there is evidence.
 vince-gate/
   INSTALL.md                          paste-to-your-agent install guide
   USER-GUIDE.md                       start here
-  skills/                             the seven skills (+ reference/ docs)
+  skills/                             the eight skills (+ reference/ docs)
   bindings/*.json                     one per harness; no per-harness code
   hooks/                              opt-in enforcement (Claude Code Stop hook)
   templates/                          profile, ledger, verdict, lessons, completion doc

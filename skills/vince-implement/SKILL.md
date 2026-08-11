@@ -335,9 +335,15 @@ You share this machine with other live sessions. Two things leak disk and RAM wh
 ends without cleanup: the git worktree you worked in, and any background process you started.
 You clean up both — and only the ones **you** created.
 
+**Record every resource as you create it.** The ledger's *Session resources* block takes one row
+per worktree and per long-running process, written the moment it exists — not at the end, when a
+crashed session will never get to it. This is the difference between a later cleanup being able to
+say "this worktree belongs to a task that passed and pushed, removing it" and having to ask the
+user about every directory it finds. An unrecorded resource is an orphan by construction.
+
 **Worktrees — create one, track it, tear it down safely.**
 - Work in a dedicated worktree off the integration branch (Phase 1), never the shared
-  checkout, and record its path on the ledger header so teardown has a target.
+  checkout, and record its path in *Session resources* so teardown has a target.
 - On PASS-and-pushed (or on abandoning the task), remove it:
   `git -C <repo> worktree remove <path>` then `git -C <repo> worktree prune`.
 - **Smart, not destructive.** `git worktree remove` refuses a dirty tree or a branch with
@@ -361,7 +367,12 @@ You clean up both — and only the ones **you** created.
   background-task stop, or kill the tracked PID). Leaving them is how a box ends up in swap.
 
 Teardown is part of "done": a task is not complete while it has leaked a worktree full of
-throwaway state or a fistful of live tail processes.
+throwaway state or a fistful of live tail processes. Mark each row in *Session resources* torn
+down as you go, so the block reads empty-of-live-items when you report.
+
+Came to a workspace someone else left in a mess — leaked worktrees, directories that will not
+delete, processes nobody stopped? That is `vince-cleanup`, not this skill. It attributes what it
+finds before touching it.
 
 ## Phase 6 — Self-attack
 
