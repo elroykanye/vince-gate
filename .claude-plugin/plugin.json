@@ -1,0 +1,20 @@
+{
+  "name": "vince-gate",
+  "description": "An implementer-and-reviewer gate for coding agents: verbatim contracts, test-first TDD with mutation-checked tests, end-to-end wire proofs, and an adversarial reviewer that runs blind and defaults to FAIL.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Elroy Kanye"
+  },
+  "homepage": "https://github.com/elroykanye/vince-gate",
+  "repository": "https://github.com/elroykanye/vince-gate",
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "tdd",
+    "testing",
+    "mutation-testing",
+    "verification",
+    "quality-gate",
+    "adversarial-review"
+  ]
+}

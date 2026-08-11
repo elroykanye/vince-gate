@@ -1,0 +1,14 @@
+{
+  "name": "vince-gate",
+  "owner": {
+    "name": "Elroy Kanye",
+    "url": "https://github.com/elroykanye"
+  },
+  "plugins": [
+    {
+      "name": "vince-gate",
+      "source": "./",
+      "description": "An implementer-and-reviewer gate for coding agents: verbatim contracts, test-first TDD with mutation-checked tests, end-to-end wire proofs, and an adversarial reviewer that runs blind and defaults to FAIL."
+    }
+  ]
+}
