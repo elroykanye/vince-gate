@@ -373,13 +373,16 @@ def choose_bindings(args, root: Path, scope: str, manifest: dict) -> list:
         else:
             chosen = []
             for bid, b in all_bindings.items():
-                if bid == "generic":
-                    continue
                 if scope == "user":
+                    if bid == "generic":
+                        continue      # no home-level AGENTS.md convention worth detecting
                     ud = b.get("user_dir")
                     if ud and Path(os.path.expanduser(ud)).parent.is_dir():
                         chosen.append(bid)
                 else:
+                    # `generic` detects on AGENTS.md, which most harnesses now read, so a
+                    # project that has one gets it alongside its native binding rather than
+                    # only as a fallback - it is the widest-reach binding there is.
                     if any((root / d).exists() for d in b.get("detect", [])):
                         chosen.append(bid)
             if not chosen:

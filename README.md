@@ -13,6 +13,12 @@ base and not a linter — it is a pair of opposed roles that together make "done
 The two rules that make the rest work: **nothing is done without a PASS verdict**, and **no claim
 counts without the command and its output behind it**.
 
+Spec-driven frameworks — OpenSpec, Spec Kit, Superpowers, BMAD, GSD — enforce *process*: phases,
+gates, personas, the order you do things in. None of them verify that the work is what it claims
+to be. vince-gate enforces *evidence*: a contract copied verbatim, tests proven able to fail,
+mutants that must die, a wire proof over real transport, and a reviewer that starts from the diff
+rather than from your summary. It composes with those frameworks rather than replacing them.
+
 New here? **[INSTALL.md](INSTALL.md)** gets it running (paste one block into your agent), then
 the **[user guide](USER-GUIDE.md)** covers using it.
 
@@ -61,9 +67,35 @@ a Go service, a React app, or a Python pipeline.
   becomes a gate, a correction becomes a lesson. It reads `.vince/metrics.jsonl` to report which
   attacks actually earn their time in this codebase and whether rounds-to-PASS is falling.
 
+## Built against the evidence
+
+Three design rules exist because measurement says they matter, and the skills say why in-line:
+
+- **The reviewer reads the diff before it reads your ledger.** Reviewers handed text asserting
+  code is sound miss most of what they would otherwise catch, and autonomous agents are far more
+  susceptible to that framing than people are. Pass 0 is blind by construction.
+- **Mutants, not coverage.** Suites at 100% coverage routinely kill single-digit percentages of
+  mutants. TAMPER uses the project's mutation tool diff-scoped where one exists, and surviving
+  mutants on changed lines are work, not a score.
+- **A different model reviews, where you can arrange it.** Fresh context breaks the correlation
+  introduced while generating, but not the correlation baked into the model's parameters — the
+  blind spot that wrote the bug is the blind spot that misses it.
+
+And the honest limit: independent review measurably beats same-session review, most clearly on
+critical errors, but it still finds a minority of defects. That is why the wire proof and the
+mutation gate carry as much weight here as the review does — they do not depend on a model's
+judgement at all.
+
 ## Install
 
-**Fastest:** open [INSTALL.md](INSTALL.md) and paste the block into your coding agent — it
+**As a Claude Code plugin:**
+
+```
+/plugin marketplace add elroykanye/vince-gate
+/plugin install vince-gate@vince-gate
+```
+
+**Any harness:** open [INSTALL.md](INSTALL.md) and paste the block into your coding agent — it
 clones, detects your harness, installs, verifies and reports back.
 
 By hand (location-independent; clone anywhere):
@@ -106,9 +138,11 @@ vince-gate/
   USER-GUIDE.md                       start here
   skills/                             the six skills (+ reference/ docs)
   bindings/*.json                     one per harness; no per-harness code
+  hooks/                              opt-in enforcement (Claude Code Stop hook)
   templates/                          profile, ledger, verdict, lessons, completion doc
   scripts/install.py                  install / status / doctor / uninstall / list / bindings
   docs/                               methodology, skills, profile, harnesses, install
+  .claude-plugin/                     plugin + marketplace manifests
   VERSION
 ```
 

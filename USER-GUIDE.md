@@ -57,8 +57,9 @@ Four rules do most of the work:
    single most common reason a task passes a review it should not have.
 3. **At least one criterion is proven end to end**, over real transport, with no mocks in the
    path. Unit green is not working software.
-4. **A reviewer that defaults to FAIL** re-derives the contract itself, re-runs every claimed
-   proof, and mutation-tests the new tests. It never sees your implementer's reasoning.
+4. **A reviewer that defaults to FAIL** starts from the diff — not from your ledger — re-derives
+   the contract itself, re-runs every claimed proof, and mutation-tests the new tests. It never
+   sees your implementer's reasoning, and where you can arrange it, it runs on a different model.
 
 What you get on your side: a ledger with the exact commands and their output, and a verdict file
 with an append-only history. Both are readable in a minute, and both are checkable.
@@ -73,9 +74,13 @@ you do not pay it for a typo.
 
 Requirements: Python 3.8+, git, and an agent harness. Nothing else.
 
-**The short way:** [INSTALL.md](INSTALL.md) has a block you paste straight into your agent; it
+**On Claude Code:** `/plugin marketplace add elroykanye/vince-gate` then
+`/plugin install vince-gate@vince-gate`. Skills are namespaced: `/vince-gate:vince-implement`.
+
+**Any harness:** [INSTALL.md](INSTALL.md) has a block you paste straight into your agent; it
 clones, detects the harness, installs, verifies and reports back. The rest of this section is
-the same thing done by hand.
+the same thing done by hand. Pick one route — the plugin and `install.py` install the same
+skills, and running both leaves you two copies to keep in sync.
 
 ```bash
 git clone https://github.com/elroykanye/vince-gate.git
@@ -156,7 +161,7 @@ What happens, in order:
 | 0 | Reads the profile and lessons, extracts the contract verbatim | `verification-ledger.md` created |
 | 1 | Owning repo, dedicated worktree, **test baseline recorded** | baseline counts in the ledger |
 | 2 | Plan: criterion → test → files → proof level | asks you to confirm (T3 always) |
-| 3 | RED → GREEN → TAMPER → full suite, per criterion | pasted command output in the ledger |
+| 3 | RED → GREEN → TAMPER → full suite, per criterion | pasted command output; surviving mutants killed |
 | 4 | End-to-end wire proof over real transport | the real request/message/browser run |
 | 5 | Definition-of-done gates | PASS/FAIL/N-A per gate, with commands |
 | 6 | Self-attack: the three likeliest production failures, tested | findings or risks in the ledger |
@@ -176,6 +181,8 @@ The verdict lands in the task dir as `review-verdict.md` and looks like this:
 ```markdown
 # Review verdict: FAIL — add-export-endpoint
 Reviewed: api@feature/export at a1b2c3d. Baseline suite: 142/0/3. Suite now: 145/0/3.
+Blind pass: 3 findings before reading the ledger, 1 only after. Reviewer model: <model>.
+Mutation: stryker --incremental on the diff - 41 mutants, 4 survived on changed lines.
 
 ## Per-AC verdict
 | ID | Requirement | Claimed | My verdict | Why |
@@ -193,6 +200,10 @@ Reviewed: api@feature/export at a1b2c3d. Baseline suite: 142/0/3. Suite now: 145
 
 Read it in this order:
 
+0. **The blind-pass line.** How many findings came from the diff alone, before the reviewer read
+   your ledger? Findings that only appeared afterwards are the weaker ones — the reviewer had
+   already been told what to believe. A review that found *nothing* blind is a review that read
+   the answer sheet, and its PASS is worth correspondingly less.
 1. **The per-AC table.** `PROVEN` means the reviewer reproduced it. `UNPROVEN` means the
    evidence did not survive. `BROKEN` means it actively found the defect.
 2. **Attacks that did not break it.** This is the part that tells you how hard it actually
@@ -206,6 +217,13 @@ time in your codebase.
 **A PASS is not a guarantee.** It means a determined adversary with your test suite and your
 environment could not break it in one pass. That is a genuinely useful signal and it is not the
 same as correct.
+
+Be concrete about the size of it: independent, fresh-context review beats same-session review by
+a meaningful margin, and the margin is widest on critical errors — but it still surfaces a
+minority of defects, and it barely improves on *contextual* errors (does this actually work in
+its real environment?). Which is exactly why the wire proof and the mutation gate exist. They do
+not depend on a model's judgement at all, and on the categories review is worst at, they are
+doing most of the work.
 
 ---
 
@@ -363,6 +381,9 @@ Almost everything project-specific belongs in `.vince/profile.md`, not in a skil
 
 - **Add a gate everyone must pass** → `dod_extras`, in the same `Gate | Verify | PASS condition`
   shape as the catalog. The verify command must actually run.
+- **Wire in mutation testing** → the `mutation` section: the tool and its **diff-scoped**
+  invocation. This is the highest-leverage single field in the profile after the isolation key.
+- **Have a different model review** → `reviewer_model`.
 - **Record a trap** → `known_traps`. The reviewer sweeps these in its A5 pass.
 - **Change tier rules** → *Tiering overrides*.
 - **Point at your decisions/runbooks** → the `memory` section. Both skills read it, and an
@@ -422,15 +443,25 @@ Every file it writes is inside your project or your home directory.
 User scope (`--scope user`) never touches a project's working tree. If you do install into a
 project, gitignore `.vince/install.json` and `.vince/tasks/`.
 
-**Can the agent just... not follow it?** Yes. These are instructions, not enforcement. What makes
-them stick is the artifacts: a missing ledger, a missing verdict file, or a ledger with no
-command output is immediately visible to you. Vince makes skipping the process *legible*, not
-impossible.
+**Can the agent just... not follow it?** By default, yes — these are instructions. What makes them
+stick is the artifacts: a missing ledger, a missing verdict, or a ledger with no command output
+is immediately visible to you. Vince makes skipping the process *legible*.
+
+If you want it actually enforced, [hooks/README.md](hooks/README.md) ships an opt-in Claude Code
+**Stop hook** that blocks the session from ending while the active ledger has unproven rows or no
+PASS verdict. It is experimental and has a known upstream caveat, which is why it is not part of
+a normal install.
 
 **Why does the reviewer have to run in a fresh context?** Because an agent cannot un-see its own
 reasoning. A reviewer that read the implementation's justification inherits its blind spots and
-its confidence. This is the single most important structural rule in the toolkit — and the most
-tempting one to skip.
+its confidence. Reviewing twice in one session measures *worse* than reviewing once — the second
+pass anchors on the first. This is the single most important structural rule in the toolkit, and
+the most tempting one to skip.
+
+**Then why does it also start blind, if the context is already fresh?** Because the ledger crosses
+that boundary. A fresh reviewer handed a document whose every row says PROVEN has been framed just
+as effectively as one that sat in the implementer's context — and agents are more susceptible to
+that framing than people are. Fresh context and the blind pass fix two different leaks.
 
 **Is a PASS a guarantee?** No. See [Reading a verdict](#reading-a-verdict).
 

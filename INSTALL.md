@@ -1,10 +1,28 @@
 # Install
 
-Two ways: hand the block below to your agent and let it do the work, or
-[run four commands yourself](#manual-install).
+Three ways: install the Claude Code plugin, hand the block below to your agent and let it do the
+work, or [run four commands yourself](#manual-install).
 
 Requirements: Python 3.8+, git, and an agent harness. No dependencies, no network calls at
 runtime, no account.
+
+---
+
+## Claude Code: install the plugin
+
+The shortest path if you are on Claude Code:
+
+```
+/plugin marketplace add elroykanye/vince-gate
+/plugin install vince-gate@vince-gate
+```
+
+Plugin skills are namespaced by the plugin, so you invoke them as `/vince-gate:vince-implement`,
+`/vince-gate:vince-setup`, and so on. Update later with `/plugin marketplace update`.
+
+**Pick one install route.** The plugin and `install.py` both put the same skills in front of the
+same agent; running both gives you two copies to keep in sync. Use the plugin on Claude Code, and
+`install.py` when you want other harnesses, project-scoped installs, or drift detection.
 
 ---
 
@@ -170,6 +188,14 @@ python scripts/install.py uninstall --scope user
 
 Removes only what the manifest recorded, then empty directories, then the index block. Anything
 you added or edited is left alone unless you pass `--force`.
+
+## Optional: enforce the gate with a hook
+
+Everything above is instructions a model can forget. A **Stop hook** cannot be forgotten — it
+refuses to end a session while the active ledger still has unproven rows or no PASS verdict.
+
+It is opt-in and experimental, including a known upstream caveat. See
+[hooks/README.md](hooks/README.md) for the settings block and how to verify it before trusting it.
 
 ## If something goes wrong
 
