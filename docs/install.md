@@ -54,6 +54,13 @@ is already installed there, or falls back to `generic` if it finds nothing. See
 Nothing else. No hooks, no settings edits, no global state. `.vince/install.json` records absolute
 paths from your machine, so gitignore it in a shared repo.
 
+## Versions
+
+Releases are git tags; the installer installs whatever is checked out. `status` prints the
+release from `VERSION` **and** the git ref actually checked out, so `0.2.0 (v0.2.0-3-gabc-dirty)`
+tells you the clone is mid-line or modified rather than on a clean release. Full upgrade, pin
+and rollback recipes are in [INSTALL.md](../INSTALL.md#versions).
+
 ## Updating
 
 Pull or edit the toolkit, then re-run `install` against the same target. Files a previous install

@@ -55,6 +55,29 @@ def version() -> str:
     return f.read_text(encoding="utf-8").strip() if f.is_file() else "unknown"
 
 
+def toolkit_ref() -> str:
+    """The git checkout the toolkit is sitting on, for when VERSION is not the whole story.
+
+    VERSION says what the release claims to be; this says what is actually checked out - a
+    tag, or a commit with a distance from the last tag, plus -dirty for local edits. Empty
+    string when the toolkit is not a git clone or git is unavailable.
+    """
+    import subprocess
+    try:
+        out = subprocess.run(
+            ["git", "-C", str(toolkit_root()), "describe", "--tags", "--always", "--dirty"],
+            capture_output=True, text=True, timeout=5,
+        )
+        return out.stdout.strip() if out.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def version_label() -> str:
+    ref = toolkit_ref()
+    return f"{version()} ({ref})" if ref and ref != f"v{version()}" else version()
+
+
 def load_bindings() -> dict:
     out = {}
     bdir = toolkit_root() / "bindings"
@@ -427,7 +450,7 @@ def cmd_list(_args) -> int:
     if not names:
         print(f"no skills found under {toolkit_root() / 'skills'}", file=sys.stderr)
         return 1
-    print(f"vince {version()}  ({toolkit_root()})")
+    print(f"vince {version_label()}  ({toolkit_root()})")
     for name in names:
         fields, _ = split_frontmatter(
             (toolkit_root() / "skills" / name / "SKILL.md").read_text(encoding="utf-8"))
@@ -453,7 +476,7 @@ def cmd_install(args) -> int:
         print(f"error: no skills under {toolkit_root() / 'skills'}", file=sys.stderr)
         return 1
 
-    print(f"vince {version()} -> {root}  (scope: {scope})")
+    print(f"vince {version_label()} -> {root}  (scope: {scope})")
     print(f"bindings: {', '.join(chosen)}")
 
     for bid in chosen:
@@ -618,7 +641,7 @@ def inspect_indexes(root: Path, scope: str, manifest: dict) -> dict:
 
 
 def _print_report(root: Path, scope: str, manifest: dict) -> int:
-    print(f"toolkit  : vince {version()}  ({toolkit_root()})")
+    print(f"toolkit  : vince {version_label()}  ({toolkit_root()})")
     print(f"target   : {root}  (scope: {scope})")
     if not manifest.get("installs"):
         hint = " - legacy manifest found, re-run install to migrate" if manifest.get("_legacy") else ""

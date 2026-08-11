@@ -98,6 +98,9 @@ judgement at all.
 **Any harness:** open [INSTALL.md](INSTALL.md) and paste the block into your coding agent — it
 clones, detects your harness, installs, verifies and reports back.
 
+Releases are git tags, so pinning a version is `git checkout v0.1.0` then reinstall — see
+[Versions](INSTALL.md#versions).
+
 By hand (location-independent; clone anywhere):
 
 ```bash
@@ -159,6 +162,7 @@ Artifacts live in the project Vince is working on, never in the toolkit:
 ## Documentation
 
 - [INSTALL.md](INSTALL.md) — getting it installed: blocks you can paste to an agent, and the manual equivalents.
+- [CHANGELOG.md](CHANGELOG.md) — what changed per release, and how to upgrade, pin or roll back.
 - [USER-GUIDE.md](USER-GUIDE.md) — first project, reading a verdict, troubleshooting, FAQ.
 - [docs/methodology.md](docs/methodology.md) — why each rule exists and the failure mode it stops.
 - [docs/skills.md](docs/skills.md) — every phase and attack pass.

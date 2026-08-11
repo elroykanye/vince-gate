@@ -147,26 +147,102 @@ and correct the JSON in `bindings/` if they differ. That is a one-file change wi
 
 ---
 
-## Updating
+## Versions
+
+**Releases are git tags.** The installer installs whatever is checked out in the clone, so
+choosing a version is `git checkout <tag>` followed by a reinstall — there is no separate
+version flag to learn.
+
+### What am I running?
+
+```bash
+python scripts/install.py status --scope user
+#   toolkit  : vince 0.2.0 (v0.2.0)   <- release, and the actual checkout
+#   ...
+#       version 0.1.0  ! toolkit is 0.2.0    <- the install is behind the clone
+```
+
+Two numbers, deliberately. `VERSION` is what the release claims to be; the parenthesised git
+ref is what is really checked out. A mismatch (`0.2.0 (v0.2.0-3-gabc1234-dirty)`) means you are
+mid-line or have local edits, not on a clean release. `git tag -l` lists what exists.
+
+### Upgrade to the newest release
+
+```bash
+cd vince-gate
+git fetch --tags
+git checkout main && git pull          # or: git checkout v0.2.0 to pin it
+python scripts/install.py install --scope user     # same scope/target as before
+python scripts/install.py status  --scope user     # must say healthy, exit 0
+```
+
+Reinstalling rewrites drifted files, removes files the new version no longer ships, and updates
+the index blocks. Read [CHANGELOG.md](CHANGELOG.md) first if you want to know what changes.
+
+### Install or roll back to a specific version
+
+```bash
+git clone https://github.com/elroykanye/vince-gate.git
+cd vince-gate
+git checkout v0.1.0
+python scripts/install.py install --scope user
+```
+
+Rolling back an existing install is the same two commands in the existing clone:
+
+```bash
+cd vince-gate && git fetch --tags && git checkout v0.1.0
+python scripts/install.py install --scope user
+```
+
+The installer removes files the older version does not ship, so a rollback leaves you with that
+version's skill set rather than a mixture. Artifacts already written into your projects
+(`.vince/profile.md`, ledgers, verdicts) are untouched by any of this — they are yours, not the
+toolkit's, and older skills read newer profiles fine.
+
+### Pinning as an agent instruction
+
+```text
+Install vince-gate at version v0.1.0.
+Clone https://github.com/elroykanye/vince-gate, `git checkout v0.1.0`, confirm with
+`git describe --tags` that you are on that tag, then run the installer as in INSTALL.md.
+Do not use main. Show me the version line from `install.py status` when you are done.
+```
+
+### Pinning the Claude Code plugin
+
+The plugin follows the marketplace, and `/plugin marketplace update` moves you to whatever
+`main` carries. To hold a specific tag, add the marketplace at a ref in your settings instead of
+with the bare `add` command:
+
+```json
+{
+  "extraKnownMarketplaces": [
+    {
+      "source": "github",
+      "repo": "elroykanye/vince-gate",
+      "ref": "v0.1.0"
+    }
+  ]
+}
+```
+
+Plugin updates are keyed on the `version` field in `.claude-plugin/plugin.json`, so you only
+receive a new version when a release bumps it.
+
+## Updating (as an agent instruction)
 
 ```text
 Update vince-gate for me.
 
-1. `git pull` in the clone.
+1. In the clone: `git fetch --tags` then `git checkout main && git pull`. If I asked for a
+   specific version instead, `git checkout <tag>` and confirm with `git describe --tags`.
 2. Run the installer's `install` command against the same scope/target as before — the
    manifest at `.vince/install.json` records what that was.
-3. Run `status` afterwards; it must say healthy and exit 0.
+3. Run `status` afterwards; it must say healthy and exit 0. Show me its version line.
 4. If the installer refuses because files were edited in place, STOP. That is not an error to
    force past: someone improved a skill at the target and it never made it back to the clone.
    Show me the diff and let me decide. Do not pass --force without asking.
-```
-
-By hand:
-
-```bash
-cd vince-gate && git pull
-python scripts/install.py install --scope user
-python scripts/install.py status  --scope user
 ```
 
 ## Repairing

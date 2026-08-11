@@ -1,0 +1,93 @@
+# Changelog
+
+Versions are git tags. `VERSION` in the working tree names the release; `install.py status`
+prints both that and the actual checkout, so a mid-line or modified clone is visible rather than
+silently claiming to be a release.
+
+See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
+
+## v0.2.1 — 2026-08-11
+
+Version selection. v0.1.0 and v0.2.0 shipped without git tags, so there was no way to install or
+roll back to a specific release - only "whatever `main` happens to be". Both are now tagged
+retroactively at the commits that were those releases.
+
+**Added**
+
+- Annotated tags `v0.1.0` and `v0.2.0`.
+- `install.py` prints the toolkit's git ref beside `VERSION`, so `0.2.1 (v0.2.0-4-gabc-dirty)`
+  shows a mid-line or modified clone instead of letting it claim to be a clean release.
+- This changelog, and a [Versions](INSTALL.md#versions) section covering what-am-I-running,
+  upgrade, pin, roll back, agent-instruction pinning, and holding the Claude Code plugin at a
+  tag via `extraKnownMarketplaces` with a `ref`.
+
+## v0.2.0 — 2026-08-11
+
+Makes the review measure rather than judge. Three changes aimed at the same weakness: a review
+resting on the model's opinion of work the model just did.
+
+**Added**
+
+- **Blind first pass (`vince-review` Pass 0).** The reviewer derives findings from the diff and
+  the original contract *before* opening the ledger, completion doc, commit messages or any prior
+  verdict — all of which it now treats as claims, not evidence. The verdict records how many
+  findings came blind versus only after. Skipping Pass 0 is a hard FAIL condition.
+- **Tool-backed mutation testing.** The profile gains a `mutation` section naming the stack's
+  tool and its diff-scoped invocation (StrykerJS/.NET, mutmut, PIT, go-mutesting, cargo-mutants).
+  TAMPER and the reviewer's A2 both run it; a mutant surviving on a changed line is a missing
+  assertion to kill or waive, and a hard FAIL if neither. Hand mutation remains the fallback.
+- **`reviewer_model`.** The profile can name a different model to review with. Fresh context
+  breaks the correlation introduced while generating, not the correlation in a model's
+  parameters.
+- **Claude Code plugin packaging.** `/plugin marketplace add elroykanye/vince-gate`, then
+  `/plugin install vince-gate@vince-gate`. Skills arrive namespaced: `/vince-gate:vince-implement`.
+- **Opt-in Stop hook** (`hooks/vince_gate_stop.py`) that blocks a session from ending while the
+  active ledger has unproven rows or no PASS verdict. Fails open in every ambiguous case.
+- **New DoD gate:** new code survives mutation.
+- `install.py` reports the toolkit's git ref alongside `VERSION`.
+
+**Changed**
+
+- `--binding auto` now includes `generic` whenever the project has an `AGENTS.md`, rather than
+  using it only as a last-resort fallback. Most coding agents read `AGENTS.md`, so it is the
+  widest-reach binding available.
+- README states the positioning directly: spec-driven frameworks enforce process; this enforces
+  evidence.
+- The docs are more explicit about limits — independent review still finds a minority of defects
+  and barely improves on contextual errors, which is why the wire proof and mutation gate carry
+  as much weight as the reviewer.
+
+**Upgrade notes**
+
+Nothing breaks. Existing `.vince/profile.md` files keep working; the new `mutation` and
+`reviewer_model` fields are optional and both skills degrade to the previous behaviour without
+them. To adopt them, re-run `vince-setup` or add the sections by hand. Reinstall with
+`install.py install` against the same scope — the manifest records what that was.
+
+## v0.1.0 — 2026-08-11
+
+First release.
+
+- Six skills: `vince-setup`, `vince-implement`, `vince-review`, `vince-document`,
+  `vince-doctor`, `vince-learn`.
+- Harness bindings for Claude Code, Cursor, Windsurf, Codex, Gemini CLI and any AGENTS.md
+  runtime, rendered from one canonical markdown source. Claude and generic verified.
+- `install.py` with install / status / doctor / uninstall / list / bindings, a checksummed
+  manifest, drift detection, and refusal to clobber in-place edits.
+- Templates for the profile, verification ledger, review verdict, lessons and completion doc.
+- Paste-to-your-agent install guide.
+
+Rewritten to be stack-agnostic from a set of skills originally built for one platform.
+
+---
+
+## Releasing
+
+1. Land the work on `main`.
+2. Bump `VERSION` **in the same commit as the last change of the line** — in 0.2.0 the bump
+   landed last, so three commits carried 0.2.0 features while claiming 0.1.0. `install.py` now
+   prints the git ref for exactly this reason, but the bump still belongs with the work.
+3. Update this file.
+4. Bump `version` in `.claude-plugin/plugin.json` — plugin users only receive updates when that
+   string changes.
+5. Tag annotated and push: `git tag -a vX.Y.Z -m "…" && git push origin vX.Y.Z`.
