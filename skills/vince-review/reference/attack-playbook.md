@@ -162,7 +162,24 @@ state.
 - Every claim of "verified": what command, what output?
 - Does the doc describe what was intended rather than what shipped?
 
-## 10. The honest last question
+## 10. Leftover processes from an earlier session
+
+Not a defect in the change, but it corrupts your evidence: a stale dev or preview server bound to
+the port the wire proof uses will answer instead of the build under review, and it will answer
+with week-old output. If a wire proof passes suspiciously easily, confirm what is actually
+listening:
+
+```powershell
+Get-NetTCPConnection -State Listen | Where-Object LocalPort -eq <port> |
+  Select-Object OwningProcess, @{n='Started';e={(Get-Process -Id $_.OwningProcess).StartTime}}
+```
+```bash
+lsof -nP -iTCP:<port> -sTCP:LISTEN
+```
+
+A process older than the branch cannot be serving the branch. `vince-cleanup` handles the sweep.
+
+## 11. The honest last question
 
 Before writing the verdict, ask: if this shipped tonight and broke tomorrow, what would the
 post-mortem say the reviewer missed? Then go test that specific thing. If you cannot test it,

@@ -44,25 +44,71 @@ git -C <repo> worktree list --porcelain   # includes branch + bare/detached stat
 For each one that is not the main checkout, gather: path, branch, `git -C <wt> status --porcelain`
 (dirty?), and `git -C <wt> log --branches --not --remotes --oneline` (unpushed commits?).
 
-**Processes holding paths in scope.** The specific thing that makes directories undeletable.
+**Processes holding paths in scope.** The specific thing that makes directories undeletable, and
+the step most likely to be done wrongly.
+
+> **Do not start by grepping command lines for the directory.** The process that bites you is
+> `python -m http.server` started a week ago inside `dist/`: its command line is
+> `python -m http.server 4200`, its image is `python.exe`, and **neither contains the path**. The
+> association lives in the working directory and open handles, which `Win32_Process` does not
+> expose. A command-line filter returns nothing and you conclude the directory is held by
+> nothing — the exact dead end this section exists to prevent.
+
+Sweep on three axes instead. Any one of them finds the class; together they are hard to escape.
+
+```powershell
+# 1. LISTENING PORTS - a preview or dev server exists to serve, so it is bound to something
+Get-NetTCPConnection -State Listen |
+  Select-Object LocalPort, OwningProcess,
+    @{n='Name';e={(Get-Process -Id $_.OwningProcess -EA SilentlyContinue).Name}},
+    @{n='Started';e={(Get-Process -Id $_.OwningProcess -EA SilentlyContinue).StartTime}} |
+  Sort-Object LocalPort
+
+# 2. AGE + IMAGE - dev tooling that has been up for days is nobody's active work
+Get-Process node,python,python3,dotnet,java,ruby,php,deno,bun -EA SilentlyContinue |
+  Where-Object { $_.StartTime -lt (Get-Date).AddHours(-12) } |
+  Select-Object Id, Name, StartTime,
+    @{n='Cmd';e={(Get-CimInstance Win32_Process -Filter "ProcessId=$($_.Id)").CommandLine}}
+
+# 3. OPEN HANDLES - definitive, needs Sysinternals handle.exe
+handle.exe -nobanner -accepteula "<path>"
+```
 
 ```bash
-# Windows - what is running out of, or was invoked against, the tree
-Get-CimInstance Win32_Process |
-  Where-Object { $_.CommandLine -like "*<path>*" -or $_.ExecutablePath -like "*<path>*" } |
-  Select-Object ProcessId, Name, ExecutablePath, CommandLine | Format-List
-
-# Windows - definitive, if Sysinternals handle.exe is installed
-handle.exe -nobanner -accepteula "<path>"
-
-# macOS / Linux
-lsof +D "<path>" 2>/dev/null | head -40
+# macOS / Linux - same three axes
+lsof -nP -iTCP -sTCP:LISTEN                 # ports
+ps -eo pid,lstart,etime,comm,args --sort=start_time | head -30   # age
+lsof +D "<path>" 2>/dev/null | head -40     # handles (also catches cwd)
 fuser -v "<path>" 2>&1
 ```
 
-Usual culprits: `node` (dev servers, watchers, Vite/Next), `dotnet watch`, `python -m http.server`,
-`tail -f`, `kubectl port-forward`, test runners in `--watch`, and on Windows/Git-Bash orphaned
-`tail`/`sed`/`grep` from a backgrounded pipeline.
+Then, for each candidate, resolve what it is actually sitting on — the question the command line
+cannot answer:
+
+```powershell
+handle.exe -nobanner -p <pid>            # every handle, including the directory it holds
+```
+```bash
+lsof -p <pid> | grep -E 'cwd|DIR'        # cwd is the line that matters
+readlink /proc/<pid>/cwd                 # Linux, exact
+```
+
+**Shapes that hide from a path grep.** Every one of these serves or watches a directory while
+naming it nowhere:
+
+| Command | Why it hides |
+|---------|--------------|
+| `python -m http.server <port>` | module run; serves **cwd**, which appears in no argument |
+| `npx serve`, `http-server`, `live-server` | serves cwd or a short relative path |
+| `php -S localhost:8000`, `ruby -run -e httpd .` | same shape |
+| `node` from a dev server (Vite, Next, Angular) | image is `node`; the project path may only be in cwd |
+| `dotnet watch`, test runners in `--watch` | long-lived, re-spawn children |
+| `kubectl port-forward` | holds a port, not a directory, but leaks the same way |
+| orphaned `tail`/`sed`/`grep` on Windows/Git-Bash | left by a backgrounded pipeline |
+
+A week-old `python` bound to a dev port is not somebody's careful setup. It is a preview server
+somebody started once to look at a build, and it will hold that directory until the machine
+reboots.
 
 **Harness background jobs.** Whatever your harness tracks. These are the easiest and safest to
 deal with, because they are attributable by construction — start there.
@@ -103,8 +149,20 @@ kill <pid>        # SIGTERM, wait a moment
 kill -9 <pid>     # only if it ignored SIGTERM
 ```
 
-By **PID from the inventory**, never by name. Re-check after stopping: a supervisor may restart
-the child, in which case stop the supervisor, not the child, and say so.
+By **PID from the inventory**, never by name.
+
+**Then verify the stop actually achieved something** — "killed it" is not the same as "the
+directory is free":
+
+```powershell
+Get-Process -Id <pid> -EA SilentlyContinue          # gone?
+Get-NetTCPConnection -LocalPort <port> -EA SilentlyContinue   # port released?
+Remove-Item "<path>\.probe" -EA SilentlyContinue; New-Item "<path>\.probe" -ItemType File
+```
+
+A supervisor may restart the child, in which case stop the supervisor rather than the child and
+say so. A port that stays bound means another process holds it too — the case that prompted this
+section had **two** servers on the same port, and killing one changed nothing observable.
 
 **c. Remove worktrees that are provably safe.**
 
@@ -128,9 +186,11 @@ after showing the list.
 The specific failure that sends people here. Work it in this order rather than escalating force:
 
 1. **Identify the holder** with the commands above. Do not guess.
-2. **Nothing shown holding it?** On Windows, check for a lingering handle from a dead process
-   (the folder is open in Explorer, a terminal is `cd`'d into it, or an antivirus scan is
-   mid-flight). Closing that shell or Explorer window is usually the whole fix.
+2. **Nothing shown holding it?** You probably searched the wrong way. Command-line and image-path
+   filters miss anything that serves its *working directory* — re-run the three-axis sweep above
+   (ports, age, handles) before concluding it is unheld. Only after that, check for a lingering
+   handle from something that is not a server at all: the folder open in Explorer, a terminal
+   `cd`'d into it, an antivirus scan mid-flight. Closing that window is often the whole fix.
 3. **A live holder you can attribute?** Stop it (step 3b), then retry.
 4. **A live holder you cannot attribute?** Stop. Report the PID, image path and command line and
    ask. This is exactly the case where killing blind breaks something the user cares about.
@@ -150,6 +210,9 @@ not create, and never on a git worktree at all.
 ### Removed
 - `<path>` — worktree for <task-id> (PASS, pushed) · `git worktree remove` clean
 - pid 4812 `node` — dev server from <task-id>, stopped gracefully
+
+### Freed
+- port 4200 released, `<path>` now writable (probe file created and removed)
 
 ### Left alone, deliberately
 - `<path>` — 3 uncommitted files. Not mine to delete. `git -C <path> status` to see them

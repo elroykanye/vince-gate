@@ -6,6 +6,35 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.6.1 — 2026-08-12
+
+Fixes the discovery gap that 0.6.0 shipped with, found by the incident that prompted the skill:
+two `python -m http.server` processes, started a week earlier, holding a `dist/` directory open.
+0.6.0's primary sweep filtered `Win32_Process` on `CommandLine` and `ExecutablePath` containing
+the directory - and **neither field contains it**. The association is in the working directory and
+open handles. The sweep returned nothing and the directory looked unheld.
+
+**Changed**
+
+- `vince-cleanup` now sweeps on **three axes** instead of a path filter: **listening ports** (a
+  preview server exists to serve, so it is bound to something), **age + image name** (dev tooling
+  up for days is nobody's active work), and **open handles**. Per-candidate resolution then answers
+  what the command line cannot - `handle.exe -p`, `lsof -p ... cwd`, `readlink /proc/<pid>/cwd`.
+- Added a table of shapes that hide from a path grep: `python -m http.server`, `npx serve`,
+  `php -S`, `ruby -run -e httpd`, bare `node` dev servers, `dotnet watch`, `kubectl port-forward`.
+- **Post-stop verification**: process gone, port released, directory writable. "Killed it" is not
+  "the directory is free" - the incident had two servers on the same port, so killing one changed
+  nothing observable.
+- "Nothing is holding it" now sends you back through the three-axis sweep before concluding the
+  directory is unheld, rather than straight to Explorer windows and antivirus.
+- New attack-playbook entry (A5 sweep): a stale server on the wire-proof's port answers instead of
+  the build under review, with week-old output. A process older than the branch cannot be serving
+  the branch.
+
+**Upgrade notes**
+
+No config changes.
+
 ## v0.6.0 — 2026-08-12
 
 **Added**
