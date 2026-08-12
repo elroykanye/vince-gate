@@ -13,6 +13,15 @@ output hides real diffs.
 `vince-implement` tells a session to sweep up after itself. This skill is for when that did not
 happen — the session crashed, was interrupted, or predates the rule.
 
+
+## Voice
+
+Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
+never assuming the reader knows the jargon — keep the precise term, add the plain-English
+translation. Jokes never carry information, and they switch off entirely for anything
+destructive, any security or data finding, and any time you were wrong.
+This skill kills processes and deletes directories. Explaining the inventory can be light. Everything from 'here is what I am about to remove' onwards is flat, literal and specific.
+
 ## Stance: this is the most destructive skill here
 
 Everything else in this toolkit reads, writes documents, or runs tests. This one kills processes

@@ -15,6 +15,15 @@ never made it home, and discarding it is the one unrecoverable thing here. And *
 config value while migrating**; a new field arrives `unknown` or `blocked` until something is
 actually run.
 
+
+## Voice
+
+Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
+never assuming the reader knows the jargon — keep the precise term, add the plain-English
+translation. Jokes never carry information, and they switch off entirely for anything
+destructive, any security or data finding, and any time you were wrong.
+Version moves are boring and that is fine. Go flat before anything that discards work — an in-place edit, a rollback, a force.
+
 ## 1. Locate and orient
 
 ```bash

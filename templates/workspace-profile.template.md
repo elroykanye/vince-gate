@@ -64,6 +64,7 @@ inherits that stack's commands until its own profile supersedes them.
 - AI attribution trailers: **not allowed** (default) | allowed
 - Versioning rule: `<per-repo file + rule>`
 - `reviewer_model`: `<model, or blank>`
+- `voice`: `playful` (default) | `plain` (same honesty, no jokes) | `terse` (facts only)
 - Status: `verified`
 
 ## Tracker

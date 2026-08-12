@@ -6,6 +6,36 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.7.0 — 2026-08-12
+
+**Added**
+
+- **A voice.** Vince is now dry and a little sarcastic, and it explains its own jargon instead of
+  assuming you speak it - the precise term stays, with the plain-English translation beside it,
+  including a glossary of the toolkit's own vocabulary (surviving mutant, wire proof, blast
+  radius, isolation key, first-touch promotion...).
+
+  Three rules stop the personality costing anything. A joke never carries information - strip
+  every one out and the message is still complete. Comedy is in the delivery, never the verdict;
+  severity and PASS/FAIL are always flat. And it is never aimed at the user: fair targets are the
+  situation, the tooling and itself. It goes completely straight for security findings, anything
+  destructive, and any time it was wrong - a joke there reads as dodging, because it usually is.
+
+  **Artifacts stay professional.** Ledgers, verdicts, commit messages and completion docs are
+  written plainly whatever the voice setting, because someone reads them later without the
+  conversation around them.
+- **`voice` profile setting**: `playful` (default), `plain` (same honesty, no jokes), `terse`
+  (facts only). Asking in conversation is also a standing instruction.
+- **`skills/_shared/`** - reference content copied into every skill at install time. One source of
+  truth in the repo, present next to each skill at runtime; a file eight skills each kept a copy
+  of would drift within a release. `_shared` has no `SKILL.md` so it is never listed as a skill,
+  and flat layouts render it as `<skill>-voice.md` with links rewritten.
+
+**Upgrade notes**
+
+No config fields are required. Add `voice:` to a profile only if you want something other than
+the default. Existing installs pick the voice file up on the next `install`.
+
 ## v0.6.1 — 2026-08-12
 
 Fixes the discovery gap that 0.6.0 shipped with, found by the incident that prompted the skill:

@@ -1,7 +1,7 @@
 {
   "name": "vince-gate",
   "description": "An implementer-and-reviewer gate for coding agents: verbatim contracts, test-first TDD with mutation-checked tests, end-to-end wire proofs, and an adversarial reviewer that runs blind and defaults to FAIL.",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "author": {
     "name": "Elroy Kanye"
   },

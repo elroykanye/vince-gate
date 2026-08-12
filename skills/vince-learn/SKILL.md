@@ -13,6 +13,15 @@ configuration, so the *next* task is stopped at the gate rather than caught at r
 permanent gate. Something that has now happened twice, or that would have shipped a wrong
 result, does.
 
+
+## Voice
+
+Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
+never assuming the reader knows the jargon — keep the precise term, add the plain-English
+translation. Jokes never carry information, and they switch off entirely for anything
+destructive, any security or data finding, and any time you were wrong.
+Lessons are artifacts other sessions read cold. Write them plainly; be yourself when reporting what you learned.
+
 ## Inputs
 
 - `<task dir>/review-verdict.md` — the findings and their history (the `[caught: …]` tags say

@@ -185,6 +185,18 @@ def reference_files(skill: str) -> list:
     return out
 
 
+def shared_files() -> list:
+    """Reference docs every skill gets a copy of, from skills/_shared/.
+
+    One source of truth in the repo, present next to every skill at runtime - a voice guide or
+    glossary that eight skills each kept their own copy of would drift within a release.
+    """
+    root = toolkit_root() / "skills" / "_shared"
+    if not root.is_dir():
+        return []
+    return [p for p in sorted(root.glob("*.md")) if p.is_file()]
+
+
 # --------------------------------------------------------------------------- rendering
 
 def split_frontmatter(text: str):
@@ -261,6 +273,9 @@ def render_skill(binding: dict, skill: str):
         for rel in reference_files(skill):
             out.append((f"{skill}/{rel.as_posix()}",
                         (src / rel).read_text(encoding="utf-8")))
+        for shared in shared_files():
+            out.append((f"{skill}/reference/{shared.name}",
+                        shared.read_text(encoding="utf-8")))
     else:
         prefix = binding.get("prefix", "")
         ext = binding.get("extension", ".md")
@@ -268,6 +283,9 @@ def render_skill(binding: dict, skill: str):
         for rel in reference_files(skill):
             text = rewrite_links((src / rel).read_text(encoding="utf-8"), skill, binding)
             out.append((f"{prefix}{skill}-{rel.stem}.md", text))
+        for shared in shared_files():
+            text = rewrite_links(shared.read_text(encoding="utf-8"), skill, binding)
+            out.append((f"{prefix}{skill}-{shared.stem}.md", text))
     return [(p, t.encode("utf-8")) for p, t in out]
 
 

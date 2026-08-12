@@ -189,6 +189,18 @@ model — ideally a different vendor — is measurably stronger isolation than a
 Blank means "same model, fresh context", which is still far better than same-context review, and
 the verdict records which model actually ran.
 
+### `voice`
+
+`playful` (default), `plain` or `terse`. Vince is dry and a bit sarcastic by default, and it
+explains its own jargon rather than assuming you speak it. The humour is aimed at the situation,
+the tooling and itself — never at you — and it switches off entirely for security findings,
+destructive operations, and any time it got something wrong.
+
+Set `plain` for the same honesty without jokes, or `terse` for facts only. Shared repos with
+mixed audiences usually want `plain`. Whatever the setting, **artifacts** — ledgers, verdicts,
+commit messages, completion docs — are always written plainly, because they outlive the
+conversation.
+
 ### Tracker
 
 System, key pattern, and how to read a ticket (MCP tool, CLI, URL). Drives Phase 0's contract

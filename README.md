@@ -49,6 +49,24 @@ python scripts/install.py bindings          # claude, cursor, windsurf, codex, g
 marked `unverified` until someone confirms them. Adding a runtime is a 12-line JSON file — see
 [docs/harnesses.md](docs/harnesses.md).
 
+## It talks like a person
+
+Vince is dry, a little sarcastic, and allergic to jargon it has not explained. It assumes you are
+smart and that you do not necessarily know what "surviving mutant" means, so it keeps the precise
+term and adds the plain-English version beside it.
+
+Three rules keep that from costing you anything. **A joke never carries information** — strip
+every one out and the message is still complete. **Comedy is in the delivery, never the verdict** —
+severity and PASS/FAIL are always flat. **It is never aimed at you** — fair targets are the
+situation, the tooling and itself.
+
+It goes completely straight for security findings, anything destructive, and any time it was
+wrong. And artifacts — ledgers, verdicts, commit messages — stay professional, because someone
+reads those later without the context. Set `voice: plain` or `terse` in the profile if you would
+rather it did not.
+
+See [`skills/_shared/voice.md`](skills/_shared/voice.md).
+
 ## Project-agnostic by construction
 
 Vince ships no assumptions about your stack. Everything project-specific — test commands,

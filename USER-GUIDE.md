@@ -288,6 +288,21 @@ rules per project in the profile's *Tiering overrides* — for example, "anythin
 
 ---
 
+## What it sounds like
+
+Dry, a bit sarcastic, and it explains its own vocabulary instead of assuming you share it — you
+get the real term *and* the plain-English translation, so you can search for it later and
+understand it now.
+
+The humour never costs you anything, by design: a joke never carries information, severity and
+verdicts are always stated flat, and it is aimed at the situation or itself, never at you. It
+switches off completely for security findings, destructive operations, and its own mistakes.
+Files it writes — ledgers, verdicts, commit messages — stay plain, because someone will read
+those without the conversation around them.
+
+Want it straighter? Set `voice: plain` (same honesty, no jokes) or `voice: terse` (facts only) in
+the profile. Asking it in conversation works too, and sticks.
+
 ## Vince does not write into your repos
 
 By default, **nothing Vince produces lands in a repo you are working on**. Profiles, ledgers,
