@@ -174,7 +174,8 @@ write-capable and must know the task dir, or it silently skips persisting the ve
 
 ## Shared reference content
 
-`skills/_shared/*.md` is copied into every skill's `reference/` at install time — one source of
+`skills/_shared/*.md` (currently `voice.md` and `token-discipline.md`) is copied into every
+skill's `reference/` at install time — one source of
 truth in the repo, present next to each skill at runtime. `voice.md` lives there. A file eight
 skills each kept their own copy of would drift within a release.
 

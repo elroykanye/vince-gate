@@ -69,6 +69,8 @@ mutating by hand.
 - Commit convention: `<ticket prefix pattern | conventional commits | none>`
 - AI attribution trailers: **not allowed** (default) | allowed
 - `reviewer_model`: `<model to run vince-review with, ideally a different vendor from the
+- `reviewer_agent_type`: `<narrowest agent type with Write/Edit, or blank>`
+- `mechanical_model`: `<cheaper model for search/mechanical subagents, or blank>`
 - `voice`: `playful` (default) | `plain` (same honesty, no jokes) | `terse` (facts only)
   implementer; blank = same model, fresh context>`
 - Versioning: `<file + rule, or "not required">`

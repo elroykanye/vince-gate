@@ -6,6 +6,43 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.8.0 — 2026-08-13
+
+Token discipline. Vince was directly implicated in its own users' cost profile: it mandates a
+subagent per task, its handoff recommended `general-purpose` by name, and `vince-implement` alone
+was ~10k tokens of context on every task. Rigour is not negotiable; what it costs is.
+
+**Added**
+
+- **`scripts/check.py`** - the deterministic half of a review as a script instead of model turns.
+  One command reports stray artifacts, AI/bot attribution trailers, over-long commit subjects,
+  newly added skipped tests, debug statements in non-test code, possible hardcoded secrets,
+  whole-file rewrites (the line-ending-flip shape), a branch behind its base, an uncommitted tree,
+  and whether any test files were touched. Replaces roughly ten commands and their raw output.
+  Explicitly **input, not verdict** - it proves nothing about behaviour, isolation or blast radius.
+- **`skills/_shared/token-discipline.md`** - read narrowly, bound long commands, spend the model
+  where judgement is needed, and treat the ledger as memory so context can be reset. Ends with
+  what never gets cut to save money.
+- Profile settings `reviewer_agent_type` and `mechanical_model`, and `tokens` on the metrics line
+  so `vince-learn` can report cost per task against rounds-to-PASS.
+
+**Changed**
+
+- `vince-implement` **10,098 -> ~7,400 tokens**. Remediation, self-healing, commit hygiene and
+  workspace hygiene moved to `reference/remediation.md` and `reference/hygiene.md`, which load at
+  the step that needs them; the inline ledger example is replaced by a pointer to the template.
+  What stayed inline is everything that changes behaviour every task.
+- The reviewer handoff no longer names `general-purpose` as the default. Use the narrowest agent
+  type with `Write`/`Edit`; `general-purpose` is the fallback, because a broad type carries a
+  bigger prompt for capabilities a review never uses.
+- `vince-review` A1 now starts with the script and falls back to hand commands.
+- `voice.md` trimmed - it is copied into all eight skills, so its examples were paying eight times.
+
+**Upgrade notes**
+
+No required config. `reviewer_agent_type` and `mechanical_model` are optional. `check.py` needs
+nothing installed - it is in the toolkit clone.
+
 ## v0.7.0 — 2026-08-12
 
 **Added**

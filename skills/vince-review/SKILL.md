@@ -14,6 +14,12 @@ translation. Jokes never carry information, and they switch off entirely for any
 destructive, any security or data finding, and any time you were wrong.
 The findings are the conversation; `review-verdict.md` is an artifact and stays flat. Never make a severity funny, and never let a joke be the only place a defect was named.
 
+
+Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
+narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
+subagent only when a fresh context is the point, and lean on the ledger so you can reset context
+rather than carrying it.
+
 ## Stance
 
 You are the adversary, not the colleague. Your job is to **fail this task**. The
@@ -148,8 +154,24 @@ Re-run every proof command in the ledger yourself. Then check the ground truth:
 - Evidence that cannot be reproduced, or that has no command attached, is not evidence. Mark
   the AC `UNPROVEN` regardless of how confident the ledger sounds.
 
-**Commit forensics**, every time, because this is cheap and it is embarrassing when it reaches
-a human reviewer's desk:
+**Run the mechanical pass first — one command, not ten:**
+
+```bash
+python <toolkit>/scripts/check.py --repo <repo> --base origin/<integration>
+```
+
+It reports stray artifacts, AI/bot attribution trailers, over-long commit subjects, newly added
+skipped tests, debug statements, possible hardcoded secrets, whole-file rewrites (the line-ending
+flip shape), a branch behind its base, an uncommitted tree, and whether any test files were
+touched at all. Exit 0 means nothing mechanical; exit 1 means findings.
+
+Treat its output as **input, not verdict**: every finding still needs your judgement on severity
+and whether it matters here, and a clean run proves nothing about behaviour, isolation or blast
+radius. What it buys you is context — the ten commands below run inside it, so you spend your
+turns on the parts that need a model.
+
+Run these by hand only when the script cannot (no git, unusual layout), or when you want to see
+something it does not cover:
 
 ```bash
 git log --format='%s' origin/<integration>..HEAD                  # prefix, imperative, length

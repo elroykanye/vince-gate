@@ -288,6 +288,31 @@ rules per project in the profile's *Tiering overrides* — for example, "anythin
 
 ---
 
+## What it costs, and how to spend less
+
+Vince is thorough and thorough is expensive — a fresh-context reviewer per task is a whole second
+context. Most of the avoidable cost is not the review though; it is waste around it. Four levers,
+in order of payoff:
+
+1. **Run the mechanical checks as a script, not as model turns.**
+   `python <toolkit>/scripts/check.py --repo . --base origin/main` does the boring half of a
+   review — stray files, bot trailers, newly skipped tests, debug statements, possible secrets,
+   line-ending rewrites, branch behind base — in one command instead of ten, with a compact report
+   instead of ten raw outputs. Run it before handing off *and* at the start of the review.
+2. **Reset context between phases.** This is Vince's structural advantage and the most commonly
+   wasted one: the ledger holds the contract, the evidence and the verdict, so **you do not need
+   the conversation history to continue**. Compact or clear and re-read the ledger. Past ~150k
+   context you are paying for scrollback you are not using.
+3. **Match the subagent to the job.** T1 tasks spawn no reviewer at all. One reviewer per task,
+   not per criterion. Prefer the narrowest agent type your harness offers over a general-purpose
+   one, and set `mechanical_model` in the profile so search-shaped subagents use something cheaper
+   than your review model.
+4. **Queue instead of parallelising.** Sessions share one limit; four at once spends it in bursts.
+
+What never gets cut to save money: the RED step, an observed baseline, the fresh-context review,
+or re-running a proof. If a task will not fit the budget properly, the honest move is to split it
+and say so — not to quietly weaken the gate.
+
 ## What it sounds like
 
 Dry, a bit sarcastic, and it explains its own vocabulary instead of assuming you share it — you

@@ -20,6 +20,12 @@ translation. Jokes never carry information, and they switch off entirely for any
 destructive, any security or data finding, and any time you were wrong.
 Completion documentation is outward-facing and outlives the branch. Write it plainly; save the personality for telling the user what you wrote.
 
+
+Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
+narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
+subagent only when a fresh context is the point, and lean on the ledger so you can reset context
+rather than carrying it.
+
 ## Inputs required
 
 ```

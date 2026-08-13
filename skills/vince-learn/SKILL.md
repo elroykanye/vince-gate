@@ -22,6 +22,12 @@ translation. Jokes never carry information, and they switch off entirely for any
 destructive, any security or data finding, and any time you were wrong.
 Lessons are artifacts other sessions read cold. Write them plainly; be yourself when reporting what you learned.
 
+
+Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
+narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
+subagent only when a fresh context is the point, and lean on the ledger so you can reset context
+rather than carrying it.
+
 ## Inputs
 
 - `<task dir>/review-verdict.md` — the findings and their history (the `[caught: …]` tags say
@@ -86,6 +92,12 @@ drop ones whose gate now catches them automatically — a gate makes its own les
 that is the file working as intended.
 
 ## Reading the metrics
+
+Add `tokens` to the metrics line when the harness reports it. Cost per task, trending against
+`rounds`, is the number that tells you whether the gate is paying for itself — and whether a
+particular repo's tasks are expensive because they are hard or because something is being done
+wastefully.
+
 
 With a handful of lines in `.vince/metrics.jsonl` you can answer questions worth acting on:
 

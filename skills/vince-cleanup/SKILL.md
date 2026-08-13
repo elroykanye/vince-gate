@@ -22,6 +22,12 @@ translation. Jokes never carry information, and they switch off entirely for any
 destructive, any security or data finding, and any time you were wrong.
 This skill kills processes and deletes directories. Explaining the inventory can be light. Everything from 'here is what I am about to remove' onwards is flat, literal and specific.
 
+
+Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
+narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
+subagent only when a fresh context is the point, and lean on the ledger so you can reset context
+rather than carrying it.
+
 ## Stance: this is the most destructive skill here
 
 Everything else in this toolkit reads, writes documents, or runs tests. This one kills processes

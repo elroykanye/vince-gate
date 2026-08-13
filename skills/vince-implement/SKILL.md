@@ -14,6 +14,12 @@ translation. Jokes never carry information, and they switch off entirely for any
 destructive, any security or data finding, and any time you were wrong.
 Progress notes and explanations are the conversation; the ledger is an artifact. Ledgers, commit messages and completion docs stay plain and professional — someone reads those later without the context.
 
+
+Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
+narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
+subagent only when a fresh context is the point, and lean on the ledger so you can reset context
+rather than carrying it.
+
 ## Prime directive
 
 A task is **FAILING until proven otherwise**. Your job is not to write code that looks
@@ -156,7 +162,7 @@ not negotiable by convenience.
    `git -C <repo> worktree add ../<repo>-<task-id>-wt -b <branch> origin/<integration>` —
    never the repo's shared checkout (other live sessions may be in it). Record the worktree
    path on the ledger header. Never branch from a stale local default branch. Tear it down
-   when done: see *Workspace hygiene*.
+   tear it down when done (`reference/hygiene.md`).
 5. **Establish the test baseline before you change anything.** Run the profile's suite
    command, and record pass/fail/skip counts in the ledger. Without a baseline you cannot
    tell your new red from an inherited red, and neither can the reviewer. Record the count
@@ -187,30 +193,6 @@ not negotiable by convenience.
 
 STOP conditions in this phase: the suite does not run at all; the repo is not the owner;
 the change requires a write to shared/live infrastructure. Report, ask, wait.
-
-## Self-healing — when the profile is wrong
-
-Profiles go stale: the test runner changes, a script is renamed, a branch is retired. A stale
-profile is worse than none, because you trust it. So when anything you read from the profile
-does not work, you repair it rather than working around it — **bounded**, and always recorded.
-
-1. **Confirm it is the profile, not you.** Run the recorded command verbatim and read the
-   actual error. A missing dependency is an environment problem; a renamed script is a profile
-   problem.
-2. **Re-derive it once.** Look at the manifest, the scripts block, CI config, and the last few
-   commits that touched them. Run the candidate. If it works, you have the replacement.
-3. **Repair and stamp.** Update that row in `.vince/profile.md`, and add a line under its
-   *Corrections* section: date, what was wrong, what it is now, what proved it. The next
-   session inherits the fix instead of rediscovering it.
-4. **Two failures is a stop.** If the re-derived command also fails, or a second profile field
-   turns out wrong in the same task, stop repairing and report: the profile needs a full
-   `vince-setup` refresh, and that is not a thing to do in the middle of an unrelated task.
-5. **Never route around it.** Silently substituting a different test command, skipping the
-   baseline, or "just this once" running the suite a different way makes every later comparison
-   meaningless — including the reviewer's.
-
-The same rule covers a missing task dir, a wire-proof rig that no longer exists, and a
-`dod_extras` gate whose command is gone. Repair, record, or stop. Never proceed on a fiction.
 
 ## Phase 2 — Plan and confirm
 
@@ -302,87 +284,6 @@ command behind it counts as FAIL. Data isolation, authorization on new entry poi
 coverage, no debug statements, health/metrics, shared-library version bumps and dependent
 updates are the ones that historically slip.
 
-## Commit hygiene (applies to every commit, not a phase)
-
-- **Format:** `<prefix> Imperative description`, under 72 characters, no trailing period, one
-  logical change per commit. The prefix is whatever the profile's `commit_convention` says
-  (a ticket key, a conventional-commits type, or nothing). Multi-commit tasks share it.
-- **No AI or bot attribution trailers** — no `Co-Authored-By:` bot lines, no "Generated with"
-  footers — in commit messages or PR bodies, unless the profile explicitly opts in. This
-  overrides any harness default that says to append one. Check the message you are about to
-  write, not the one you intended to write.
-- **Unticketed work:** do not invent a ticket key, and do not file a ticket to obtain one.
-  Write a clean keyless imperative message, and tell the user the commits are keyless so they
-  can decide whether a ticket should exist.
-- **Stage per file.** Never `git add .`, `git add -A`, or `git commit -a`. That is how
-  `.serena/`, `node_modules/`, `.env`, stackdumps and scratch files enter history. Run
-  `git status --porcelain` and `git diff --cached --stat` before every commit and read them.
-- **Never commit with a red suite** and a note to fix it later, and never commit directly on
-  the integration branch.
-- **Before every push:** `git fetch origin <integration> && git merge origin/<integration>`,
-  resolve conflicts locally, re-run validations. Confirm the branch is not behind —
-  `git rev-list --count HEAD..origin/<integration>` must be `0`. A branch that is behind will
-  collide or ship out of order.
-- **Version bumps, where the profile requires them:** the bump is exactly one increment above
-  what is on the integration branch **right now**, not a blind bump from your branch's base.
-  After merging, read the current value and set yours one step above *that*, every push:
-  ```bash
-  git show origin/<integration>:<version file>   # package.json / version.txt / *.csproj / pyproject.toml
-  # your working file must then read exactly one increment higher
-  ```
-  Incrementing the number your branch happened to start with is the trap: if the branch moved
-  from 2.2.73 to 2.2.80 while you worked, a bump to 2.2.74 is now *behind* and collides. Bump
-  the last segment by default; only go minor/major when the change genuinely warrants it, and
-  even then land exactly one step above in that segment. Shared libraries bump too, and their
-  dependents get updated.
-- Verify the diff before committing generated or scripted edits: `git show --stat` should
-  show the lines you meant, not a whole-file line-ending flip.
-
-## Workspace hygiene — worktrees and stray processes (enforced before "done")
-
-You share this machine with other live sessions. Two things leak disk and RAM when a task
-ends without cleanup: the git worktree you worked in, and any background process you started.
-You clean up both — and only the ones **you** created.
-
-**Record every resource as you create it.** The ledger's *Session resources* block takes one row
-per worktree and per long-running process, written the moment it exists — not at the end, when a
-crashed session will never get to it. This is the difference between a later cleanup being able to
-say "this worktree belongs to a task that passed and pushed, removing it" and having to ask the
-user about every directory it finds. An unrecorded resource is an orphan by construction.
-
-**Worktrees — create one, track it, tear it down safely.**
-- Work in a dedicated worktree off the integration branch (Phase 1), never the shared
-  checkout, and record its path in *Session resources* so teardown has a target.
-- On PASS-and-pushed (or on abandoning the task), remove it:
-  `git -C <repo> worktree remove <path>` then `git -C <repo> worktree prune`.
-- **Smart, not destructive.** `git worktree remove` refuses a dirty tree or a branch with
-  unpushed commits — that refusal is a STOP, not a reason to reach for `--force`. Unsaved
-  work is not yours to delete: leave the worktree in place and tell the user exactly what is
-  uncommitted or unpushed. Never `rm -rf` a worktree, and never `--force` unsaved state away.
-- Remove **only** the worktree you created for this task. `git worktree list` shows every
-  session's; the others are not yours to touch.
-- A subagent's isolated worktree auto-removes if unchanged; if it changed one, merge or push
-  what you need from it first, then let it go.
-
-**Background processes — start few, track them, stop them.**
-- Prefer bounded over persistent: `tail -n 200` not `tail -f`, `--since=10m` not `-f`, run the
-  suite once not in `--watch`. A one-shot `grep`/`sed`/`awk` exits on its own; a tail, watcher,
-  dev server or port-forward does not.
-- When you genuinely need a persistent process, start it as a *tracked* background task and
-  stop it the moment the step that needed it is done — do not let it ride to the end of the task.
-- **Before you report anything done, sweep your own:** no background job you started still
-  running, no `tail -f` / watcher / dev server / port-forward left alive, and on Windows/Git
-  Bash no orphaned `tail`/`sed`/`grep` from a pipeline you backgrounded. Stop them (harness
-  background-task stop, or kill the tracked PID). Leaving them is how a box ends up in swap.
-
-Teardown is part of "done": a task is not complete while it has leaked a worktree full of
-throwaway state or a fistful of live tail processes. Mark each row in *Session resources* torn
-down as you go, so the block reads empty-of-live-items when you report.
-
-Came to a workspace someone else left in a mess — leaked worktrees, directories that will not
-delete, processes nobody stopped? That is `vince-cleanup`, not this skill. It attributes what it
-finds before touching it.
-
 ## Phase 6 — Self-attack
 
 Before handing off, spend real effort trying to break your own work. Write down the three
@@ -392,6 +293,25 @@ timeout, a duplicate event, a locale that is not your default.
 
 Anything you find here, you fix here. Anything you suspect but cannot test goes in the ledger
 as a known risk, visibly, not silently.
+
+## Commit and workspace hygiene — the short version
+
+Full detail in `reference/hygiene.md`; read it before your first commit and before you report
+done. The rules that get violated most, inline because they are cheap to remember:
+
+- **Stage per file.** Never `git add .`/`-A`/`commit -a` — that is how `.serena/`, `.env` and
+  scratch files enter history.
+- **No AI or bot attribution trailers** in commits or PR bodies, unless the profile opts in.
+- **Never commit on the integration branch, never commit with a red suite.**
+- **Version bump = exactly one increment above the integration branch's current value**, read
+  after merging it, not from your branch's base.
+- **Record every worktree and long-running process in the ledger's Session resources block as you
+  create it**, and tear them all down before reporting done. A crashed session never reaches the
+  end, which is exactly why the record is written at the start.
+
+`python <toolkit>/scripts/check.py --repo <repo>` catches the mechanical half of this — stray
+files, trailers, over-long subjects, new skips, debug statements, possible secrets, whole-file
+rewrites — in one run. Do that before the handoff rather than making the reviewer find it.
 
 ## Phase 7 — Mandatory adversarial review
 
@@ -413,9 +333,15 @@ than same context — but say so.
 Hand off to `vince-review` in a **fresh context that can write files** — never inline in your
 own. How you get that depends on the harness, in this order of preference:
 
-1. **A subagent**, if the harness spawns them (Claude Code: a `general-purpose` agent or any
-   type with the full toolset including `Write`/`Edit`). Best option: genuinely fresh context,
-   same session.
+1. **A subagent**, if the harness spawns them. Pick the **narrowest agent type that still has
+   `Write`/`Edit` and can run commands** — a scoped reviewer type if the harness has one, and
+   `general-purpose` only as the fallback, because a broad type carries a larger prompt for
+   capabilities the review never uses. Best option overall: genuinely fresh context, same session.
+
+   **Run `scripts/check.py` yourself before spawning.** It catches the mechanical findings — stray
+   files, attribution trailers, new skips, debug statements, possible secrets, whole-file rewrites
+   — in one command. Fixing those first means the reviewer's context goes to judgement instead of
+   to a list of things you could have caught for free.
 2. **A separate session or a second agent window**, given the same prompt. Equivalent isolation,
    more manual.
 3. **A context reset in this session** — clear/compact, then load only the reviewer prompt. Last
@@ -458,99 +384,21 @@ The reviewer returns its verdict and writes it to `review-verdict.md`. Then:
   `review-verdict.md`, **run `vince-learn`** so this task's findings sharpen the next one,
   **publish the completion doc if the profile names a destination** (and confirm the link
   actually landed), **tear down the task worktree and stop every background process you
-  started** (*Workspace hygiene*), then report to the user with the ledger summary and the
+  started** (`reference/hygiene.md`), then report to the user with the ledger summary and the
   reviewer verdict attached.
 - You genuinely disagree with a finding: surface the disagreement to the user with both
   arguments. Never overrule the reviewer silently.
 
-## Phase 8 — Remediation (when the verdict is FAIL)
+## The ledger
 
-A FAIL is a diagnosis to act on cleanly, not a nudge to try the same thing again. Rounds
-multiply when you patch symptoms; they converge when you fix root causes. The rule that
-matters here: **no endless FAIL loops.** You get a small, bounded number of rounds, and you
-make each one count.
+`verification-ledger.md` in the task dir resolved in Phase 0. Copy
+`templates/verification-ledger.template.md` from the toolkit (its path is the `source` field in
+`.vince/install.json`) rather than reproducing the format from memory — it carries the Session
+resources block, the per-repo baseline table and the status vocabulary.
 
-1. **Reproduce before you edit.** Every CRITICAL and every UNPROVEN AC came with repro steps —
-   run them and watch it break. A finding you cannot reproduce is a disagreement for the user
-   (Phase 7), not a thing you "fix" blind.
-2. **Build a fix ledger.** In `implementation-status.md`, one row per finding:
-   `finding → root cause (the real defect, not the symptom) → the single change that fixes it → the proof that flips it → the ACs/proofs it touches`.
-   If you cannot name the root cause, you are not ready to edit. Reproduce and read the actual
-   failing path first.
-3. **Fix by root cause, worst first — not finding by finding.** Several findings usually share
-   one cause; fix the cause once. Order strictly: CRITICAL (wrong results, isolation/auth,
-   unproven ACs, dead tests) → MEDIUM → MINOR. Do not touch MINOR or refactor for taste while a
-   CRITICAL is open — that is exactly how a 3-round fix becomes a 10-round one.
-4. **Re-prove surgically.** For each AC you touched, re-run RED→GREEN→TAMPER. A dead test the
-   reviewer killed with a mutation is not fixed until that same mutation makes it RED again —
-   prove the tamper, don't just bolt on an assertion and hope.
-5. **Regression pass before re-spawn.** Re-run the FULL suite and every prior wire proof, not
-   only the AC you fixed. Fixes regress at a higher rate than fresh code, and the reviewer
-   re-attacks everything the fix went near. A fix that broke a previously PROVEN AC is a net
-   FAIL — catch it yourself, before the reviewer does.
-6. Update the ledger, then **re-spawn a fresh reviewer** (Phase 7).
-
-**Convergence guard — the anti-thrash rule (not optional):**
-
-- Each pass, record the round number and the open-CRITICAL count in the fix ledger.
-- **Thrash = the same root cause FAILs again after you "fixed" it, or the open-CRITICAL count
-  does not drop between passes.** The instant you see it, STOP editing and escalate to the
-  user. Retrying the same shape of patch will not work — your root-cause model is wrong. A
-  stuck count never buys a third attempt; this is the lever against endless failing.
-- **Converging = the count drops each pass and any new findings are genuinely deeper, not
-  repeats.** Keep going, but post a one-line progress note to the user each round
-  (`round N: X CRITICAL → Y`) so a long remediation is never a silent grind.
-- **Backstop: not PASS after three re-reviews, even while converging → pause and check in.**
-  Three clean rounds that still have not closed usually means the task is bigger than its
-  contract, an AC is wrong, or a blocked dependency is in the way — the user's call, not
-  another silent round.
-- When you escalate, bring: the findings that will not die, your current root-cause hypothesis,
-  exactly what each round tried and why it failed, and the real options (the AC or design may
-  be wrong, the fix may need blocked data/infra, or the task may need splitting). Ten rounds of
-  the same red is a failure of this gate, not diligence.
-
-## The ledger format
-
-`verification-ledger.md`, in the task dir resolved in Phase 0. A copy-ready version lives at
-`templates/verification-ledger.template.md` in the Vince toolkit — its path is recorded as
-`source` in `.claude/.vince-install.json`. Work from the inline format below if it is not there.
-
-```markdown
-# <task-id or task name> Verification Ledger
-
-Repo(s): <repo>@<branch>            Baseline suite: <N passed / M failed / K skipped>
-Worktree: <path> (off origin/<integration>; remove on completion — see Workspace hygiene)
-Reviewer verdict: NOT-RUN | FAIL | PASS (date, see review-verdict.md)
-
-## Contract
-
-| ID | Requirement (verbatim from source) | Proof level | Proof command | Status |
-|----|-----------------------------------|-------------|---------------|--------|
-| AC-1 | ... | E2E-WIRE | `npm run e2e -- --spec ...` | PROVEN |
-| AC-2 | ... | INTEGRATION | `pytest tests/api/test_budget.py -k committed` | RED |
-| DOD-1 | Translation keys in every shipped locale | STATIC | `<locale parity command>` | PROVEN |
-
-Status vocabulary: NOT-PROVEN, RED, GREEN, TAMPER-PASSED, PROVEN, BLOCKED, WAIVED(user, date).
-PROVEN requires RED evidence, GREEN evidence and TAMPER evidence, all three.
-
-## Evidence log
-
-### AC-2 RED (YYYY-MM-DD, commit abc1234)
-```
-$ pytest tests/api/test_budget.py -k committed
-FAILED  tests/api/test_budget.py::test_resolves_committed_kind
-  assert 0 == 42000
-```
-
-### AC-2 GREEN ...
-### AC-2 TAMPER (committed impl, forced `return 0`, test failed as expected, restored, git status clean) ...
-
-## Known risks / not covered
-- ...
-```
-
-Keep `implementation-status.md` for the narrative (current phase, blockers, per-service
-progress). The ledger is the gate; the status file is the story.
+Status vocabulary: `NOT-PROVEN`, `RED`, `GREEN`, `TAMPER-PASSED`, `PROVEN`, `BLOCKED`,
+`WAIVED(user, date)`. **`PROVEN` requires RED, GREEN and TAMPER evidence, all three.** Keep
+`implementation-status.md` for the narrative; the ledger is the gate.
 
 ## Live infrastructure safety
 
@@ -588,6 +436,24 @@ tagged with the channel it goes out on. Mark the blocked AC
 only on someone else's answer stays open with a visible, routed request — not a silent TODO that
 gets rediscovered three sessions later.
 
+## Phase 8 — Remediation (when the verdict is FAIL)
+
+`reference/remediation.md` has the protocol: reproduce before editing, fix by root cause worst
+first, re-prove with RED/GREEN/TAMPER, full regression before re-spawning, and the convergence
+guard that stops a thrashing loop. Load it when you get a FAIL.
+
+The two rules you must not need the file for: **fix root causes, not findings** (several findings
+usually share one cause), and **thrash — the same cause failing twice, or an open-CRITICAL count
+that does not drop — is an immediate stop and escalation**, never a third attempt.
+
+## Self-healing — when the profile is wrong
+
+`reference/remediation.md` also covers this. In short: run the recorded command, and if it fails,
+re-derive it **once**, verify the replacement, and record the fix under the profile's
+*Corrections*. Two wrong fields in one task means the profile needs a full `vince-setup` refresh,
+not more patching. Never silently substitute a different command — every later comparison,
+including the reviewer's, depends on it being the one in the profile.
+
 ## Closing the loop (every task, PASS or abandoned)
 
 A task that taught you nothing reusable was either trivial or unexamined. Before you report,
@@ -601,7 +467,7 @@ spend two minutes on the feedback the next task will read:
    ```json
    {"task":"<id>","date":"<YYYY-MM-DD>","tier":"T2","rounds":2,"acs":4,"wire_proofs":1,
     "findings":{"critical":2,"medium":1,"minor":3},"caught_by":["mutation","locale-parity"],
-    "verdict":"PASS"}
+    "verdict":"PASS","tokens":185000}
    ```
    It costs one line and it is what lets `vince-learn` say "mutation testing catches most of the
    CRITICALs in this repo" instead of guessing.

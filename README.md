@@ -49,6 +49,18 @@ python scripts/install.py bindings          # claude, cursor, windsurf, codex, g
 marked `unverified` until someone confirms them. Adding a runtime is a 12-line JSON file — see
 [docs/harnesses.md](docs/harnesses.md).
 
+## Deliberate about what it spends
+
+A gate this thorough costs tokens, so the toolkit is built to spend them on judgement and nothing
+else. `scripts/check.py` runs the deterministic half of a review — stray files, bot trailers, new
+skips, debug statements, possible secrets, whole-file rewrites — as one command with a compact
+report, so ten shell commands and their raw output never enter a model context. Skills keep
+on-demand detail in `reference/` files that load at the step that needs them. T1 tasks spawn no
+reviewer. And because the ledger holds the contract and the evidence on disk, you can compact or
+clear between phases and pick up from the file instead of the scrollback.
+
+See `skills/_shared/token-discipline.md`.
+
 ## It talks like a person
 
 Vince is dry, a little sarcastic, and allergic to jargon it has not explained. It assumes you are
