@@ -12,6 +12,15 @@ frontend). Each repo needs its **own** observed baseline:
 |---|------|--------|----------------------------------------|-------------------------|
 | 1 | | | | verified this task / already in repo profile |
 
+## Resume
+
+The first thing a fresh session reads. Keep it current at every checkpoint — two or three lines.
+`scripts/resume.py --task <dir> --check` verifies this ledger stands without the conversation.
+
+Current phase: `<n, and what is in progress>`
+Next action: `<the single next thing to do>`
+In flight: `<anything half-done, or "nothing">`
+
 ## Session resources
 
 Everything this task created that outlives a command, recorded **as you create it** - this is

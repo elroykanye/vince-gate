@@ -64,6 +64,7 @@ inherits that stack's commands until its own profile supersedes them.
 - AI attribution trailers: **not allowed** (default) | allowed
 - Versioning rule: `<per-repo file + rule>`
 - `reviewer_model`: `<model, or blank>`
+- `checkpoints`: `off` (default) | `suggest` (offer /compact at safe checkpoints) | `insist`
 - `reviewer_agent_type`: `<narrowest agent type with Write/Edit, or blank>`
 - `mechanical_model`: `<cheaper model for search/mechanical subagents, or blank>`
 - `voice`: `playful` (default) | `plain` (same honesty, no jokes) | `terse` (facts only)

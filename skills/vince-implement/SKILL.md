@@ -276,6 +276,24 @@ or broken config, that is a finding to report, not an obstacle to route around.
 Also remember: **merged is not deployed.** Check what is actually running (image tag, build
 number, deployed commit) before claiming behaviour is live.
 
+## Checkpoints (between every phase)
+
+At each phase boundary — and whenever the pressure signals in `reference/token-discipline.md`
+fire — bring the ledger current, update its **Resume** block (current phase, single next action,
+anything in flight), and verify it stands on its own:
+
+```bash
+python <toolkit>/scripts/resume.py --task <task dir> --check
+```
+
+`SAFE TO CLEAR` means a fresh session could continue from the ledger alone. `NOT SAFE TO CLEAR`
+names what is missing — fix it now, while you still remember it.
+
+If the profile sets `checkpoints: suggest` or `insist`, offer the user a `/compact` or `/clear`
+at the safe ones. **You cannot run it yourself**; it is theirs to type, and a suggestion is not
+an action. Never offer it when the check has not passed — a reset on an incomplete ledger loses
+work, which is the opposite of the point.
+
 ## Phase 5 — Definition-of-done gates
 
 Walk `reference/dod-gates.md`, plus any extra gates the profile's `dod_extras` adds. Every
@@ -360,6 +378,8 @@ must contain, and contain only:
   before opening the ledger**;
 - the **task ID**, the **repo(s) and branch**, the **verification-ledger path**, the **task
   directory**, and the **profile path**;
+- the **model to review with**, if the profile names `reviewer_model` — you cannot set it
+  yourself, so say it plainly and let whoever spawns the subagent honour it;
 - the live-infrastructure boundary (read-only on every repo, DB, cache and cluster).
 
 Nothing persuasive: no summary of your work, no severity opinions, no "already verified" or

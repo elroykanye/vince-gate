@@ -369,7 +369,8 @@ verdict*) — the same structure is the top of the persisted file.
 ```markdown
 # Review verdict: FAIL | PASS — <task-id>
 Reviewed: <repo>@<branch> at <commit>. Baseline suite: <N/M/K>. Suite now: <N/M/K>.
-Blind pass: <N> findings before reading the ledger, <M> only after. Reviewer model: <model>.
+Blind pass: <N> findings before reading the ledger, <M> only after.
+Reviewer model: <the model you are actually running as, or "unrecorded" - never guess>.
 Mutation: <tool + scope, or "by hand"> — <N> mutants, <M> survived on changed lines.
 
 ## Per-AC verdict

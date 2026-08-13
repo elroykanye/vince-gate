@@ -6,6 +6,40 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.9.0 — 2026-08-13
+
+Makes "you can clear context mid-task" a checked claim instead of a hopeful one, and stops the
+docs implying Vince can do things it cannot.
+
+**Added**
+
+- **`scripts/resume.py`** - rebuilds a task's state from its ledger alone, reading no
+  conversation. Prints what a fresh session needs (phase, next action, open criteria with their
+  proof commands, live resources still to tear down) and returns `SAFE TO CLEAR` / `NOT SAFE TO
+  CLEAR` with the specific gaps. A ledger missing a Resume block, a proof command on an open
+  criterion, or a baseline is not self-sufficient, and it says so rather than letting you find out
+  after clearing.
+- **Checkpoint protocol.** At every phase boundary: bring the ledger current, update its new
+  **Resume** block, run `resume.py --check`. Never suggest clearing without that check passing -
+  a reset on an incomplete ledger destroys work, which is worse than the context it saves.
+- **Pressure signals** - proxies an agent can actually observe, since it cannot see its own token
+  count: ~15 files read or ~5 suite runs since the last checkpoint, a large diff or build log
+  captured, the same file read more than twice, entering remediation. Documented as
+  approximations.
+- **`checkpoints` profile setting**: `off` (default), `suggest`, `insist`. At `suggest`, Vince
+  offers a `/compact` at checkpoints that pass the safety check. **It cannot run compaction
+  itself** - that is the user's keystroke - and the skills say so explicitly rather than implying
+  otherwise.
+- **Model honesty.** A skill cannot select its own model. Vince now states which model it is
+  running as in the verdict and handoff, passes `reviewer_model`/`mechanical_model` through so
+  whoever spawns the subagent can honour them, and recommends the split - strongest model for the
+  judgement passes, cheaper for search and mechanical sweeps. It does not claim to have chosen.
+
+**Upgrade notes**
+
+`checkpoints` defaults to `off`, so nothing changes until you set it. Existing ledgers gain a
+Resume block the next time a task touches them; `resume.py --check` will flag its absence.
+
 ## v0.8.0 — 2026-08-13
 
 Token discipline. Vince was directly implicated in its own users' cost profile: it mandates a

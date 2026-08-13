@@ -299,10 +299,19 @@ in order of payoff:
    review — stray files, bot trailers, newly skipped tests, debug statements, possible secrets,
    line-ending rewrites, branch behind base — in one command instead of ten, with a compact report
    instead of ten raw outputs. Run it before handing off *and* at the start of the review.
-2. **Reset context between phases.** This is Vince's structural advantage and the most commonly
-   wasted one: the ledger holds the contract, the evidence and the verdict, so **you do not need
-   the conversation history to continue**. Compact or clear and re-read the ledger. Past ~150k
-   context you are paying for scrollback you are not using.
+2. **Reset context between phases.** The ledger holds the contract, the evidence and the verdict,
+   so **you do not need the conversation history to continue** — and there is now a tool that
+   proves it rather than assuming it:
+
+   ```bash
+   python <toolkit>/scripts/resume.py --task <task dir> --check
+   ```
+
+   `SAFE TO CLEAR` means a fresh session can carry on from the ledger. `NOT SAFE TO CLEAR` lists
+   exactly what would be lost. Vince runs this at every phase boundary, and with
+   `checkpoints: suggest` in the profile it will offer you a `/compact` at the safe ones. It
+   cannot run the compaction itself — that stays your keystroke — and it will never offer one
+   when the check has not passed.
 3. **Match the subagent to the job.** T1 tasks spawn no reviewer at all. One reviewer per task,
    not per criterion. Prefer the narrowest agent type your harness offers over a general-purpose
    one, and set `mechanical_model` in the profile so search-shaped subagents use something cheaper

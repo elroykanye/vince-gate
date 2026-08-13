@@ -59,6 +59,11 @@ on-demand detail in `reference/` files that load at the step that needs them. T1
 reviewer. And because the ledger holds the contract and the evidence on disk, you can compact or
 clear between phases and pick up from the file instead of the scrollback.
 
+`scripts/resume.py` rebuilds a task from its ledger alone and refuses to call it safe if
+anything is missing — which is what makes "clear context mid-task" a checked claim rather than a
+hopeful one. With `checkpoints: suggest`, Vince offers a `/compact` at the boundaries that pass;
+it cannot type it for you and does not pretend otherwise.
+
 See `skills/_shared/token-discipline.md`.
 
 ## It talks like a person

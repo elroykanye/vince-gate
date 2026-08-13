@@ -51,24 +51,87 @@ the fresh context is exactly why it is worth it for review — but only when rev
   when it saves your context more than it costs; searching for one symbol does not qualify.
 - **Give a subagent the narrowest brief that still works.** A reviewer needs paths and the task
   ID, not a transcript.
-- **Prefer a scoped agent type over a general-purpose one** where the harness offers it, and use a
-  cheaper model for mechanical or search-shaped subagents. Reserve the strongest model for the
-  review's judgement passes, where the quality difference actually shows.
+- **Prefer a scoped agent type over a general-purpose one** where the harness offers it.
 
-## The ledger is your memory — use it and reset
+### Models: recommend, do not pretend to choose
 
-This is Vince's structural advantage and it is routinely wasted. Everything that matters is on
-disk: the contract, the evidence, the verdict, the resources you started. **You do not need the
-conversation history to continue a task.**
+You almost certainly **cannot select your own model** — that is the harness's setting, not
+something a skill controls. So do not claim to have "picked a cheaper model", and do not silently
+assume one was used.
 
-- Compact or clear between phases of a long task, and between tasks entirely. Re-read the ledger
-  instead of scrolling back.
-- Past ~150k context, every turn is paying for history you are not using. Reset earlier than feels
-  comfortable — the ledger is what makes that safe.
-- Long-running loop sessions are the most expensive shape there is. If a task is waiting on
-  something, stop and resume rather than idling.
-- One task at a time where you can. Parallel sessions all draw from the same limit, and a queue
-  spends it more evenly.
+What to do instead, once per task, in one line:
+
+- Say **which model you are running as**, if you know it, in the verdict and the handoff. A review
+  whose model is unrecorded cannot be weighed later.
+- If the profile names `reviewer_model` or `mechanical_model`, **state them in the handoff** so
+  whoever spawns the subagent can honour them, and give the exact flag or command for the harness
+  in use.
+- Recommend the split where it pays: the strongest model for the review's judgement passes (blind
+  pass, behaviour, isolation, blast radius), something cheaper for search, file-finding and
+  mechanical sweeps. The quality difference shows in the first group and is invisible in the
+  second.
+- If nothing is configured, say so once and move on. Nagging about it every task is its own waste.
+
+## Checkpoints — the ledger is your memory
+
+Vince's structural advantage, and the most commonly wasted one: the contract, the evidence, the
+verdict and the resources you started are all on disk. **You do not need the conversation history
+to continue a task.** But that is only true if the ledger is actually complete, so check rather
+than assume.
+
+### At every checkpoint
+
+Checkpoints are phase boundaries — after Phase 1's baseline, after each AC completes in Phase 3,
+before the Phase 7 handoff, and after a FAIL before starting remediation.
+
+1. Bring the ledger current: statuses, evidence, Session resources.
+2. Write or update the **Resume block** — current phase, the single next action, anything in
+   flight. Two or three lines. This is what a fresh session reads first.
+3. Verify it is genuinely sufficient:
+   ```bash
+   python <toolkit>/scripts/resume.py --task <task dir> --check
+   ```
+   `SAFE TO CLEAR` (exit 0) means the ledger stands alone. `NOT SAFE TO CLEAR` names exactly what
+   is missing — fix that before clearing, or the gap goes with the conversation.
+
+**Never suggest clearing without running that check.** Suggesting a reset on an insufficient
+ledger destroys work, which is worse than any amount of context you were trying to save.
+
+### Pressure signals
+
+You cannot see your own token count. You *can* see these proxies, so keep a rough tally and
+treat any of them as "checkpoint now":
+
+- a phase boundary (always)
+- ~15 files read, or ~5 full suite runs, since the last checkpoint
+- a large diff, a long build log, or a big test output captured this turn
+- the same file read more than twice — you are re-reading because it fell out of your head
+- entering remediation, which re-reads everything the fix touches
+
+These are approximations and the skill says so. A checkpoint costs a minute; being wrong in the
+other direction costs the whole session's history.
+
+### Proposing a compact or clear
+
+**Off by default.** With `checkpoints: suggest` in the profile, at a checkpoint where
+`resume.py --check` returns SAFE TO CLEAR, say so in one line:
+
+> Checkpoint: AC-2 proven, ledger current, `resume.py` says safe. Good moment to `/compact` or
+> `/clear` — I'll pick up from the ledger.
+
+With `checkpoints: insist`, also stop and ask at pressure thresholds rather than only mentioning
+it. Setting `off` means never raise it.
+
+**You cannot run the compaction yourself** — `/compact` and `/clear` are the user's to type. Do
+not claim to have triggered one, and do not pretend a suggestion was an action. Propose, and let
+them decide.
+
+### Between tasks
+
+Clear entirely. A new task shares nothing with the old one but the profile, and that is on disk
+too. Long-running loop sessions are the most expensive shape there is: if a task is waiting on
+something, stop and resume rather than idling. And prefer one task at a time — parallel sessions
+all draw on the same limit, and a queue spends it more evenly.
 
 ## Write short
 
