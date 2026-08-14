@@ -422,6 +422,16 @@ documented convention and are marked `unverified` — preview with `--dry-run`, 
 against your runtime's docs, and correct the JSON in `bindings/` if they differ. Adding a
 binding is a 12-line JSON file; see [`bindings/README.md`](bindings/README.md).
 
+**Using Cursor or Codex instead of Claude Code?** Both work. Codex loads the skills natively from
+`.agents/skills/` and has real subagents, so the review runs the same way — and its subagent TOML
+can pin the reviewer's model, which is one thing Claude Code cannot do. Cursor loads them as
+`.mdc` rules, but has no subagent mechanism, so the fresh-context review becomes a second chat you
+open and paste the handoff into. That is the same rigour with one manual step, and the isolation
+is if anything cleaner — but it is easier to skip, so the discipline has to come from you.
+
+`check.py` and `resume.py` are plain Python and the ledger is a file, so those work identically
+everywhere. See [docs/harnesses.md](docs/harnesses.md) for the per-harness table.
+
 **For a team:** install project-scoped and commit `.claude/skills/` (or your harness's
 equivalent) plus `.vince/profile.md` and `.vince/lessons.md`. Everyone gets the same gate and
 the same accumulated knowledge. If teammates use different harnesses, install every binding they

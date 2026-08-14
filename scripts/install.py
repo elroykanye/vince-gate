@@ -246,13 +246,17 @@ def render_entry(binding: dict, name: str, description: str, body: str) -> str:
 
 
 def rewrite_links(text: str, skill: str, binding: dict) -> str:
-    """In flat layouts a reference/ subdirectory does not exist; point at the sibling file."""
+    """In flat layouts there is no reference/ subdirectory; point at where the file really goes."""
     if binding.get("layout") != "flat":
         return text
     prefix = binding.get("prefix", "")
+    # reference_dir is relative to the entry file, e.g. "../vince" keeps plain .md out of a
+    # rules directory that would otherwise ignore it.
+    base = binding.get("reference_dir", "").rstrip("/")
+    base = f"{base}/" if base else ""
 
     def repl(m):
-        return f"{prefix}{skill}-{m.group(1)}.md"
+        return f"{base}{prefix}{skill}-{m.group(1)}.md"
 
     return re.sub(r"reference/([\w.-]+)\.md", repl, text)
 
@@ -279,13 +283,15 @@ def render_skill(binding: dict, skill: str):
     else:
         prefix = binding.get("prefix", "")
         ext = binding.get("extension", ".md")
+        refdir = binding.get("reference_dir", "").rstrip("/")
+        refdir = f"{refdir}/" if refdir else ""
         out.append((f"{prefix}{skill}{ext}", render_entry(binding, name, description, body)))
         for rel in reference_files(skill):
             text = rewrite_links((src / rel).read_text(encoding="utf-8"), skill, binding)
-            out.append((f"{prefix}{skill}-{rel.stem}.md", text))
+            out.append((f"{refdir}{prefix}{skill}-{rel.stem}.md", text))
         for shared in shared_files():
             text = rewrite_links(shared.read_text(encoding="utf-8"), skill, binding)
-            out.append((f"{prefix}{skill}-{shared.stem}.md", text))
+            out.append((f"{refdir}{prefix}{skill}-{shared.stem}.md", text))
     return [(p, t.encode("utf-8")) for p, t in out]
 
 

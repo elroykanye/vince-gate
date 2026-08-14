@@ -6,6 +6,41 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.10.0 — 2026-08-14
+
+Two bindings were wrong, found by checking them against current documentation instead of trusting
+what they were written from.
+
+**Fixed**
+
+- **Codex.** Was installing to `.codex/vince/` with no frontmatter and an AGENTS.md pointer block.
+  Codex has had native skill loading since December 2025: `.agents/skills/` for a project,
+  `~/.agents/skills/` or `~/.codex/skills/` for a user, most specific first, with the **same
+  `name` + `description` frontmatter Claude Code uses**. The canonical skills now install
+  unchanged and auto-activate, and the pointer block is no longer needed.
+- **Cursor.** Reference docs were being written as plain `.md` into `.cursor/rules/`, which Cursor
+  **ignores** - no frontmatter means it is not a rule, so they sat in the rules directory looking
+  registered while doing nothing. Bindings gained a `reference_dir`, so references now install to
+  `.cursor/vince/` and links inside each rule are rewritten to `../vince/…`. The rules directory
+  contains only real rules. Same fix applied to Windsurf.
+
+**Added**
+
+- **A per-harness capability table** in `docs/harnesses.md`. The compatibility question is not
+  whether files install, it is whether the harness can give the reviewer a fresh context. Claude
+  Code and Codex can, natively. Cursor, Windsurf and Gemini CLI cannot, so the review is a second
+  chat you open and paste the handoff into - the same rigour with one manual step, and arguably
+  cleaner isolation, but easier to skip. Stated plainly rather than implied.
+- **`templates/codex-reviewer-agent.toml`** - a Codex subagent definition for the review. Codex
+  subagents are TOML in `.codex/agents/` and **can pin the model**, which is the one place the
+  reviewer's model can actually be chosen rather than merely recommended.
+
+**Upgrade notes**
+
+Anyone with a previous Codex install should uninstall the `codex` binding before reinstalling;
+the old `.codex/vince/` location and its AGENTS.md block are no longer written, and `uninstall`
+only removes what its manifest recorded.
+
 ## v0.9.0 — 2026-08-13
 
 Makes "you can clear context mid-task" a checked claim instead of a hopeful one, and stops the

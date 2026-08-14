@@ -15,15 +15,62 @@ substitution to the runtime.
 |---------|---------|-------------|-------|--------|
 | `claude` | Claude Code | `.claude/skills/<skill>/SKILL.md` | dir per skill, YAML frontmatter | **verified** |
 | `generic` | Any AGENTS.md runtime | `.agents/vince/<skill>/SKILL.md` + `AGENTS.md` block | dir per skill, no frontmatter | **verified** |
-| `cursor` | Cursor | `.cursor/rules/<skill>.mdc` | flat, MDC frontmatter (`alwaysApply: false`) | unverified |
-| `windsurf` | Windsurf | `.windsurf/rules/<skill>.md` | flat, `trigger: model_decision` | unverified |
-| `codex` | Codex CLI | `.codex/vince/<skill>/SKILL.md` + `AGENTS.md` block | dir per skill, no frontmatter | unverified |
+| `cursor` | Cursor | `.cursor/rules/<skill>.mdc`, refs in `.cursor/vince/` | flat, MDC frontmatter (`alwaysApply: false`) | unverified |
+| `windsurf` | Windsurf | `.windsurf/rules/<skill>.md`, refs in `.windsurf/vince/` | flat, `trigger: model_decision` | unverified |
+| `codex` | Codex CLI | `.agents/skills/<skill>/SKILL.md` (user: `~/.agents/skills/`) | dir per skill, YAML frontmatter | unverified |
 | `gemini` | Gemini CLI | `.gemini/commands/vince/<skill>.toml` | flat, TOML command (`description` + `prompt`) | unverified |
 
 **`verified`** means installed and confirmed working on a real runtime. **`unverified`** means
 the paths follow that runtime's documented convention but were not confirmed against a live
 install — preview with `--dry-run`, check against your runtime's current docs, and correct the
 JSON if they differ. Correcting a binding is editing one small file; there is no code to change.
+
+## What degrades, per harness
+
+The files installing is not the same as the method working. One structural dependency matters
+more than the rest: **the reviewer needs a fresh context that is not the implementer's.** How
+well a harness supports that is the real compatibility question.
+
+| Harness | Skill loading | Fresh-context review | Net |
+|---------|---------------|----------------------|-----|
+| **Claude Code** | native skills, auto-activate on description | subagent, one call | full |
+| **Codex CLI** | native skills from `.agents/skills/` | native subagents (TOML in `.codex/agents/`), and the definition can pin the model | full, and the model pinning is better than Claude Code's |
+| **Cursor** | `.mdc` rules, attach on description match | **no subagent mechanism** — you open a second chat yourself and paste the handoff | works, one manual step |
+| **Windsurf** | rules with `trigger: model_decision` | same as Cursor | works, one manual step |
+| **Gemini CLI** | TOML custom commands, invoked explicitly | no subagent — manual second session | works, two manual steps |
+| **Anything reading AGENTS.md** | you tell it to read the file | manual | works, fully manual |
+
+**The manual review is not a downgrade in rigour**, only in convenience: open a new chat, paste
+the handoff prompt (task ID, repo, branch, ledger path, task dir, profile path, and the
+instruction to invoke `vince-review` starting with Pass 0), and let it run. The isolation is
+arguably *better* than a subagent, since nothing at all leaks across. What you lose is it
+happening automatically, which means it is easier to skip — so on those harnesses the discipline
+has to come from you.
+
+Two things work identically everywhere, because they are not model features:
+`scripts/check.py` and `scripts/resume.py` are plain Python, and the ledger is a file.
+
+### Cursor specifics
+
+Cursor **ignores plain `.md` files inside `.cursor/rules/`** — no frontmatter means it is not a
+rule. Reference docs therefore install to `.cursor/vince/` and the links inside each rule are
+rewritten to `../vince/…`, so the rules directory contains only real rules and the references are
+still readable when the skill asks for them.
+
+The entry files use `description` + empty `globs` + `alwaysApply: false`, which is Cursor's
+agent-requested shape: the model attaches the rule when the description matches. Note the skills
+are large — `vince-implement` is ~7.6k tokens — so watch how your rule budget behaves.
+
+### Codex specifics
+
+Codex loads `SKILL.md` from `.agents/skills/` (project) and `~/.agents/skills/` or
+`~/.codex/skills/` (user), most specific first, with the same `name` + `description` frontmatter
+Claude Code uses — so the canonical skills install unchanged.
+
+It also has real subagents, defined as TOML in `.codex/agents/`, and **a subagent definition can
+set the model**. That solves something Vince cannot do for itself: see
+[`templates/codex-reviewer-agent.toml`](../templates/codex-reviewer-agent.toml) for a reviewer
+definition that pins the model and runs read-only.
 
 ## Choosing bindings
 

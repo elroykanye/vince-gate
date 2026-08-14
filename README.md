@@ -46,8 +46,14 @@ python scripts/install.py bindings          # claude, cursor, windsurf, codex, g
 ```
 
 `claude` and `generic` are verified; the rest follow each runtime's documented convention and are
-marked `unverified` until someone confirms them. Adding a runtime is a 12-line JSON file — see
-[docs/harnesses.md](docs/harnesses.md).
+marked `unverified` until someone confirms them against a live install. Adding a runtime is a
+12-line JSON file.
+
+The compatibility question that actually matters is not whether the files install, but whether
+the harness can give the reviewer a **fresh context**. Claude Code and Codex both can, natively.
+Cursor, Windsurf and Gemini CLI cannot, so the review becomes a second chat you open yourself —
+same rigour, one manual step, easier to skip. [docs/harnesses.md](docs/harnesses.md) has the
+per-harness table.
 
 ## Deliberate about what it spends
 

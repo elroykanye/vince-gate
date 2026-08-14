@@ -2,13 +2,16 @@
   "id": "codex",
   "label": "Codex CLI",
   "status": "unverified",
-  "detect": [".codex"],
-  "project_dir": ".codex/vince",
-  "user_dir": "~/.codex/vince",
+  "detect": [
+    ".codex",
+    ".agents"
+  ],
+  "project_dir": ".agents/skills",
+  "user_dir": "~/.agents/skills",
   "layout": "dir",
   "entry": "SKILL.md",
-  "frontmatter": "none",
-  "index": "AGENTS.md",
-  "invocation": "read .codex/vince/{skill}/SKILL.md and follow it",
-  "notes": "Codex reads AGENTS.md natively, so the skills live beside it and the AGENTS.md block routes to them. If your Codex version has a native skills or plugin mechanism, prefer that path and adjust project_dir accordingly."
+  "frontmatter": "yaml",
+  "index": null,
+  "invocation": "describe the task; the skill activates on its description",
+  "notes": "Codex loads SKILL.md skills from .agents/skills (project) and ~/.agents/skills or ~/.codex/skills (user), most specific first, with the same name+description frontmatter Claude Code uses. Codex also has real subagents (TOML in .codex/agents/), so the fresh-context review works natively - see templates/codex-reviewer-agent.toml. Paths confirmed from documentation, not against a live install."
 }
