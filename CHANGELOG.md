@@ -6,6 +6,34 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.11.0 — 2026-08-17
+
+Codex support is now based on live runtime behavior rather than configuration shape alone.
+
+**Fixed**
+
+- **Native reviewer role.** The supplied TOML now uses Codex's required
+  `developer_instructions`; the prior description-only role was rejected by the runtime.
+- **External verdict persistence.** Reviewer sessions whose Vince task directory is outside the
+  repository now document the required parent `--add-dir <resolved task-root>` grant.
+- **Stop-hook task lookup.** The hook finds both repository-local and external Vince task stores,
+  including repositories without an origin remote.
+
+**Verified**
+
+- Project-scoped Vince skills were installed, discovered and invoked by Codex CLI
+  `0.148.0-alpha.9`.
+- A persistent Codex parent delegated to the named reviewer role, which ran the installed
+  `vince-review` skill and persisted a genuine verdict in an external task directory.
+- Project `.codex/hooks.json` did not load, and user-scope Stop blocking was not exercised. The
+  binding and documentation state that limitation instead of claiming hard enforcement.
+
+**Upgrade notes**
+
+Copy the updated reviewer template into `.codex/agents/vince-review.toml`. Use a persistent Codex
+parent session, and when `install.py where --repo <repo>` resolves outside the repository, launch
+Codex with `--add-dir <resolved task-root>`.
+
 ## v0.10.0 — 2026-08-14
 
 Two bindings were wrong, found by checking them against current documentation instead of trusting
