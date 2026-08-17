@@ -32,6 +32,7 @@ Environment:
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import subprocess
@@ -70,7 +71,20 @@ def repo_key(root: Path) -> str:
         )
     except (OSError, subprocess.SubprocessError):
         return ""
-    return normalise_remote(result.stdout) if result.returncode == 0 else ""
+    if result.returncode == 0:
+        key = normalise_remote(result.stdout)
+        if key:
+            return key
+    try:
+        common = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--path-format=absolute", "--git-common-dir"],
+            capture_output=True, text=True, timeout=2,
+        )
+    except (OSError, subprocess.SubprocessError):
+        common = None
+    repo_root = Path(common.stdout.strip()).parent if common and common.returncode == 0 else root.resolve()
+    digest = hashlib.sha256(str(repo_root).replace("\\", "/").lower().encode()).hexdigest()[:8]
+    return f"local__{repo_root.name.lower()}__{digest}"
 
 
 def active_dirs(root: Path):

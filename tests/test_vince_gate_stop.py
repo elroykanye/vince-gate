@@ -1,4 +1,5 @@
 import json
+import hashlib
 import os
 import subprocess
 import sys
@@ -52,6 +53,36 @@ class VinceGateStopTests(unittest.TestCase):
             self.assertEqual(2, result.returncode, result.stderr)
             self.assertIn("task-1", result.stderr)
             self.assertIn("AC-1", result.stderr)
+
+    def test_blocks_external_store_for_repo_without_origin_remote(self):
+        with tempfile.TemporaryDirectory() as raw:
+            base = Path(raw)
+            repo = base / "local-repo"
+            repo.mkdir()
+            self._git(repo, "init")
+            digest = hashlib.sha256(str(repo.resolve()).replace("\\", "/").lower().encode()).hexdigest()[:8]
+            key = f"local__local-repo__{digest}"
+            ledger = base / "store" / "repos" / key / "tasks" / "active" / "task-2" / "verification-ledger.md"
+            ledger.parent.mkdir(parents=True)
+            ledger.write_text(
+                "# task-2 Verification Ledger\n\nReviewer verdict: NOT-RUN\n\n"
+                "| ID | Requirement | Proof | Command | Status |\n"
+                "|----|-------------|-------|---------|--------|\n"
+                "| AC-2 | works | E2E-WIRE | test | RED |\n",
+                encoding="utf-8",
+            )
+
+            result = subprocess.run(
+                [sys.executable, str(HOOK)],
+                input=json.dumps({"cwd": str(repo)}),
+                text=True,
+                capture_output=True,
+                env={**os.environ, "VINCE_STORE": str(base / "store")},
+                timeout=10,
+            )
+
+            self.assertEqual(2, result.returncode, result.stderr)
+            self.assertIn("task-2", result.stderr)
 
     @staticmethod
     def _git(repo: Path, *args: str):
