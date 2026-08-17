@@ -424,7 +424,11 @@ binding is a 12-line JSON file; see [`bindings/README.md`](bindings/README.md).
 
 **Using Cursor or Codex instead of Claude Code?** Both work. Codex loads the skills natively from
 `.agents/skills/` and has real subagents, so the review runs the same way — and its subagent TOML
-can pin the reviewer's model, which is one thing Claude Code cannot do. Cursor loads them as
+can pin the reviewer's model, which is one thing Claude Code cannot do. Copy
+`templates/codex-reviewer-agent.toml` to `.codex/agents/vince-review.toml`, use a persistent
+parent session (not `codex exec --ephemeral`), and start Codex with
+`--add-dir <resolved task-root>` when `install.py where --repo .` returns an external directory.
+This named-agent path was live-verified through a persisted Vince verdict. Cursor loads them as
 `.mdc` rules, but has no subagent mechanism, so the fresh-context review becomes a second chat you
 open and paste the handoff into. That is the same rigour with one manual step, and the isolation
 is if anything cleaner — but it is easier to skip, so the discipline has to come from you.

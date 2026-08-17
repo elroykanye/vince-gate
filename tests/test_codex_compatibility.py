@@ -1,4 +1,5 @@
 import json
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -15,10 +16,13 @@ class CodexBindingTests(unittest.TestCase):
 
     def test_reviewer_agent_can_persist_its_verdict(self):
         template = (ROOT / "templates" / "codex-reviewer-agent.toml").read_text(encoding="utf-8")
+        role = tomllib.loads(template)
 
+        self.assertIn("vince-review", role["developer_instructions"])
         self.assertIn('sandbox_mode = "workspace-write"', template)
         self.assertNotIn('sandbox_mode = "read-only"', template)
         self.assertIn("--add-dir <resolved task-root>", template)
+        self.assertIn("persistent session", template)
 
     def test_codex_docs_describe_verified_stop_hook_support(self):
         harnesses = (ROOT / "docs" / "harnesses.md").read_text(encoding="utf-8")

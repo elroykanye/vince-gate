@@ -5,13 +5,17 @@
 # If `scripts/install.py where --repo <repo>` resolves the task root outside the repository,
 # start Codex with `--add-dir <resolved task-root>`. The agent's workspace-write sandbox covers
 # only roots granted to the parent Codex process; this TOML file cannot widen them by itself.
+# Start the parent in a persistent session: on CLI 0.148.0-alpha.9, `codex exec --ephemeral`
+# discovered this role but subagent delegation failed because the parent thread was unavailable.
 #
 # Why this file is worth having: it is one of the few places where the *model* for a review can
 # actually be pinned. Vince cannot select its own model, but a subagent definition can, so the
 # review runs on what you chose rather than whatever the session happened to be using.
 
 name = "vince-review"
-description = """
+description = "Runs Vince's adversarial fresh-context implementation review and persists its verdict."
+# Codex requires this field for an agent role. A description alone is discovered but rejected.
+developer_instructions = """
 Adversarial reviewer. Assumes the implementation is broken and tries to prove it. Invoke the
 vince-review skill and follow it exactly, starting with its blind Pass 0: read the diff and the
 original contract BEFORE opening the verification ledger, completion doc or commit messages,

@@ -70,11 +70,17 @@ Claude Code uses — so the canonical skills install unchanged.
 It also has real subagents, defined as TOML in `.codex/agents/`, and **a subagent definition can
 set the model**. That solves something Vince cannot do for itself: see
 [`templates/codex-reviewer-agent.toml`](../templates/codex-reviewer-agent.toml) for a reviewer
-definition that pins the model and grants workspace writes so the reviewer can persist its
-verdict. The review prompt still prohibits repository and shared-infrastructure writes.
+definition that uses Codex's required `developer_instructions`, pins the model and grants
+workspace writes. Copy it to `.codex/agents/vince-review.toml`; if the task root is external,
+start the parent with `--add-dir <resolved task-root>`. Use a persistent parent session: on the
+tested CLI, `codex exec --ephemeral` discovered the role but delegation failed because its parent
+thread was unavailable. The persistent-session path ran `vince-review` in the named role and
+persisted its real verdict. The review prompt still prohibits repository and shared-infrastructure
+writes.
 
 Codex CLI `0.148.0-alpha.9` was live-verified for skill discovery, description-triggered
-activation, TOML subagent definitions, and the user-scope `Stop` hook event. The same command
+activation, persistent-session TOML subagent delegation and verdict persistence, and visibility
+of the user-scope `Stop` hook event. The same command
 hook used by Claude can be configured in `~/.codex/hooks.json`; project `.codex/hooks.json` did
 not load in that build. User-scope Stop blocking was not live-verified, so do not call it hard
 enforcement until the local probe succeeds. See [`hooks/README.md`](../hooks/README.md). Without
