@@ -29,6 +29,10 @@ class CodexBindingTests(unittest.TestCase):
         self.assertIn("Codex", hooks)
         self.assertIn("hooks.json", hooks)
         self.assertIn(
+            "Codex reads hooks from `~/.codex/hooks.json`; project `.codex/hooks.json` was not loaded",
+            " ".join(hooks.split()),
+        )
+        self.assertIn(
             "in-repo `.vince/tasks/active/` **or the repository's\nexternal store**",
             hooks,
         )

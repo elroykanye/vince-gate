@@ -53,10 +53,11 @@ guard is what stops a session deadlocking.
 ```
 
 For Claude Code, put the block in `.claude/settings.json` for one project or
-`~/.claude/settings.json` for all projects. For Codex, put the same block in
-`.codex/hooks.json` for one project or `~/.codex/hooks.json` for all projects. Codex requires
-hook trust; review the command before approving it. Automation that already vets the source can
-use Codex's `--dangerously-bypass-hook-trust` flag, but ordinary interactive use should not.
+`~/.claude/settings.json` for all projects. Codex reads hooks from `~/.codex/hooks.json`; project
+`.codex/hooks.json` was not loaded by CLI `0.148.0-alpha.9`, so Codex enforcement is user-scoped
+in that build. Codex requires hook trust; review the command before approving it. Automation
+that already vets the source can use Codex's `--dangerously-bypass-hook-trust` flag, but ordinary
+interactive use should not.
 
 Use an absolute path, and `python3` if `python` is not Python 3.8+ on your machine. When Vince's
 external store is not `~/.vince`, set `VINCE_STORE` in the environment that starts the harness.
@@ -78,8 +79,9 @@ where a hook returning exit 2 sometimes leaves the session idle instead of the m
 the feedback — you type "continue" and it proceeds. That is why this is opt-in rather than part
 of a normal install. If you hit it, `VINCE_STOP_DISABLE=1` is the escape hatch.
 
-Codex support was live-verified with CLI `0.148.0-alpha.9`. Hooks are a stable feature in that
-build, but their trust and config schema are harness-owned; re-run the probe after upgrading
+Codex support was live-verified with CLI `0.148.0-alpha.9`. Skills were installed, discovered,
+and invoked from a disposable project. The `hooks` feature and user-scope `Stop` event are
+present, but a disposable project-level hook did not fire. Re-run both probes after upgrading
 Codex before relying on the gate.
 
 ## What is deliberately *not* here
