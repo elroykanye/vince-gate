@@ -417,7 +417,7 @@ python scripts/install.py install --target . --binding claude,cursor
 python scripts/install.py install --target . --binding all
 ```
 
-Only the `claude` and `generic` bindings are verified. The others follow each runtime's
+The `claude`, `codex`, and `generic` bindings are verified. The others follow each runtime's
 documented convention and are marked `unverified` — preview with `--dry-run`, check the paths
 against your runtime's docs, and correct the JSON in `bindings/` if they differ. Adding a
 binding is a 12-line JSON file; see [`bindings/README.md`](bindings/README.md).
@@ -591,8 +591,8 @@ toolkit's `skills/`, reinstall, and the refusal goes away. `--force` discards yo
 
 **Does this work without Claude Code?** Yes. Six markdown files and a Python script; the
 bindings render them for other harnesses, and the `generic` binding works anywhere an agent can
-read a file. Only `claude` and `generic` are verified — the rest are documented conventions you
-should check.
+read a file. The `claude`, `codex`, and `generic` bindings are verified; the rest are documented
+conventions you should check.
 
 **Does Vince send anything anywhere?** No. It has no network access, no telemetry, no account.
 Every file it writes is inside your project or your home directory.

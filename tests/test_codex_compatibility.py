@@ -27,6 +27,7 @@ class CodexBindingTests(unittest.TestCase):
     def test_codex_docs_describe_verified_stop_hook_support(self):
         harnesses = (ROOT / "docs" / "harnesses.md").read_text(encoding="utf-8")
         hooks = (ROOT / "hooks" / "README.md").read_text(encoding="utf-8")
+        user_guide = (ROOT / "USER-GUIDE.md").read_text(encoding="utf-8")
 
         self.assertIn("| `codex` | Codex CLI", harnesses)
         codex_row = next(line for line in harnesses.splitlines() if line.startswith("| `codex` |"))
@@ -40,6 +41,10 @@ class CodexBindingTests(unittest.TestCase):
         self.assertIn("hard enforcement was not live-verified", hooks)
         binding = json.loads((ROOT / "bindings" / "codex.json").read_text(encoding="utf-8"))
         self.assertIn("not live-verified", binding["notes"])
+        self.assertEqual(
+            2,
+            user_guide.count("The `claude`, `codex`, and `generic` bindings are verified"),
+        )
         self.assertIn(
             "in-repo `.vince/tasks/active/` **or the repository's\nexternal store**",
             hooks,
