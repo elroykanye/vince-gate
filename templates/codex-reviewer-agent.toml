@@ -1,8 +1,7 @@
 # Codex CLI subagent for the Vince review.
 #
 # Copy to `.codex/agents/vince-review.toml` in a project, or the equivalent user-scope location.
-# Verify the field names against your Codex version before relying on it - this is written from
-# documentation, not confirmed against a live install.
+# Verified against Codex CLI 0.148.0-alpha.9. Re-verify after schema-changing upgrades.
 #
 # Why this file is worth having: it is one of the few places where the *model* for a review can
 # actually be pinned. Vince cannot select its own model, but a subagent definition can, so the
@@ -20,8 +19,7 @@ which are claims rather than evidence. Default verdict is FAIL.
 # strongest model available to you. Mechanical checks already ran as scripts/check.py.
 model = "gpt-5.4"
 
-# Read-only is deliberate and load-bearing. The reviewer must never write to shared
-# infrastructure, and it must not "fix" what it finds - reporting is the whole job. The one
-# exception is its own verdict file, so if this sandbox mode blocks that too, grant the narrowest
-# write it needs rather than opening the sandbox up.
-sandbox_mode = "read-only"
+# The reviewer must persist review-verdict.md in the task directory. Workspace write access is
+# therefore required, while the review prompt still forbids writes to repos and shared/live
+# infrastructure other than that verdict artifact.
+sandbox_mode = "workspace-write"

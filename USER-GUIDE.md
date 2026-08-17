@@ -601,7 +601,7 @@ project, gitignore `.vince/install.json` and `.vince/tasks/`.
 stick is the artifacts: a missing ledger, a missing verdict, or a ledger with no command output
 is immediately visible to you. Vince makes skipping the process *legible*.
 
-If you want it actually enforced, [hooks/README.md](hooks/README.md) ships an opt-in Claude Code
+If you want it actually enforced, [hooks/README.md](hooks/README.md) ships an opt-in Claude Code/Codex
 **Stop hook** that blocks the session from ending while the active ledger has unproven rows or no
 PASS verdict. It is experimental and has a known upstream caveat, which is why it is not part of
 a normal install.

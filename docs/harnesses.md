@@ -17,7 +17,7 @@ substitution to the runtime.
 | `generic` | Any AGENTS.md runtime | `.agents/vince/<skill>/SKILL.md` + `AGENTS.md` block | dir per skill, no frontmatter | **verified** |
 | `cursor` | Cursor | `.cursor/rules/<skill>.mdc`, refs in `.cursor/vince/` | flat, MDC frontmatter (`alwaysApply: false`) | unverified |
 | `windsurf` | Windsurf | `.windsurf/rules/<skill>.md`, refs in `.windsurf/vince/` | flat, `trigger: model_decision` | unverified |
-| `codex` | Codex CLI | `.agents/skills/<skill>/SKILL.md` (user: `~/.agents/skills/`) | dir per skill, YAML frontmatter | unverified |
+| `codex` | Codex CLI | `.agents/skills/<skill>/SKILL.md` (user: `~/.agents/skills/`) | dir per skill, YAML frontmatter | verified |
 | `gemini` | Gemini CLI | `.gemini/commands/vince/<skill>.toml` | flat, TOML command (`description` + `prompt`) | unverified |
 
 **`verified`** means installed and confirmed working on a real runtime. **`unverified`** means
@@ -70,7 +70,14 @@ Claude Code uses — so the canonical skills install unchanged.
 It also has real subagents, defined as TOML in `.codex/agents/`, and **a subagent definition can
 set the model**. That solves something Vince cannot do for itself: see
 [`templates/codex-reviewer-agent.toml`](../templates/codex-reviewer-agent.toml) for a reviewer
-definition that pins the model and runs read-only.
+definition that pins the model and grants workspace writes so the reviewer can persist its
+verdict. The review prompt still prohibits repository and shared-infrastructure writes.
+
+Codex CLI `0.148.0-alpha.9` was live-verified for skill discovery, description-triggered
+activation, TOML subagent definitions, and the `Stop` hook event. The same command hook used by
+Claude can be configured in `.codex/hooks.json` or `~/.codex/hooks.json`; see
+[`hooks/README.md`](../hooks/README.md). This is the hard completion gate. Without it, Vince is
+procedural guidance that an agent can still skip.
 
 ## Choosing bindings
 

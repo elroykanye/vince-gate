@@ -192,7 +192,7 @@ vince-gate/
   USER-GUIDE.md                       start here
   skills/                             the eight skills (+ reference/ docs)
   bindings/*.json                     one per harness; no per-harness code
-  hooks/                              opt-in enforcement (Claude Code Stop hook)
+  hooks/                              opt-in enforcement (Claude Code/Codex Stop hook)
   templates/                          profile, ledger, verdict, lessons, completion doc
   scripts/install.py                  install / status / doctor / uninstall / list / bindings
   docs/                               methodology, skills, profile, harnesses, install

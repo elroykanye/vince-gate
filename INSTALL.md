@@ -271,7 +271,8 @@ Everything above is instructions a model can forget. A **Stop hook** cannot be f
 refuses to end a session while the active ledger still has unproven rows or no PASS verdict.
 
 It is opt-in and experimental, including a known upstream caveat. See
-[hooks/README.md](hooks/README.md) for the settings block and how to verify it before trusting it.
+[hooks/README.md](hooks/README.md) for the Claude Code and Codex configuration blocks and how to
+verify the hook before trusting it.
 
 ## If something goes wrong
 

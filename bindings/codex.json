@@ -1,7 +1,7 @@
 {
   "id": "codex",
   "label": "Codex CLI",
-  "status": "unverified",
+  "status": "verified",
   "detect": [
     ".codex",
     ".agents"
@@ -13,5 +13,5 @@
   "frontmatter": "yaml",
   "index": null,
   "invocation": "describe the task; the skill activates on its description",
-  "notes": "Codex loads SKILL.md skills from .agents/skills (project) and ~/.agents/skills or ~/.codex/skills (user), most specific first, with the same name+description frontmatter Claude Code uses. Codex also has real subagents (TOML in .codex/agents/), so the fresh-context review works natively - see templates/codex-reviewer-agent.toml. Paths confirmed from documentation, not against a live install."
+  "notes": "Live-verified with Codex CLI 0.148.0-alpha.9: skills under ~/.agents/skills were discovered and description-triggered, native TOML subagents were available under ~/.codex/agents, and hooks.json exposed a Stop event. See templates/codex-reviewer-agent.toml and hooks/README.md."
 }

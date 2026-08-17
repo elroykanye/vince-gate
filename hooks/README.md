@@ -4,7 +4,8 @@
 forget. Hooks are executed by the harness, so they cannot be forgotten. That is the whole point,
 and it is also why they need to be careful: a gate that fires wrongly is worse than no gate.
 
-Currently ships one hook, for Claude Code.
+Currently ships one Stop hook verified with Claude Code and Codex CLI. Both use the same event
+and command shape. Installation remains opt-in because a Stop hook can hold a session open.
 
 ## `vince_gate_stop.py`
 
@@ -12,9 +13,11 @@ A **Stop hook** that refuses to end a session while the active ledger says the w
 This is vince's prime directive — *no done without a PASS verdict* — enforced rather than asked
 for. Exit code 2 blocks the stop and returns the message to the model as feedback.
 
-It blocks when a recent ledger under `.vince/tasks/active/` has any `AC-`/`DOD-` row whose status
-is `NOT-PROVEN`, `RED`, `GREEN` or `TAMPER-PASSED` (i.e. not yet `PROVEN`), or whose
-`Reviewer verdict:` line is absent, `NOT-RUN` or `FAIL`.
+It blocks when a recent ledger under an in-repo `.vince/tasks/active/` **or the repository's
+external store** has any `AC-`/`DOD-` row whose status is `NOT-PROVEN`, `RED`, `GREEN` or
+`TAMPER-PASSED` (i.e. not yet `PROVEN`), or whose `Reviewer verdict:` line is absent, `NOT-RUN`
+or `FAIL`. The external location is resolved from `VINCE_STORE` (default `~/.vince`) and the
+repository's origin remote, using the same key format as `scripts/install.py where`.
 
 It also blocks on a **leaked worktree**: a ledger that reads `PASS` while a worktree it recorded
 in *Session resources* still exists on disk. That is teardown that did not happen, and it is
@@ -49,8 +52,14 @@ guard is what stops a session deadlocking.
 }
 ```
 
-In `.claude/settings.json` for one project, or `~/.claude/settings.json` for all of them. Use an
-absolute path, and `python3` if `python` is not Python 3.8+ on your machine.
+For Claude Code, put the block in `.claude/settings.json` for one project or
+`~/.claude/settings.json` for all projects. For Codex, put the same block in
+`.codex/hooks.json` for one project or `~/.codex/hooks.json` for all projects. Codex requires
+hook trust; review the command before approving it. Automation that already vets the source can
+use Codex's `--dangerously-bypass-hook-trust` flag, but ordinary interactive use should not.
+
+Use an absolute path, and `python3` if `python` is not Python 3.8+ on your machine. When Vince's
+external store is not `~/.vince`, set `VINCE_STORE` in the environment that starts the harness.
 
 ### Verify it before you trust it
 
@@ -62,12 +71,16 @@ echo "{\"cwd\":\"$PWD\"}" | python /path/to/vince-gate/hooks/vince_gate_stop.py;
 # expect: a message on stderr and exit=2
 ```
 
-### Known caveat
+### Known caveats
 
 Claude Code has [an open issue (#24327)](https://github.com/anthropics/claude-code/issues/24327)
 where a hook returning exit 2 sometimes leaves the session idle instead of the model acting on
 the feedback — you type "continue" and it proceeds. That is why this is opt-in rather than part
 of a normal install. If you hit it, `VINCE_STOP_DISABLE=1` is the escape hatch.
+
+Codex support was live-verified with CLI `0.148.0-alpha.9`. Hooks are a stable feature in that
+build, but their trust and config schema are harness-owned; re-run the probe after upgrading
+Codex before relying on the gate.
 
 ## What is deliberately *not* here
 
