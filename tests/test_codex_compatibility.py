@@ -28,7 +28,10 @@ class CodexBindingTests(unittest.TestCase):
         self.assertIn("verified", codex_row)
         self.assertIn("Codex", hooks)
         self.assertIn("hooks.json", hooks)
-        self.assertIn("external store", hooks)
+        self.assertIn(
+            "in-repo `.vince/tasks/active/` **or the repository's\nexternal store**",
+            hooks,
+        )
 
 
 if __name__ == "__main__":
