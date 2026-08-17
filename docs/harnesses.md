@@ -76,8 +76,9 @@ verdict. The review prompt still prohibits repository and shared-infrastructure 
 Codex CLI `0.148.0-alpha.9` was live-verified for skill discovery, description-triggered
 activation, TOML subagent definitions, and the user-scope `Stop` hook event. The same command
 hook used by Claude can be configured in `~/.codex/hooks.json`; project `.codex/hooks.json` did
-not load in that build. See [`hooks/README.md`](../hooks/README.md). The user-scope hook is the
-hard completion gate. Without it, Vince is procedural guidance that an agent can still skip.
+not load in that build. User-scope Stop blocking was not live-verified, so do not call it hard
+enforcement until the local probe succeeds. See [`hooks/README.md`](../hooks/README.md). Without
+an exercised Stop hook, Vince is procedural guidance that an agent can still skip.
 
 ## Choosing bindings
 

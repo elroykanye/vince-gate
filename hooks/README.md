@@ -4,8 +4,9 @@
 forget. Hooks are executed by the harness, so they cannot be forgotten. That is the whole point,
 and it is also why they need to be careful: a gate that fires wrongly is worse than no gate.
 
-Currently ships one Stop hook verified with Claude Code and Codex CLI. Both use the same event
-and command shape. Installation remains opt-in because a Stop hook can hold a session open.
+Currently ships one Stop hook verified with Claude Code. Codex CLI exposes the same event and
+command shape, but its user-scope hard enforcement was not live-verified in this work. Installation
+remains opt-in because a Stop hook can hold a session open.
 
 ## `vince_gate_stop.py`
 
@@ -79,10 +80,11 @@ where a hook returning exit 2 sometimes leaves the session idle instead of the m
 the feedback — you type "continue" and it proceeds. That is why this is opt-in rather than part
 of a normal install. If you hit it, `VINCE_STOP_DISABLE=1` is the escape hatch.
 
-Codex support was live-verified with CLI `0.148.0-alpha.9`. Skills were installed, discovered,
-and invoked from a disposable project. The `hooks` feature and user-scope `Stop` event are
-present, but a disposable project-level hook did not fire. Re-run both probes after upgrading
-Codex before relying on the gate.
+Codex skill support was live-verified with CLI `0.148.0-alpha.9`: skills were installed,
+discovered, and invoked from a disposable project. The `hooks` feature and a user-scope `Stop`
+event were present, but user-scope hard enforcement was not live-verified and a disposable
+project-level hook did not fire. Treat the Codex hook block as an opt-in candidate that must pass
+the probe in your own user config before relying on it.
 
 ## What is deliberately *not* here
 

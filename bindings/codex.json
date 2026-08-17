@@ -13,5 +13,5 @@
   "frontmatter": "yaml",
   "index": null,
   "invocation": "describe the task; the skill activates on its description",
-  "notes": "Live-verified with Codex CLI 0.148.0-alpha.9: skills under ~/.agents/skills were discovered and description-triggered, native TOML subagents were available under ~/.codex/agents, and hooks.json exposed a Stop event. See templates/codex-reviewer-agent.toml and hooks/README.md."
+  "notes": "Live-verified with Codex CLI 0.148.0-alpha.9: project skills were installed, discovered, and invoked, and native TOML subagents were available under ~/.codex/agents. A user hooks.json exposed a Stop event, but user-scope Stop blocking was not live-verified; project .codex/hooks.json did not load. External-store reviewers require Codex --add-dir for the resolved task root. See templates/codex-reviewer-agent.toml and hooks/README.md."
 }

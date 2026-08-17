@@ -18,6 +18,7 @@ class CodexBindingTests(unittest.TestCase):
 
         self.assertIn('sandbox_mode = "workspace-write"', template)
         self.assertNotIn('sandbox_mode = "read-only"', template)
+        self.assertIn("--add-dir <resolved task-root>", template)
 
     def test_codex_docs_describe_verified_stop_hook_support(self):
         harnesses = (ROOT / "docs" / "harnesses.md").read_text(encoding="utf-8")
@@ -32,6 +33,9 @@ class CodexBindingTests(unittest.TestCase):
             "Codex reads hooks from `~/.codex/hooks.json`; project `.codex/hooks.json` was not loaded",
             " ".join(hooks.split()),
         )
+        self.assertIn("hard enforcement was not live-verified", hooks)
+        binding = json.loads((ROOT / "bindings" / "codex.json").read_text(encoding="utf-8"))
+        self.assertIn("not live-verified", binding["notes"])
         self.assertIn(
             "in-repo `.vince/tasks/active/` **or the repository's\nexternal store**",
             hooks,

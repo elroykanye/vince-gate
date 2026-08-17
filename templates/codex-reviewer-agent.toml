@@ -2,6 +2,9 @@
 #
 # Copy to `.codex/agents/vince-review.toml` in a project, or the equivalent user-scope location.
 # Verified against Codex CLI 0.148.0-alpha.9. Re-verify after schema-changing upgrades.
+# If `scripts/install.py where --repo <repo>` resolves the task root outside the repository,
+# start Codex with `--add-dir <resolved task-root>`. The agent's workspace-write sandbox covers
+# only roots granted to the parent Codex process; this TOML file cannot widen them by itself.
 #
 # Why this file is worth having: it is one of the few places where the *model* for a review can
 # actually be pinned. Vince cannot select its own model, but a subagent definition can, so the
@@ -20,6 +23,6 @@ which are claims rather than evidence. Default verdict is FAIL.
 model = "gpt-5.4"
 
 # The reviewer must persist review-verdict.md in the task directory. Workspace write access is
-# therefore required, while the review prompt still forbids writes to repos and shared/live
-# infrastructure other than that verdict artifact.
+# required, plus the `--add-dir` grant above for an external store. The review prompt still
+# forbids writes to repos and shared/live infrastructure other than that verdict artifact.
 sandbox_mode = "workspace-write"
