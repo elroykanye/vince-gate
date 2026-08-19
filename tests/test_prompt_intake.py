@@ -15,7 +15,7 @@ class PromptIntakeSkillTests(unittest.TestCase):
 
         for decision in ("READY", "CLARIFY", "BOUNCE"):
             with self.subTest(decision=decision):
-                self.assertIn(f"`{decision}`", skill)
+                self.assertIn(f"| `{decision}` |", skill)
         self.assertIn("contradictory", skill)
         self.assertIn("impossible", skill)
         self.assertIn("unsafe", skill)
