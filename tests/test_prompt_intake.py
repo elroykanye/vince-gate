@@ -22,6 +22,11 @@ class PromptIntakeSkillTests(unittest.TestCase):
         self.assertIn("unauthorized", skill)
         self.assertIn("unbounded", skill)
         self.assertIn("minimum", skill.lower())
+        self.assertIn(
+            "If two reasonable answers produce meaningfully different features, data handling, "
+            "security, cost, or user experience, `CLARIFY` only those forks.",
+            " ".join(skill.split()),
+        )
 
     def test_skill_preserves_intent_and_forbids_premature_implementation(self):
         skill = (ROOT / "skills" / "vince-intake" / "SKILL.md").read_text(encoding="utf-8")
