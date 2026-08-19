@@ -8,6 +8,7 @@ makes real model calls. It exits non-zero when the observed decisions violate th
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import subprocess
 import sys
@@ -36,11 +37,26 @@ def run(command: list[str], *, cwd: Path, timeout: int = 180) -> subprocess.Comp
     return result
 
 
-def invoke(codex: str, project: Path, prompt: str) -> str:
+def thread_id_from_jsonl(output: str) -> str:
+    for line in output.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("type") == "thread.started" and event.get("thread_id"):
+            return str(event["thread_id"])
+        for key in ("thread_id", "session_id"):
+            if event.get(key):
+                return str(event[key])
+    raise AssertionError("Codex JSON output did not contain a thread/session id")
+
+
+def invoke(codex: str, project: Path, prompt: str) -> tuple[str, str]:
     output = project / "last-message.txt"
     command = [
         codex,
         "exec",
+        "--json",
         "--skip-git-repo-check",
         "-C",
         str(project),
@@ -48,11 +64,33 @@ def invoke(codex: str, project: Path, prompt: str) -> str:
         str(output),
         prompt,
     ]
-    run(command, cwd=project)
+    result = run(command, cwd=project)
     if not output.is_file():
         raise AssertionError("Codex did not write --output-last-message")
     message = output.read_text(encoding="utf-8").strip()
     print("--- captured last message ---")
+    print(message)
+    return message, thread_id_from_jsonl(result.stdout)
+
+
+def resume(codex: str, project: Path, thread_id: str, prompt: str) -> str:
+    output = project / "last-message.txt"
+    command = [
+        codex,
+        "exec",
+        "resume",
+        "--skip-git-repo-check",
+        "--json",
+        "--output-last-message",
+        str(output),
+        thread_id,
+        prompt,
+    ]
+    run(command, cwd=project)
+    if not output.is_file():
+        raise AssertionError("Codex resume did not write --output-last-message")
+    message = output.read_text(encoding="utf-8").strip()
+    print("--- captured resumed message ---")
     print(message)
     return message
 
@@ -96,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
             cwd=ROOT,
         )
 
-        triage = invoke(
+        triage, thread_id = invoke(
             args.codex,
             project,
             "Use $vince-intake. Evaluate each request independently. Output these exact labels "
@@ -114,14 +152,30 @@ def main(argv: list[str] | None = None) -> int:
         if not 1 <= question_count <= 3:
             raise AssertionError(f"clarification asked {question_count} questions; expected 1..3")
 
-        resolved = invoke(
+        partial = resume(
             args.codex,
             project,
-            "Use $vince-intake. This is the resolved version of a previously vague request: "
-            "Strengthen staff authentication by requiring TOTP MFA at the existing login flow; "
-            "success means enrolled staff must provide a valid current TOTP, invalid codes are "
-            "rejected, recovery codes work once, and tests cover all three paths. Output only "
-            "DECISION=<decision>, then acceptance criteria, then CONFIRMATION_REQUIRED=YES or NO.",
+            thread_id,
+            "For CASE2, my follow-up answers are: improve security; staff users and the existing "
+            "login flow are in scope. I have not yet defined the observable success result. "
+            "Continue the same vince-intake clarification. Output DECISION=<decision> and only "
+            "the remaining numbered questions.",
+        )
+        require(r"DECISION\s*=\s*CLARIFY", partial, "continued clarification")
+        partial_questions = len(re.findall(r"(?m)^\s*\d+[.)]\s+", partial))
+        if not 1 <= partial_questions <= 3:
+            raise AssertionError(
+                f"continued clarification asked {partial_questions} questions; expected 1..3"
+            )
+
+        resolved = resume(
+            args.codex,
+            project,
+            thread_id,
+            "My remaining answer is: success means enrolled staff must provide a valid current "
+            "TOTP; invalid codes are rejected; recovery codes work once; tests cover all three "
+            "paths. Continue the same intake conversation. Output DECISION=<decision>, then the "
+            "resolved acceptance criteria, then CONFIRMATION_REQUIRED=YES or NO.",
         )
         require(r"DECISION\s*=\s*READY", resolved, "resolved clarification")
         require(r"CONFIRMATION_REQUIRED\s*=\s*YES", resolved, "contract confirmation")
