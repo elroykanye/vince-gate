@@ -36,7 +36,9 @@ class ModelRoutingTests(unittest.TestCase):
         implement = (ROOT / "skills" / "vince-implement" / "SKILL.md").read_text(
             encoding="utf-8"
         )
-        route = implement.index("vince-route")
+        invocation = "Invoke `vince-route` after intake is `READY`, before implementation planning"
+        self.assertIn(invocation, implement)
+        route = implement.index(invocation)
         planning = implement.index("## Phase 2")
         self.assertLess(route, planning)
         self.assertIn("model switch", implement)
