@@ -189,7 +189,7 @@ def shared_files() -> list:
     """Reference docs every skill gets a copy of, from skills/_shared/.
 
     One source of truth in the repo, present next to every skill at runtime - a voice guide or
-    glossary that eight skills each kept their own copy of would drift within a release.
+    glossary that every skill kept its own copy of would drift within a release.
     """
     root = toolkit_root() / "skills" / "_shared"
     if not root.is_dir():

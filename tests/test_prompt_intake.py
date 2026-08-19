@@ -89,6 +89,9 @@ class PromptIntakeSkillTests(unittest.TestCase):
             self.assertIn("CLARIFY", document)
             self.assertIn("BOUNCE", document)
 
+        installer = (ROOT / "scripts" / "install.py").read_text(encoding="utf-8")
+        self.assertNotIn("eight skills", installer)
+
 
 if __name__ == "__main__":
     unittest.main()
