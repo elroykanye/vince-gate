@@ -1,12 +1,13 @@
 # Skill catalog
 
-Eight skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
+Nine skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
 [harnesses.md](harnesses.md)). They are designed to be invoked by name (`/vince-implement`) or to
 auto-activate on their description triggers.
 
 | Skill | When |
 |-------|------|
 | `vince-setup` | once per project, and after the build or conventions change |
+| `vince-intake` | when a proposed implementation request may not be actionable yet |
 | `vince-implement` | every implementation task, before code |
 | `vince-review` | spawned by the implementer; usable standalone on any branch |
 | `vince-document` | at completion, before publishing |
@@ -25,6 +26,13 @@ targets and known traps. Verifies its own output before finishing — re-runs th
 the integration branch, checks every path it recorded.
 
 Output: `.vince/profile.md`. See [profile.md](profile.md).
+
+## `vince-intake`
+
+The preflight gate returns `READY`, `CLARIFY`, or `BOUNCE`. `READY` yields testable acceptance
+criteria for confirmation. `CLARIFY` asks at most three material questions at a time. `BOUNCE`
+stops work and explains the minimum information, authority, or constraint needed for a new
+actionable request. It preserves the user's intent and never starts implementation itself.
 
 ## `vince-implement`
 

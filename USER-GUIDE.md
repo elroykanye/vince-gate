@@ -154,6 +154,12 @@ then describe the task, or point at a ticket. Invoke it **before** any code is w
 it afterwards produces a ledger reverse-engineered from the implementation, which is precisely
 the rationalisation the method exists to prevent.
 
+Before Phase 0, `vince-intake` classifies the request as `READY`, `CLARIFY`, or `BOUNCE`.
+`READY` becomes a proposed contract. `CLARIFY` asks only the questions whose answers materially
+change the result. `BOUNCE` stops contradictory, impossible, unsafe, unauthorized, or unbounded
+work and says what minimum change would make a new request actionable. Neither `CLARIFY` nor
+`BOUNCE` starts implementation.
+
 What happens, in order:
 
 | Phase | What it does | What you see |

@@ -38,6 +38,13 @@ Three rules override everything else in this skill:
 
 Partial delivery reported honestly beats full delivery claimed falsely. Always.
 
+## Intake gate (before Phase 0)
+
+Invoke `vince-intake` on the incoming implementation request before extracting a contract. Continue
+only when its result is `READY` and, for an ad-hoc chat request, the user has confirmed the restated
+contract. Do not continue on `CLARIFY` or `BOUNCE`: clarification remains a conversation, and a
+bounced request starts no implementation task or ledger.
+
 ## Scaling the gate (do this first, in one line)
 
 A gate that costs the same for a typo and a payment flow gets skipped for both. So the tier

@@ -27,6 +27,7 @@ the **[user guide](USER-GUIDE.md)** covers using it.
 | Skill | Role |
 |-------|------|
 | `vince-setup` | Inspects a repo and writes `.vince/profile.md` — the one file that makes the rest project-specific. Run once per project. |
+| `vince-intake` | Checks whether a request is `READY`, needs focused questions (`CLARIFY`), or must stop with a repairable reason (`BOUNCE`) before implementation starts. |
 | `vince-implement` | The execution gate: tier the task → contract → recon → plan → RED/GREEN/TAMPER → wire proof → DoD gates → self-attack → mandatory review → bounded remediation. |
 | `vince-review` | The adversarial reviewer: contract re-derivation, evidence forensics, mutation testing, behaviour and isolation attacks, live-browser verification, blast radius, verdict persisted with append-only history. |
 | `vince-document` | Completion documentation in the task dir, validated against what actually shipped, published only after PASS. |
@@ -169,10 +170,11 @@ into `skills/` and reinstall — the toolkit is the source of truth.
 
 ```
 1. /vince-setup          once per project (or when the build changes)
-2. /vince-implement      for every task, before touching code
-3. …it hands off to vince-review in a fresh context and will not report done without PASS
-4. /vince-learn          at PASS — it gets sharper here, not just done
-5. /vince-update         when a new release lands; it migrates your config, not just the files
+2. /vince-intake         when a request may need READY / CLARIFY / BOUNCE triage
+3. /vince-implement      for every READY task, before touching code
+4. …it hands off to vince-review in a fresh context and will not report done without PASS
+5. /vince-learn          at PASS — it gets sharper here, not just done
+6. /vince-update         when a new release lands; it migrates your config, not just the files
 ```
 
 `vince-implement` is a **gate, not a reference sheet**. Invoking it after the code is written
@@ -190,7 +192,7 @@ there is evidence.
 vince-gate/
   INSTALL.md                          paste-to-your-agent install guide
   USER-GUIDE.md                       start here
-  skills/                             the eight skills (+ reference/ docs)
+  skills/                             the nine skills (+ reference/ docs)
   bindings/*.json                     one per harness; no per-harness code
   hooks/                              opt-in enforcement (Claude Code/Codex Stop hook)
   templates/                          profile, ledger, verdict, lessons, completion doc
