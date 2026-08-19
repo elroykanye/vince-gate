@@ -27,6 +27,10 @@ class PromptIntakeSkillTests(unittest.TestCase):
             "security, cost, or user experience, `CLARIFY` only those forks.",
             " ".join(skill.split()),
         )
+        self.assertIn(
+            "After the answers, restate the contract and classify again.",
+            " ".join(skill.split()),
+        )
 
     def test_skill_preserves_intent_and_forbids_premature_implementation(self):
         skill = (ROOT / "skills" / "vince-intake" / "SKILL.md").read_text(encoding="utf-8")
