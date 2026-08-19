@@ -45,6 +45,15 @@ only when its result is `READY` and, for an ad-hoc chat request, the user has co
 contract. Do not continue on `CLARIFY` or `BOUNCE`: clarification remains a conversation, and a
 bounced request starts no implementation task or ledger.
 
+## Routing gate (before planning and at phase boundaries)
+
+Invoke `vince-route` after intake is `READY`, before implementation planning, and again when moving
+between mechanical work, implementation, high-risk judgement, and review. Record its compact route
+decision in the ledger. If it returns `SWITCH`, recommend the exact model switch to the user and
+continue only within the current harness's authority; never claim the switch happened unless the
+harness confirms it. If it returns `ASK`, stop until the profile mapping is repaired or the user
+chooses. Routing may reduce model or agent cost, but it may not weaken any proof gate.
+
 ## Scaling the gate (do this first, in one line)
 
 A gate that costs the same for a typo and a payment flow gets skipped for both. So the tier

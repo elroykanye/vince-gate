@@ -160,6 +160,14 @@ change the result. `BOUNCE` stops contradictory, impossible, unsafe, unauthorize
 work and says what minimum change would make a new request actionable. Neither `CLARIFY` nor
 `BOUNCE` starts implementation.
 
+After `READY`, `vince-route` reads the active harness's exact model mappings from the project
+profile. It selects the lowest capable class — `economy`, `balanced`, `frontier`, or `reviewer` —
+and the narrowest useful agent role. When the current model is wasteful or insufficient it can
+recommend an exact switch and explain the token/quality tradeoff; it cannot pretend the switch
+happened. Missing, stale, unavailable, or unverified mappings stop with a question rather than a
+silent fallback. Claude Code, Codex, Gemini, Cursor, Windsurf, and generic mappings are independent:
+verification in one harness leaves the others unverified.
+
 What happens, in order:
 
 | Phase | What it does | What you see |

@@ -76,6 +76,34 @@ mutating by hand.
   implementer; blank = same model, fresh context>`
 - Versioning: `<file + rule, or "not required">`
 
+## Model routing
+
+Exact identifiers are harness-local and must be verified against the installed runtime. Never copy
+one provider's model name into another provider row. `vince-route` selects the class; this table
+supplies the exact model. Mark an untested row `(inferred, unverified)` and use `unknown` when the
+runtime cannot list models.
+
+| Harness | economy | balanced | frontier | reviewer | Status / verification command |
+|---------|---------|----------|----------|----------|-------------------------------|
+| claude | | | | | |
+| codex | | | | | |
+| cursor | | | | | |
+| gemini | | | | | |
+| generic | | | | | |
+| windsurf | | | | | |
+
+Map Vince's semantic roles to the exact agent types exposed by each harness. Use `none` where the
+harness has no safe equivalent; never invent an agent type.
+
+| Harness | explorer | worker | reviewer | Status / verification command |
+|---------|----------|--------|----------|-------------------------------|
+| claude | | | | |
+| codex | | | | |
+| cursor | | | | |
+| gemini | | | | |
+| generic | | | | |
+| windsurf | | | | |
+
 ## Tracker
 
 - System: `<GitHub Issues | Jira | Linear | none>`

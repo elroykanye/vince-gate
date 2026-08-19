@@ -85,6 +85,7 @@ Then, for the profile at hand:
 | Wire-proof rigs | does the rig still exist and start | repair, or mark `unknown` rather than leaving a fiction |
 | Locale files | do they exist, do key sets still match | repair the paths; a parity failure is a codebase finding |
 | `dod_extras` gates | run each gate's verify command | repair or remove, and say which |
+| Model routing | run each row's recorded model/agent discovery command and compare exact IDs | mark stale or unavailable; ask the user for a replacement, never substitute silently |
 
 Rules for repairs:
 
@@ -94,6 +95,10 @@ Rules for repairs:
   An honest gap beats a confident guess, because the next session will trust whatever is there.
 - **Record every repair** under the profile's *Corrections* section with the date, what was
   wrong, what it is now, and what proved it.
+- **Model catalogs drift.** A mapping is stale when an exact model or agent type no longer appears
+  in the active harness, or its verification command no longer runs. Do not "repair" it by picking
+  a plausible newer name. Report the affected class and harness, then ask the user to choose or run
+  `vince-setup` to refresh the whole model routing section.
 
 ## 3. The work in flight
 

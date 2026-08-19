@@ -138,6 +138,11 @@ baseline you observed, and leave everything else to inheritance.
     Serena memories, a brain vault, ADRs, prior task dirs.
 13. **Known traps.** Ask the user, and mine the repo: recurring review comments, `HACK`/`FIXME`
     clusters, past incidents, gotchas in `CLAUDE.md`. These become the reviewer's A5 sweep.
+14. **Model routing.** For every harness the team uses, discover the exact available model IDs
+    and exact agent types for `economy`, `balanced`, `frontier`, and `reviewer`. Prefer the
+    harness's own model-list or configuration command and run it. Record that command beside the
+    mapping. If the runtime cannot prove availability, mark the row `(inferred, unverified)` or
+    `unknown — <what you tried>` and ask the user; never invent an exact model name from memory.
 
 ## Write the profile
 
@@ -175,6 +180,11 @@ If Vince is installed at user scope, project files will show nothing — that is
 If the project has harness directories the current install does not cover (`.cursor/`,
 `.windsurf/`, `.codex/`, an `AGENTS.md` other people rely on), say so: a teammate on a different
 harness gets no gate at all unless that binding is installed too.
+
+Populate **Model routing** only for harnesses actually used by the project. Exact model IDs and
+agent types are provider-specific: a Codex mapping does not validate Claude Code, Gemini, Cursor,
+Windsurf, or a generic harness. Run each harness's supported discovery command where available;
+otherwise keep that row explicitly unverified and ask the user for the intended exact mapping.
 
 ## Verify before you finish
 

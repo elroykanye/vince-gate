@@ -85,7 +85,12 @@ class PromptIntakeSkillTests(unittest.TestCase):
                 )
             with self.subTest(binding=binding["id"]):
                 self.assertIn(entry, result.stdout)
-        self.assertIn("would install 9 skills", result.stdout)
+        skill_count = sum(
+            1
+            for path in (ROOT / "skills").iterdir()
+            if path.is_dir() and (path / "SKILL.md").is_file()
+        )
+        self.assertIn(f"would install {skill_count} skills", result.stdout)
 
     def test_docs_route_unclear_requests_through_intake(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
