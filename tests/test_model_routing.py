@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -23,6 +24,34 @@ class ModelRoutingTests(unittest.TestCase):
         self.assertIn("smallest capable", self.skill)
         self.assertIn("Do not spawn", self.skill)
         self.assertIn("Do not weaken", self.skill)
+
+    def test_semantic_task_classes_cannot_be_reversed(self):
+        economy = re.search(r"(?m)^\| `economy` \| (?P<rule>.+) \|$", self.skill)
+        frontier = re.search(r"(?m)^\| `frontier` \| (?P<rule>.+) \|$", self.skill)
+        self.assertIsNotNone(economy)
+        self.assertIsNotNone(frontier)
+        economy_rule = economy.group("rule").lower()
+        frontier_rule = frontier.group("rule").lower()
+        for term in ("deterministic", "formatting", "mechanical"):
+            self.assertIn(term, economy_rule)
+            self.assertNotIn(term, frontier_rule)
+        for term in ("architecture", "security", "cross-repo"):
+            self.assertIn(term, frontier_rule)
+            self.assertNotIn(term, economy_rule)
+
+        fast_lane = re.search(
+            r"1\. (?P<fast>.+?)\n2\. (?P<full>.+?)\n3\.",
+            self.skill,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(fast_lane)
+        fast = fast_lane.group("fast").lower()
+        full = fast_lane.group("full").lower()
+        self.assertIn("economy", fast)
+        self.assertIn("micro-tasks", fast)
+        self.assertIn("frontier", full)
+        self.assertIn("multi-file", full)
+        self.assertIn("security", full)
 
     def test_fast_lane_hands_complex_work_back_to_the_full_model(self):
         self.assertIn("fast lane", self.skill.lower())
