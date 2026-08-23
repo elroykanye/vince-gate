@@ -83,6 +83,11 @@ one provider's model name into another provider row. `vince-route` selects the c
 supplies the exact model. Mark an untested row `(inferred, unverified)` and use `unknown` when the
 runtime cannot list models.
 
+Prefer a verified two-model pair where the harness provides one: a low-latency coding model in
+`economy` for bounded micro-tasks and the full reasoning model in `frontier` for ambiguous,
+security-sensitive, or multi-file work. Do not prefill vendor names from documentation alone;
+availability must be confirmed in the active account and harness.
+
 | Harness | economy | balanced | frontier | reviewer | Status / verification command |
 |---------|---------|----------|----------|----------|-------------------------------|
 | claude | | | | | |

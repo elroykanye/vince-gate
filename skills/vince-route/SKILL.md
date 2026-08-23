@@ -47,6 +47,23 @@ Use the lowest class that safely covers the hardest judgement in the next phase:
 Do not route an entire task at the class needed for one short phase. Re-evaluate at phase boundaries
 and recommend switching down after the difficult judgement is complete.
 
+## Fast lane and full-model handoff
+
+When the active harness exposes both a low-latency coding model and a full reasoning model, use a
+two-model workflow instead of keeping the full model on mechanical work:
+
+1. Route bounded searches, precise single-file edits, formatting, and other micro-tasks to the
+   verified `economy` fast lane.
+2. Handoff architecture, ambiguous debugging, security decisions, and broad multi-file work to the
+   verified `frontier` model before that reasoning begins.
+3. Switch back down at the next mechanical phase boundary when the interruption is worth the saving.
+
+Fast models may optimize for responsiveness and omit work a larger agent would volunteer. Vince must
+explicitly run every required test and proof after their edits. Never infer a fast/full pair from a
+provider family name: setup must verify availability in the active account and harness, including
+preview access, context or modality limits, and rate limits. If either side is unavailable, use
+`ASK`; do not invent a substitute or pretend the handoff occurred.
+
 ## Agent role
 
 Choose the smallest capable role:

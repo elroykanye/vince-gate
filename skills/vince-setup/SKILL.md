@@ -143,6 +143,10 @@ baseline you observed, and leave everything else to inheritance.
     harness's own model-list or configuration command and run it. Record that command beside the
     mapping. If the runtime cannot prove availability, mark the row `(inferred, unverified)` or
     `unknown — <what you tried>` and ask the user; never invent an exact model name from memory.
+    When a harness offers a specialized low-latency coding model plus a full reasoning model,
+    verify that pair explicitly and map it as the `economy` fast lane and `frontier` handoff.
+    Record preview eligibility, context/modality constraints, and rate limits when discovery
+    exposes them; availability for one account is not universal availability.
 
 ## Write the profile
 

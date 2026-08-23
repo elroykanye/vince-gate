@@ -168,6 +168,12 @@ happened. Missing, stale, unavailable, or unverified mappings stop with a questi
 silent fallback. Claude Code, Codex, Gemini, Cursor, Windsurf, and generic mappings are independent:
 verification in one harness leaves the others unverified.
 
+Where a harness exposes both a low-latency coding model and a full reasoning model, Vince uses the
+first as an `economy` fast lane for precise micro-tasks and hands architecture, security, ambiguous
+debugging, and multi-file reasoning back to `frontier`. It explicitly runs the required tests after
+fast-model edits; model thrift never lowers the Vince proof floor. Setup verifies account access and
+preview constraints before enabling this pair.
+
 What happens, in order:
 
 | Phase | What it does | What you see |

@@ -24,6 +24,13 @@ class ModelRoutingTests(unittest.TestCase):
         self.assertIn("Do not spawn", self.skill)
         self.assertIn("Do not weaken", self.skill)
 
+    def test_fast_lane_hands_complex_work_back_to_the_full_model(self):
+        self.assertIn("fast lane", self.skill.lower())
+        self.assertIn("handoff", self.skill.lower())
+        self.assertIn("multi-file", self.skill.lower())
+        self.assertIn("explicitly run", self.skill.lower())
+        self.assertIn("availability", self.skill.lower())
+
     def test_exact_models_come_from_profile_and_are_never_silently_substituted(self):
         self.assertIn("exact model", self.skill)
         self.assertIn("project profile", self.skill)
