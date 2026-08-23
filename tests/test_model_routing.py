@@ -236,6 +236,10 @@ class ModelRoutingTests(unittest.TestCase):
                 )
             with self.subTest(binding=binding["id"]):
                 self.assertIn(entry, result.stdout)
+                if binding.get("layout", "dir") == "dir":
+                    self.assertIn("vince-route/reference/route.py", result.stdout)
+                else:
+                    self.assertIn("vince-route-route.py", result.stdout)
             self.assertIn("would install 10 skills", result.stdout)
 
     def test_live_matrix_retains_every_claimed_behavior_case(self):

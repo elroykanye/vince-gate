@@ -150,10 +150,14 @@ def main(argv: list[str] | None = None) -> int:
         }
         selected = args.case or list(cases)
         output = project / "last-message.txt"
+        resolver = project / ".agents" / "skills" / "vince-route" / "reference" / "route.py"
+        if not resolver.is_file():
+            raise AssertionError("installed Codex binding did not include route.py")
         for name in selected:
             case_profile, task, pattern = cases[name]
             prompt = (
-                f"Use $vince-route. The resolved profile is {case_profile} and the toolkit is {ROOT}. "
+                f"Use $vince-route. The resolved profile is {case_profile} and the installed "
+                f"resolver is {resolver}. "
                 f"{task} Follow the skill's deterministic route.py lookup requirement before answering. "
                 "Return exactly ROUTE=STATUS|CLASS|MODEL|AGENT|WHY."
             )
@@ -162,8 +166,6 @@ def main(argv: list[str] | None = None) -> int:
                     args.codex,
                     "exec",
                     "--skip-git-repo-check",
-                    "--add-dir",
-                    str(ROOT),
                     "-C",
                     str(project),
                     "--output-last-message",
