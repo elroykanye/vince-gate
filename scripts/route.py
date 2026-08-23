@@ -13,6 +13,7 @@ from pathlib import Path
 
 MODEL_CLASSES = {"economy", "balanced", "frontier", "reviewer"}
 AGENT_ROLES = {"none", "explorer", "worker", "reviewer"}
+DEFAULT_MAX_AGE_DAYS = 30
 
 
 def cells(line: str) -> list[str]:
@@ -78,13 +79,17 @@ def resolve(
         reasons.append(f"missing {model_class} model mapping")
     elif not model_verified:
         reasons.append(f"unverified {model_class} model mapping")
-    elif available_models is not None and model not in available_models:
+    elif available_models is None:
+        reasons.append(f"unavailable {model_class} model mapping: availability not checked")
+    elif model not in available_models:
         reasons.append(f"unavailable {model_class} model mapping")
     if role != "none" and not agent:
         reasons.append(f"missing {role} agent mapping")
     elif role != "none" and not agent_verified:
         reasons.append(f"unverified {role} agent mapping")
-    elif role != "none" and available_agents is not None and agent not in available_agents:
+    elif role != "none" and available_agents is None:
+        reasons.append(f"unavailable {role} agent mapping: availability not checked")
+    elif role != "none" and agent not in available_agents:
         reasons.append(f"unavailable {role} agent mapping")
 
     if max_age_days is not None:
@@ -120,7 +125,7 @@ def main() -> int:
     parser.add_argument("--role", required=True, choices=sorted(AGENT_ROLES))
     parser.add_argument("--available-model", action="append", dest="available_models")
     parser.add_argument("--available-agent", action="append", dest="available_agents")
-    parser.add_argument("--max-age-days", type=int)
+    parser.add_argument("--max-age-days", type=int, default=DEFAULT_MAX_AGE_DAYS)
     parser.add_argument("--today", type=date.fromisoformat, help="Testable current date (YYYY-MM-DD)")
     args = parser.parse_args()
     decision = resolve(

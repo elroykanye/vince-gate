@@ -80,11 +80,11 @@ class ModelRoutingTests(unittest.TestCase):
                 """## Model routing
 | Harness | economy | balanced | frontier | reviewer | Status / verification command |
 |---|---|---|---|---|---|
-| codex | eco-17 | balanced-22 | frontier-91 | review-44 | verified — fixture |
+| codex | eco-17 | balanced-22 | frontier-91 | review-44 | verified 2026-08-23 — fixture |
 
 | Harness | explorer | worker | reviewer | Status / verification command |
 |---|---|---|---|---|
-| codex | scout-3 | builder-8 | critic-5 | verified — fixture |
+| codex | scout-3 | builder-8 | critic-5 | verified 2026-08-23 — fixture |
 """,
                 encoding="utf-8",
             )
@@ -96,6 +96,13 @@ class ModelRoutingTests(unittest.TestCase):
                     "--harness", "codex",
                     "--class", "balanced",
                     "--role", "worker",
+                    "--available-model", "eco-17",
+                    "--available-model", "balanced-22",
+                    "--available-model", "frontier-91",
+                    "--available-model", "review-44",
+                    "--available-agent", "scout-3",
+                    "--available-agent", "builder-8",
+                    "--available-agent", "critic-5",
                 ],
                 capture_output=True,
                 text=True,
@@ -172,6 +179,29 @@ class ModelRoutingTests(unittest.TestCase):
             )
             self.assertEqual(2, stale.returncode)
             self.assertIn("stale", json.loads(stale.stdout)["reason"])
+
+    def test_normal_route_rejects_stale_or_unchecked_availability(self):
+        with tempfile.TemporaryDirectory() as raw:
+            profile = Path(raw) / "profile.md"
+            profile.write_text(
+                """## Model routing
+| Harness | economy | balanced | frontier | reviewer | Status / verification command |
+|---|---|---|---|---|---|
+| codex | eco-17 | balanced-22 | frontier-91 | review-44 | verified 2020-01-01 — fixture |
+""",
+                encoding="utf-8",
+            )
+            command = [
+                sys.executable, str(ROOT / "scripts" / "route.py"),
+                "--profile", str(profile), "--harness", "codex",
+                "--class", "economy", "--role", "none",
+            ]
+            unchecked = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(2, unchecked.returncode)
+            unchecked_json = json.loads(unchecked.stdout)
+            self.assertEqual("ASK", unchecked_json["status"])
+            self.assertIn("availability", unchecked_json["reason"])
+            self.assertIn("stale", unchecked_json["reason"])
 
     def test_route_runs_before_implementation_planning(self):
         implement = (ROOT / "skills" / "vince-implement" / "SKILL.md").read_text(

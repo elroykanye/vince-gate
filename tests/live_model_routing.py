@@ -85,11 +85,11 @@ def main(argv: list[str] | None = None) -> int:
 
 | Harness | economy | balanced | frontier | reviewer | Status / verification command |
 |---------|---------|----------|----------|----------|-------------------------------|
-| codex | route-economy-exact | route-balanced-exact | route-frontier-exact | route-reviewer-exact | verified — synthetic fixture |
+| codex | route-economy-exact | route-balanced-exact | route-frontier-exact | route-reviewer-exact | verified 2026-08-23 — synthetic fixture |
 
 | Harness | explorer | worker | reviewer | Status / verification command |
 |---------|----------|--------|----------|-------------------------------|
-| codex | route-explorer-agent | route-worker-agent | route-reviewer-agent | verified — synthetic fixture |
+| codex | route-explorer-agent | route-worker-agent | route-reviewer-agent | verified 2026-08-23 — synthetic fixture |
 """,
             encoding="utf-8",
         )
@@ -97,7 +97,7 @@ def main(argv: list[str] | None = None) -> int:
         unverified = profile.with_name("unverified-profile.md")
         unverified.write_text(
             profile.read_text(encoding="utf-8").replace(
-                "verified — synthetic fixture", "inferred, unverified", 1
+                "verified 2026-08-23 — synthetic fixture", "inferred, unverified", 1
             ),
             encoding="utf-8",
         )
@@ -153,13 +153,23 @@ def main(argv: list[str] | None = None) -> int:
         resolver = project / ".agents" / "skills" / "vince-route" / "reference" / "route.py"
         if not resolver.is_file():
             raise AssertionError("installed Codex binding did not include route.py")
+        availability_args = [
+            "--available-model", "route-economy-exact",
+            "--available-model", "route-balanced-exact",
+            "--available-model", "route-frontier-exact",
+            "--available-model", "route-reviewer-exact",
+            "--available-agent", "route-explorer-agent",
+            "--available-agent", "route-worker-agent",
+            "--available-agent", "route-reviewer-agent",
+        ]
         for name in selected:
             case_profile, task, pattern = cases[name]
             lookup = {"models": {}, "agents": {"none": "none"}}
             for model_class in ("economy", "balanced", "frontier", "reviewer"):
                 resolved_route = subprocess.run(
                     [sys.executable, str(resolver), "--profile", str(case_profile),
-                     "--harness", "codex", "--class", model_class, "--role", "none"],
+                     "--harness", "codex", "--class", model_class, "--role", "none",
+                     *availability_args],
                     cwd=project, capture_output=True, text=True,
                 )
                 if resolved_route.returncode not in (0, 2):
@@ -171,7 +181,8 @@ def main(argv: list[str] | None = None) -> int:
             for role in ("explorer", "worker", "reviewer"):
                 resolved_route = subprocess.run(
                     [sys.executable, str(resolver), "--profile", str(case_profile),
-                     "--harness", "codex", "--class", "balanced", "--role", role],
+                     "--harness", "codex", "--class", "balanced", "--role", role,
+                     *availability_args],
                     cwd=project, capture_output=True, text=True,
                 )
                 if resolved_route.returncode not in (0, 2):

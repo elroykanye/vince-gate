@@ -20,7 +20,7 @@ resolver shipped beside this installed skill (the installer rewrites this relati
 flat-layout harnesses):
 
 ```bash
-python reference/route.py --profile <resolved-profile> --harness <active-harness> --class <class> --role <role>
+python reference/route.py --profile <resolved-profile> --harness <active-harness> --class <class> --role <role> --max-age-days <profile-policy> --available-model <each currently listed model> --available-agent <each currently listed agent>
 ```
 
 Use the JSON `model` and `agent` values verbatim. Exit 2 or JSON status `ASK` stops routing and is
@@ -28,6 +28,8 @@ shown to the user. Do not turn it into `READY`. This deterministic lookup is req
 table looks easy to read; it prevents provider-like identifiers from being invented by analogy.
 If the model's own sandbox cannot launch the helper, the host runs it and supplies the exact JSON to
 the model. A sandbox failure without host lookup returns `ASK`; it never permits manual fallback.
+The resolver defaults freshness to 30 days and treats omitted availability lists as unavailable, so
+the short form cannot accidentally turn an old or unchecked row into `READY`.
 
 ## Output
 

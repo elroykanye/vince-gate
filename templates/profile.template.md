@@ -78,6 +78,8 @@ mutating by hand.
 
 ## Model routing
 
+- Maximum verification age: `30` days
+
 Exact identifiers are harness-local and must be verified against the installed runtime. Never copy
 one provider's model name into another provider row. `vince-route` selects the class; this table
 supplies the exact model. Mark an untested row `(inferred, unverified)` and use `unknown` when the
