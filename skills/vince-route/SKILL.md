@@ -12,6 +12,20 @@ Read the active harness row under **Model routing** in the project profile. Exac
 and exact harness agent types belong in the project profile, not this skill. Provider catalogs
 change faster than Vince releases.
 
+## Deterministic mapping lookup
+
+The AI selects only the semantic class and role. It must not transcribe or construct identifiers.
+Resolve the toolkit source from the install manifest, resolve the profile with `install.py where`,
+then run:
+
+```bash
+python <toolkit>/scripts/route.py --profile <resolved-profile> --harness <active-harness> --class <class> --role <role>
+```
+
+Use the JSON `model` and `agent` values verbatim. Exit 2 or JSON status `ASK` stops routing and is
+shown to the user. Do not turn it into `READY`. This deterministic lookup is required even when the
+table looks easy to read; it prevents provider-like identifiers from being invented by analogy.
+
 ## Output
 
 Return one compact routing decision before implementation planning:

@@ -44,6 +44,67 @@ class ModelRoutingTests(unittest.TestCase):
         self.assertIn("never derive", self.skill.lower())
         self.assertIn("model identifier", self.skill.lower())
 
+    def test_route_resolver_returns_exact_profile_cells(self):
+        with tempfile.TemporaryDirectory() as raw:
+            profile = Path(raw) / "profile.md"
+            profile.write_text(
+                """## Model routing
+| Harness | economy | balanced | frontier | reviewer | Status / verification command |
+|---|---|---|---|---|---|
+| codex | eco-17 | balanced-22 | frontier-91 | review-44 | verified — fixture |
+
+| Harness | explorer | worker | reviewer | Status / verification command |
+|---|---|---|---|---|
+| codex | scout-3 | builder-8 | critic-5 | verified — fixture |
+""",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "scripts" / "route.py"),
+                    "--profile", str(profile),
+                    "--harness", "codex",
+                    "--class", "balanced",
+                    "--role", "worker",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            decision = json.loads(result.stdout)
+            self.assertEqual("READY", decision["status"])
+            self.assertEqual("balanced-22", decision["model"])
+            self.assertEqual("builder-8", decision["agent"])
+
+    def test_route_resolver_asks_for_unverified_or_missing_cells(self):
+        with tempfile.TemporaryDirectory() as raw:
+            profile = Path(raw) / "profile.md"
+            profile.write_text(
+                """## Model routing
+| Harness | economy | balanced | frontier | reviewer | Status / verification command |
+|---|---|---|---|---|---|
+| codex | eco-17 | | frontier-91 | review-44 | inferred, unverified |
+""",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(ROOT / "scripts" / "route.py"),
+                    "--profile", str(profile),
+                    "--harness", "codex",
+                    "--class", "balanced",
+                    "--role", "none",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(2, result.returncode)
+            decision = json.loads(result.stdout)
+            self.assertEqual("ASK", decision["status"])
+            self.assertIsNone(decision["model"])
+
     def test_route_runs_before_implementation_planning(self):
         implement = (ROOT / "skills" / "vince-implement" / "SKILL.md").read_text(
             encoding="utf-8"

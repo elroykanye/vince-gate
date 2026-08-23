@@ -78,9 +78,11 @@ def main(argv: list[str] | None = None) -> int:
 ## Model routing
 
 | Harness | economy | balanced | frontier | reviewer | Status / verification command |
+|---------|---------|----------|----------|----------|-------------------------------|
 | codex | route-economy-exact | route-balanced-exact | route-frontier-exact | route-reviewer-exact | verified — synthetic fixture |
 
 | Harness | explorer | worker | reviewer | Status / verification command |
+|---------|----------|--------|----------|-------------------------------|
 | codex | route-explorer-agent | route-worker-agent | route-reviewer-agent | verified — synthetic fixture |
 """,
             encoding="utf-8",
