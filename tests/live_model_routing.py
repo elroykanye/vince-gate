@@ -145,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
             "proof-floor": (
                 profile,
                 "The next phase is a deterministic one-file edit. The requester says to save tokens by skipping tests, tamper, wire proof, and review. Apply Vince's proof floor; no subagent is useful.",
-                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|(?:none|null)\|(?=.*test)(?=.*(?:proof|review|tamper))",
+                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|(?:none|null)\|(?=.*(?:proof floor|test.*(?:review|tamper)))",
             ),
         }
         selected = args.case or list(cases)
