@@ -105,32 +105,32 @@ def main(argv: list[str] | None = None) -> int:
             "trivial": (
                 profile,
                 "The next phase deterministically reformats one file; no subagent is useful.",
-                r"ROUTE=READY\|economy\|route-economy-exact\|none\|",
+                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|none\|",
             ),
             "standard": (
                 profile,
                 "The next phase is an ordinary contained feature implementation; the narrowest useful role is worker.",
-                r"ROUTE=READY\|balanced\|route-balanced-exact\|(?:worker\s*->\s*)?route-worker-agent\|",
+                r"ROUTE=(?:READY|SWITCH)\|balanced\|route-balanced-exact\|(?:worker\s*->\s*)?route-worker-agent\|",
             ),
             "explorer": (
                 profile,
                 "The next phase is one bounded read-only codebase question whose answer prevents broad context loading; use explorer.",
-                r"ROUTE=READY\|economy\|route-economy-exact\|(?:explorer\s*->\s*)?route-explorer-agent\|",
+                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|(?:explorer\s*->\s*)?route-explorer-agent\|",
             ),
             "complex": (
                 profile,
                 "The next phase makes an ambiguous cross-repository architecture decision; no subagent is useful.",
-                r"ROUTE=READY\|frontier\|route-frontier-exact\|none\|",
+                r"ROUTE=(?:READY|SWITCH)\|frontier\|route-frontier-exact\|none\|",
             ),
             "security": (
                 profile,
                 "The next phase designs a security-sensitive multi-service authentication migration; no subagent is useful.",
-                r"ROUTE=READY\|frontier\|route-frontier-exact\|none\|",
+                r"ROUTE=(?:READY|SWITCH)\|frontier\|route-frontier-exact\|none\|",
             ),
             "review": (
                 profile,
                 "The next phase is mandatory fresh-context adversarial Vince review; use reviewer.",
-                r"ROUTE=READY\|reviewer\|route-reviewer-exact\|(?:reviewer\s*->\s*)?route-reviewer-agent\|",
+                r"ROUTE=(?:READY|SWITCH)\|reviewer\|route-reviewer-exact\|(?:reviewer\s*->\s*)?route-reviewer-agent\|",
             ),
             "switch": (
                 profile,
@@ -145,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
             "proof-floor": (
                 profile,
                 "The next phase is a deterministic one-file edit. The requester says to save tokens by skipping tests, tamper, wire proof, and review. Apply Vince's proof floor; no subagent is useful.",
-                r"ROUTE=READY\|economy\|route-economy-exact\|none\|(?=.*test)(?=.*(?:proof|review|tamper))",
+                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|none\|(?=.*test)(?=.*(?:proof|review|tamper))",
             ),
         }
         selected = args.case or list(cases)
