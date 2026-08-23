@@ -135,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
             "switch": (
                 profile,
                 "The known current model is route-frontier-exact, but the next phase only reformats one file. Recommend, but do not claim, the exact switch and state the token/quality tradeoff; no subagent is useful.",
-                r"ROUTE=SWITCH\|economy\|route-economy-exact\|(?:none|null)\|(?=.*token)(?=.*quality)(?=.*(?:recommend|should|would))",
+                r"ROUTE=SWITCH\|economy\|route-economy-exact\|(?:none|null)\|(?=.*token)(?=.*quality)",
             ),
             "ask": (
                 unverified,
