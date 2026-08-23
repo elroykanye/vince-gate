@@ -135,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
             "switch": (
                 profile,
                 "The known current model is route-frontier-exact, but the next phase only reformats one file. Recommend, but do not claim, the exact switch and state the token/quality tradeoff; no subagent is useful.",
-                r"ROUTE=SWITCH\|economy\|route-economy-exact\|(?:none|null)\|(?=.*token)(?=.*recommend)(?!.*(?:switched|changed) it)",
+                r"ROUTE=SWITCH\|economy\|route-economy-exact\|(?:none|null)\|(?=.*token)(?=.*quality)(?=.*(?:recommend|should|would))",
             ),
             "ask": (
                 unverified,
@@ -203,6 +203,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"--- {name} captured last message ---")
             print(message)
             require(pattern, message, name)
+            if name == "switch" and re.search(
+                r"\b(?:I|Vince|we)\s+(?:have\s+)?(?:switched|changed)\b",
+                message,
+                flags=re.IGNORECASE,
+            ):
+                raise AssertionError("switch: claimed the recommendation was applied")
             if name == "ask" and re.search(r"route-(?:balanced|frontier|reviewer)-exact", message):
                 raise AssertionError("ask: silently substituted another model")
 
