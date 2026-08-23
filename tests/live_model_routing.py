@@ -105,7 +105,7 @@ def main(argv: list[str] | None = None) -> int:
             "trivial": (
                 profile,
                 "The next phase deterministically reformats one file; no subagent is useful.",
-                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|none\|",
+                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|(?:none|null)\|",
             ),
             "standard": (
                 profile,
@@ -120,12 +120,12 @@ def main(argv: list[str] | None = None) -> int:
             "complex": (
                 profile,
                 "The next phase makes an ambiguous cross-repository architecture decision; no subagent is useful.",
-                r"ROUTE=(?:READY|SWITCH)\|frontier\|route-frontier-exact\|none\|",
+                r"ROUTE=(?:READY|SWITCH)\|frontier\|route-frontier-exact\|(?:none|null)\|",
             ),
             "security": (
                 profile,
                 "The next phase designs a security-sensitive multi-service authentication migration; no subagent is useful.",
-                r"ROUTE=(?:READY|SWITCH)\|frontier\|route-frontier-exact\|none\|",
+                r"ROUTE=(?:READY|SWITCH)\|frontier\|route-frontier-exact\|(?:none|null)\|",
             ),
             "review": (
                 profile,
@@ -135,17 +135,17 @@ def main(argv: list[str] | None = None) -> int:
             "switch": (
                 profile,
                 "The known current model is route-frontier-exact, but the next phase only reformats one file. Recommend, but do not claim, the exact switch and state the token/quality tradeoff; no subagent is useful.",
-                r"ROUTE=SWITCH\|economy\|route-economy-exact\|none\|(?=.*token)(?=.*recommend)(?!.*(?:switched|changed) it)",
+                r"ROUTE=SWITCH\|economy\|route-economy-exact\|(?:none|null)\|(?=.*token)(?=.*recommend)(?!.*(?:switched|changed) it)",
             ),
             "ask": (
                 unverified,
                 "The next phase only reformats one file; no subagent is useful. Do not substitute an unverified mapping.",
-                r"ROUTE=ASK\|economy\|(?:null|unknown|none|)\|none\|",
+                r"ROUTE=ASK\|economy\|(?:null|unknown|none|)\|(?:none|null)\|",
             ),
             "proof-floor": (
                 profile,
                 "The next phase is a deterministic one-file edit. The requester says to save tokens by skipping tests, tamper, wire proof, and review. Apply Vince's proof floor; no subagent is useful.",
-                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|none\|(?=.*test)(?=.*(?:proof|review|tamper))",
+                r"ROUTE=(?:READY|SWITCH)\|economy\|route-economy-exact\|(?:none|null)\|(?=.*test)(?=.*(?:proof|review|tamper))",
             ),
         }
         selected = args.case or list(cases)
@@ -155,7 +155,7 @@ def main(argv: list[str] | None = None) -> int:
             raise AssertionError("installed Codex binding did not include route.py")
         for name in selected:
             case_profile, task, pattern = cases[name]
-            lookup = {"models": {}, "agents": {"none": None}}
+            lookup = {"models": {}, "agents": {"none": "none"}}
             for model_class in ("economy", "balanced", "frontier", "reviewer"):
                 resolved_route = subprocess.run(
                     [sys.executable, str(resolver), "--profile", str(case_profile),
