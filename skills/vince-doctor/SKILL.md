@@ -85,7 +85,7 @@ Then, for the profile at hand:
 | Wire-proof rigs | does the rig still exist and start | repair, or mark `unknown` rather than leaving a fiction |
 | Locale files | do they exist, do key sets still match | repair the paths; a parity failure is a codebase finding |
 | `dod_extras` gates | run each gate's verify command | repair or remove, and say which |
-| Model routing | run each row's recorded model/agent discovery command and compare exact IDs | mark stale or unavailable; ask the user for a replacement, never substitute silently |
+| Model routing | run each row's recorded discovery command, then execute `scripts/route.py` with discovered values as `--available-model` / `--available-agent` and the verification-age policy as `--max-age-days` | exit 2 means stale or unavailable: mark it unverified, ask the user, and never substitute silently |
 
 Rules for repairs:
 

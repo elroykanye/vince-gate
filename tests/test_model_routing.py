@@ -134,6 +134,45 @@ class ModelRoutingTests(unittest.TestCase):
             self.assertEqual("ASK", decision["status"])
             self.assertIsNone(decision["model"])
 
+    def test_route_resolver_executes_unavailable_and_stale_checks(self):
+        with tempfile.TemporaryDirectory() as raw:
+            profile = Path(raw) / "profile.md"
+            profile.write_text(
+                """## Model routing
+| Harness | economy | balanced | frontier | reviewer | Status / verification command |
+|---|---|---|---|---|---|
+| codex | eco-17 | balanced-22 | frontier-91 | review-44 | verified 2026-01-01 — fixture |
+
+| Harness | explorer | worker | reviewer | Status / verification command |
+|---|---|---|---|---|
+| codex | scout-3 | builder-8 | critic-5 | verified 2026-01-01 — fixture |
+""",
+                encoding="utf-8",
+            )
+            common = [
+                sys.executable,
+                str(ROOT / "scripts" / "route.py"),
+                "--profile", str(profile),
+                "--harness", "codex",
+                "--class", "balanced",
+                "--role", "worker",
+            ]
+            unavailable = subprocess.run(
+                common + ["--available-model", "eco-17", "--available-agent", "builder-8"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(2, unavailable.returncode)
+            self.assertIn("unavailable", json.loads(unavailable.stdout)["reason"])
+
+            stale = subprocess.run(
+                common + ["--max-age-days", "30", "--today", "2026-08-23"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(2, stale.returncode)
+            self.assertIn("stale", json.loads(stale.stdout)["reason"])
+
     def test_route_runs_before_implementation_planning(self):
         implement = (ROOT / "skills" / "vince-implement" / "SKILL.md").read_text(
             encoding="utf-8"
@@ -152,8 +191,12 @@ class ModelRoutingTests(unittest.TestCase):
 
         self.assertIn("model routing", setup.lower())
         self.assertIn("exact model", setup.lower())
+        self.assertIn("--available-model", setup)
+        self.assertIn("scripts/route.py", setup)
         self.assertIn("stale", doctor.lower())
         self.assertIn("model routing", doctor.lower())
+        self.assertIn("--max-age-days", doctor)
+        self.assertIn("scripts/route.py", doctor)
         for heading in ("economy", "balanced", "frontier", "reviewer"):
             self.assertIn(heading, template)
         for harness in ("claude", "codex", "cursor", "gemini", "generic", "windsurf"):
@@ -193,7 +236,15 @@ class ModelRoutingTests(unittest.TestCase):
                 )
             with self.subTest(binding=binding["id"]):
                 self.assertIn(entry, result.stdout)
-        self.assertIn("would install 10 skills", result.stdout)
+            self.assertIn("would install 10 skills", result.stdout)
+
+    def test_live_matrix_retains_every_claimed_behavior_case(self):
+        rig = (ROOT / "tests" / "live_model_routing.py").read_text(encoding="utf-8")
+        for case in (
+            "trivial", "standard", "explorer", "complex", "security", "review",
+            "switch", "ask", "proof-floor",
+        ):
+            self.assertIn(f'"{case}": (', rig)
 
     def test_docs_explain_routing_and_harness_verification_boundaries(self):
         documents = [

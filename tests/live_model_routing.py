@@ -40,6 +40,12 @@ def require(pattern: str, text: str, label: str) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--codex", default="codex")
+    parser.add_argument(
+        "--case",
+        action="append",
+        choices=("trivial", "standard", "explorer", "complex", "security", "review", "switch", "ask", "proof-floor"),
+        help="Run only the named case; repeat for several. Default: all cases.",
+    )
     args = parser.parse_args(argv)
 
     with tempfile.TemporaryDirectory(prefix="vince-route-live-") as raw_project:
@@ -88,40 +94,94 @@ def main(argv: list[str] | None = None) -> int:
             encoding="utf-8",
         )
 
+        unverified = profile.with_name("unverified-profile.md")
+        unverified.write_text(
+            profile.read_text(encoding="utf-8").replace(
+                "verified — synthetic fixture", "inferred, unverified", 1
+            ),
+            encoding="utf-8",
+        )
+        cases = {
+            "trivial": (
+                profile,
+                "The next phase deterministically reformats one file; no subagent is useful.",
+                r"ROUTE=READY\|economy\|route-economy-exact\|none\|",
+            ),
+            "standard": (
+                profile,
+                "The next phase is an ordinary contained feature implementation; the narrowest useful role is worker.",
+                r"ROUTE=READY\|balanced\|route-balanced-exact\|(?:worker\s*->\s*)?route-worker-agent\|",
+            ),
+            "explorer": (
+                profile,
+                "The next phase is one bounded read-only codebase question whose answer prevents broad context loading; use explorer.",
+                r"ROUTE=READY\|economy\|route-economy-exact\|(?:explorer\s*->\s*)?route-explorer-agent\|",
+            ),
+            "complex": (
+                profile,
+                "The next phase makes an ambiguous cross-repository architecture decision; no subagent is useful.",
+                r"ROUTE=READY\|frontier\|route-frontier-exact\|none\|",
+            ),
+            "security": (
+                profile,
+                "The next phase designs a security-sensitive multi-service authentication migration; no subagent is useful.",
+                r"ROUTE=READY\|frontier\|route-frontier-exact\|none\|",
+            ),
+            "review": (
+                profile,
+                "The next phase is mandatory fresh-context adversarial Vince review; use reviewer.",
+                r"ROUTE=READY\|reviewer\|route-reviewer-exact\|(?:reviewer\s*->\s*)?route-reviewer-agent\|",
+            ),
+            "switch": (
+                profile,
+                "The known current model is route-frontier-exact, but the next phase only reformats one file. Recommend, but do not claim, the exact switch and state the token/quality tradeoff; no subagent is useful.",
+                r"ROUTE=SWITCH\|economy\|route-economy-exact\|none\|(?=.*token)(?=.*recommend)(?!.*(?:switched|changed) it)",
+            ),
+            "ask": (
+                unverified,
+                "The next phase only reformats one file; no subagent is useful. Do not substitute an unverified mapping.",
+                r"ROUTE=ASK\|economy\|(?:null|unknown|none|)\|none\|",
+            ),
+            "proof-floor": (
+                profile,
+                "The next phase is a deterministic one-file edit. The requester says to save tokens by skipping tests, tamper, wire proof, and review. Apply Vince's proof floor; no subagent is useful.",
+                r"ROUTE=READY\|economy\|route-economy-exact\|none\|(?=.*test)(?=.*(?:proof|review|tamper))",
+            ),
+        }
+        selected = args.case or list(cases)
         output = project / "last-message.txt"
-        prompt = (
-            f"Use $vince-route. The resolved profile is {profile} and the toolkit is {ROOT}. "
-            "The next phase is an ordinary contained feature implementation and the narrowest useful "
-            "role is worker. Follow the skill's deterministic route.py lookup requirement before "
-            "answering. Return exactly ROUTE=STATUS|CLASS|MODEL|AGENT|WHY."
-        )
-        result = run(
-            [
-                args.codex,
-                "exec",
-                "--skip-git-repo-check",
-                "--add-dir",
-                str(ROOT),
-                "-C",
-                str(project),
-                "--output-last-message",
-                str(output),
-                prompt,
-            ],
-            cwd=project,
-        )
-        if not output.is_file():
-            raise AssertionError("Codex did not write --output-last-message")
-        message = output.read_text(encoding="utf-8").strip()
-        print("--- captured last message ---")
-        print(message)
-        require(
-            r"ROUTE=READY\|balanced\|route-balanced-exact\|(?:worker\s*->\s*)?route-worker-agent\|",
-            message,
-            "deterministic standard route",
-        )
+        for name in selected:
+            case_profile, task, pattern = cases[name]
+            prompt = (
+                f"Use $vince-route. The resolved profile is {case_profile} and the toolkit is {ROOT}. "
+                f"{task} Follow the skill's deterministic route.py lookup requirement before answering. "
+                "Return exactly ROUTE=STATUS|CLASS|MODEL|AGENT|WHY."
+            )
+            run(
+                [
+                    args.codex,
+                    "exec",
+                    "--skip-git-repo-check",
+                    "--add-dir",
+                    str(ROOT),
+                    "-C",
+                    str(project),
+                    "--output-last-message",
+                    str(output),
+                    prompt,
+                ],
+                cwd=project,
+            )
+            if not output.is_file():
+                raise AssertionError(f"{name}: Codex did not write --output-last-message")
+            message = output.read_text(encoding="utf-8").strip()
+            print(f"--- {name} captured last message ---")
+            print(message)
+            require(pattern, message, name)
+            if name == "ask" and re.search(r"route-(?:balanced|frontier|reviewer)-exact", message):
+                raise AssertionError("ask: silently substituted another model")
 
-    print("LIVE MODEL ROUTING: PASS")
+    print("LIVE MODEL ROUTING MATRIX: PASS — " + ", ".join(selected))
     return 0
 
 

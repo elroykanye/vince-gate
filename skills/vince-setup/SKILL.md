@@ -189,6 +189,10 @@ Populate **Model routing** only for harnesses actually used by the project. Exac
 agent types are provider-specific: a Codex mapping does not validate Claude Code, Gemini, Cursor,
 Windsurf, or a generic harness. Run each harness's supported discovery command where available;
 otherwise keep that row explicitly unverified and ask the user for the intended exact mapping.
+Stamp verified rows with the verification date (`verified YYYY-MM-DD — <command>`). After writing
+each row, execute `scripts/route.py` once per configured class/role with every discovered identifier
+passed as `--available-model` / `--available-agent`. Exit 2 means setup leaves the row unverified and
+asks the user; it does not publish a mapping that the resolver cannot reproduce.
 
 ## Verify before you finish
 

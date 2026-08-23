@@ -81,7 +81,8 @@ mutating by hand.
 Exact identifiers are harness-local and must be verified against the installed runtime. Never copy
 one provider's model name into another provider row. `vince-route` selects the class; this table
 supplies the exact model. Mark an untested row `(inferred, unverified)` and use `unknown` when the
-runtime cannot list models.
+runtime cannot list models. Verified rows use `verified YYYY-MM-DD — <discovery command>` so
+`vince-doctor` can enforce the configured maximum verification age.
 
 Prefer a verified two-model pair where the harness provides one: a low-latency coding model in
 `economy` for bounded micro-tasks and the full reasoning model in `frontier` for ambiguous,
