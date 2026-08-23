@@ -78,7 +78,9 @@ Choose the smallest capable role:
 Do not spawn an agent merely to appear parallel, repeat context the main agent already loaded, or
 perform work cheaper than the handoff. Multiple agents are justified only when independent work can
 run concurrently or fresh context is itself the requirement. Map the semantic role to the exact
-agent type supported by the active harness profile; use `ASK` when the required mapping is absent.
+agent type supported by the active harness profile. Copy the exact agent identifier verbatim from
+the agent-role table; never derive it from a model identifier, role label, provider naming pattern,
+or another table. Use `ASK` when the required mapping is absent.
 
 ## Non-negotiable floor
 

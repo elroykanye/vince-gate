@@ -39,6 +39,11 @@ class ModelRoutingTests(unittest.TestCase):
         for concrete_model in ("gpt-5.6", "claude-", "gemini-"):
             self.assertNotIn(concrete_model, self.skill.lower())
 
+    def test_agent_identifier_is_copied_verbatim_from_its_own_mapping(self):
+        self.assertIn("copy the exact agent identifier verbatim", self.skill.lower())
+        self.assertIn("never derive", self.skill.lower())
+        self.assertIn("model identifier", self.skill.lower())
+
     def test_route_runs_before_implementation_planning(self):
         implement = (ROOT / "skills" / "vince-implement" / "SKILL.md").read_text(
             encoding="utf-8"
