@@ -138,6 +138,15 @@ baseline you observed, and leave everything else to inheritance.
     Serena memories, a brain vault, ADRs, prior task dirs.
 13. **Known traps.** Ask the user, and mine the repo: recurring review comments, `HACK`/`FIXME`
     clusters, past incidents, gotchas in `CLAUDE.md`. These become the reviewer's A5 sweep.
+14. **Model routing.** For every harness the team uses, discover the exact available model IDs
+    and exact agent types for `economy`, `balanced`, `frontier`, and `reviewer`. Prefer the
+    harness's own model-list or configuration command and run it. Record that command beside the
+    mapping. If the runtime cannot prove availability, mark the row `(inferred, unverified)` or
+    `unknown — <what you tried>` and ask the user; never invent an exact model name from memory.
+    When a harness offers a specialized low-latency coding model plus a full reasoning model,
+    verify that pair explicitly and map it as the `economy` fast lane and `frontier` handoff.
+    Record preview eligibility, context/modality constraints, and rate limits when discovery
+    exposes them; availability for one account is not universal availability.
 
 ## Write the profile
 
@@ -175,6 +184,15 @@ If Vince is installed at user scope, project files will show nothing — that is
 If the project has harness directories the current install does not cover (`.cursor/`,
 `.windsurf/`, `.codex/`, an `AGENTS.md` other people rely on), say so: a teammate on a different
 harness gets no gate at all unless that binding is installed too.
+
+Populate **Model routing** only for harnesses actually used by the project. Exact model IDs and
+agent types are provider-specific: a Codex mapping does not validate Claude Code, Gemini, Cursor,
+Windsurf, or a generic harness. Run each harness's supported discovery command where available;
+otherwise keep that row explicitly unverified and ask the user for the intended exact mapping.
+Stamp verified rows with the verification date (`verified YYYY-MM-DD — <command>`). After writing
+each row, execute `scripts/route.py` once per configured class/role with every discovered identifier
+passed as `--available-model` / `--available-agent`. Exit 2 means setup leaves the row unverified and
+asks the user; it does not publish a mapping that the resolver cannot reproduce.
 
 ## Verify before you finish
 

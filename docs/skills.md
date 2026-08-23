@@ -1,12 +1,14 @@
 # Skill catalog
 
-Eight skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
+Ten skills, rendered into whatever shape your harness wants by `scripts/install.py` (see
 [harnesses.md](harnesses.md)). They are designed to be invoked by name (`/vince-implement`) or to
 auto-activate on their description triggers.
 
 | Skill | When |
 |-------|------|
 | `vince-setup` | once per project, and after the build or conventions change |
+| `vince-intake` | when a proposed implementation request may not be actionable yet |
+| `vince-route` | before planning, delegation, a high-risk phase, or review |
 | `vince-implement` | every implementation task, before code |
 | `vince-review` | spawned by the implementer; usable standalone on any branch |
 | `vince-document` | at completion, before publishing |
@@ -25,6 +27,22 @@ targets and known traps. Verifies its own output before finishing — re-runs th
 the integration branch, checks every path it recorded.
 
 Output: `.vince/profile.md`. See [profile.md](profile.md).
+
+## `vince-intake`
+
+The preflight gate returns `READY`, `CLARIFY`, or `BOUNCE`. `READY` yields testable acceptance
+criteria for confirmation. `CLARIFY` asks at most three material questions at a time. `BOUNCE`
+stops work and explains the minimum information, authority, or constraint needed for a new
+actionable request. It preserves the user's intent and never starts implementation itself.
+
+## `vince-route`
+
+The routing preflight reads exact per-harness model and agent mappings from the project profile.
+It chooses the lowest capable class — `economy`, `balanced`, `frontier`, or `reviewer` — and the
+narrowest useful agent role. It recommends an exact switch only when the quality or token tradeoff
+justifies interrupting the user, and never claims it changed the harness automatically. Missing,
+stale, unavailable, or unverified mappings stop with a question rather than a silent substitute.
+Codex, Claude Code, Gemini, Cursor, Windsurf, and generic rows are verified independently.
 
 ## `vince-implement`
 
@@ -176,8 +194,8 @@ write-capable and must know the task dir, or it silently skips persisting the ve
 
 `skills/_shared/*.md` (currently `voice.md` and `token-discipline.md`) is copied into every
 skill's `reference/` at install time — one source of
-truth in the repo, present next to each skill at runtime. `voice.md` lives there. A file eight
-skills each kept their own copy of would drift within a release.
+truth in the repo, present next to each skill at runtime. `voice.md` lives there. A file every
+skill kept its own copy of would drift within a release.
 
 `_shared` is not itself a skill (no `SKILL.md`), so it never appears in listings, and in flat
 layouts it renders as `<skill>-voice.md` with links rewritten to match.

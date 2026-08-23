@@ -189,7 +189,7 @@ def shared_files() -> list:
     """Reference docs every skill gets a copy of, from skills/_shared/.
 
     One source of truth in the repo, present next to every skill at runtime - a voice guide or
-    glossary that eight skills each kept their own copy of would drift within a release.
+    glossary that every skill kept its own copy of would drift within a release.
     """
     root = toolkit_root() / "skills" / "_shared"
     if not root.is_dir():
@@ -256,9 +256,9 @@ def rewrite_links(text: str, skill: str, binding: dict) -> str:
     base = f"{base}/" if base else ""
 
     def repl(m):
-        return f"{base}{prefix}{skill}-{m.group(1)}.md"
+        return f"{base}{prefix}{skill}-{m.group(1)}"
 
-    return re.sub(r"reference/([\w.-]+)\.md", repl, text)
+    return re.sub(r"reference/([\w.-]+\.(?:md|py))", repl, text)
 
 
 def render_skill(binding: dict, skill: str):
@@ -280,6 +280,9 @@ def render_skill(binding: dict, skill: str):
         for shared in shared_files():
             out.append((f"{skill}/reference/{shared.name}",
                         shared.read_text(encoding="utf-8")))
+        if skill == "vince-route":
+            out.append((f"{skill}/reference/route.py",
+                        (toolkit_root() / "scripts" / "route.py").read_text(encoding="utf-8")))
     else:
         prefix = binding.get("prefix", "")
         ext = binding.get("extension", ".md")
@@ -292,6 +295,9 @@ def render_skill(binding: dict, skill: str):
         for shared in shared_files():
             text = rewrite_links(shared.read_text(encoding="utf-8"), skill, binding)
             out.append((f"{refdir}{prefix}{skill}-{shared.stem}.md", text))
+        if skill == "vince-route":
+            out.append((f"{refdir}{prefix}{skill}-route.py",
+                        (toolkit_root() / "scripts" / "route.py").read_text(encoding="utf-8")))
     return [(p, t.encode("utf-8")) for p, t in out]
 
 

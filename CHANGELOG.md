@@ -6,6 +6,29 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.11.1 — 2026-08-23
+
+Vince now routes implementation work to the least expensive capable model class and the narrowest
+useful agent role, while keeping the proof floor intact.
+
+**Added**
+
+- **Model routing gate.** `vince-route` classifies work as `economy`, `balanced`, `frontier`, or
+  `reviewer`, then resolves exact harness-specific model identifiers from the project profile.
+- **Agent role routing.** Profiles can map exact `explorer`, `worker`, and `reviewer` roles per
+  harness, with no provider-name fallback.
+- **Switch recommendations.** Vince can recommend an exact model switch with the token/quality
+  tradeoff, while making clear that the harness or user performs the actual switch.
+
+**Verified**
+
+- Codex live routing passed a nine-case matrix covering trivial, standard, explorer, complex,
+  security, reviewer, switch, ask, and proof-floor behavior.
+- Stale, unavailable, unchecked, missing, or unverified mappings return `ASK` instead of silently
+  substituting another model.
+- Claude, Gemini, Cursor, Windsurf, and generic bindings render the routing skill and profile
+  fields, but remain marked as render-verified rather than live-verified.
+
 ## v0.11.0 — 2026-08-17
 
 Codex support is now based on live runtime behavior rather than configuration shape alone.

@@ -76,6 +76,42 @@ mutating by hand.
   implementer; blank = same model, fresh context>`
 - Versioning: `<file + rule, or "not required">`
 
+## Model routing
+
+- Maximum verification age: `30` days
+
+Exact identifiers are harness-local and must be verified against the installed runtime. Never copy
+one provider's model name into another provider row. `vince-route` selects the class; this table
+supplies the exact model. Mark an untested row `(inferred, unverified)` and use `unknown` when the
+runtime cannot list models. Verified rows use `verified YYYY-MM-DD — <discovery command>` so
+`vince-doctor` can enforce the configured maximum verification age.
+
+Prefer a verified two-model pair where the harness provides one: a low-latency coding model in
+`economy` for bounded micro-tasks and the full reasoning model in `frontier` for ambiguous,
+security-sensitive, or multi-file work. Do not prefill vendor names from documentation alone;
+availability must be confirmed in the active account and harness.
+
+| Harness | economy | balanced | frontier | reviewer | Status / verification command |
+|---------|---------|----------|----------|----------|-------------------------------|
+| claude | | | | | |
+| codex | | | | | |
+| cursor | | | | | |
+| gemini | | | | | |
+| generic | | | | | |
+| windsurf | | | | | |
+
+Map Vince's semantic roles to the exact agent types exposed by each harness. Use `none` where the
+harness has no safe equivalent; never invent an agent type.
+
+| Harness | explorer | worker | reviewer | Status / verification command |
+|---------|----------|--------|----------|-------------------------------|
+| claude | | | | |
+| codex | | | | |
+| cursor | | | | |
+| gemini | | | | |
+| generic | | | | |
+| windsurf | | | | |
+
 ## Tracker
 
 - System: `<GitHub Issues | Jira | Linear | none>`
