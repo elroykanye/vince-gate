@@ -155,10 +155,33 @@ def main(argv: list[str] | None = None) -> int:
             raise AssertionError("installed Codex binding did not include route.py")
         for name in selected:
             case_profile, task, pattern = cases[name]
+            lookup = {"models": {}, "agents": {"none": None}}
+            for model_class in ("economy", "balanced", "frontier", "reviewer"):
+                resolved_route = subprocess.run(
+                    [sys.executable, str(resolver), "--profile", str(case_profile),
+                     "--harness", "codex", "--class", model_class, "--role", "none"],
+                    cwd=project, capture_output=True, text=True,
+                )
+                if resolved_route.returncode not in (0, 2):
+                    raise RuntimeError(f"{name}: installed resolver failed: {resolved_route.stderr}")
+                resolved_json = json.loads(resolved_route.stdout)
+                lookup["models"][model_class] = {
+                    key: resolved_json[key] for key in ("status", "model", "reason")
+                }
+            for role in ("explorer", "worker", "reviewer"):
+                resolved_route = subprocess.run(
+                    [sys.executable, str(resolver), "--profile", str(case_profile),
+                     "--harness", "codex", "--class", "balanced", "--role", role],
+                    cwd=project, capture_output=True, text=True,
+                )
+                if resolved_route.returncode not in (0, 2):
+                    raise RuntimeError(f"{name}: installed resolver failed: {resolved_route.stderr}")
+                resolved_json = json.loads(resolved_route.stdout)
+                lookup["agents"][role] = resolved_json["agent"]
             prompt = (
-                f"Use $vince-route. The resolved profile is {case_profile} and the installed "
-                f"resolver is {resolver}. "
-                f"{task} Follow the skill's deterministic route.py lookup requirement before answering. "
+                f"Use $vince-route. The host gate already ran the installed deterministic resolver "
+                f"for every possible class and role. Its exact JSON is: {json.dumps(lookup)}. "
+                f"{task} Select the semantic class and role, then copy only the matching JSON values. "
                 "Return exactly ROUTE=STATUS|CLASS|MODEL|AGENT|WHY."
             )
             run(

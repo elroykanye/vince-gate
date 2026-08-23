@@ -15,8 +15,9 @@ change faster than Vince releases.
 ## Deterministic mapping lookup
 
 The AI selects only the semantic class and role. It must not transcribe or construct identifiers.
-Resolve the profile with `install.py where`, then run the resolver shipped beside this installed
-skill (the installer rewrites this relative path for flat-layout harnesses):
+The host gate or agent tool layer resolves the profile with `install.py where`, then runs the
+resolver shipped beside this installed skill (the installer rewrites this relative path for
+flat-layout harnesses):
 
 ```bash
 python reference/route.py --profile <resolved-profile> --harness <active-harness> --class <class> --role <role>
@@ -25,6 +26,8 @@ python reference/route.py --profile <resolved-profile> --harness <active-harness
 Use the JSON `model` and `agent` values verbatim. Exit 2 or JSON status `ASK` stops routing and is
 shown to the user. Do not turn it into `READY`. This deterministic lookup is required even when the
 table looks easy to read; it prevents provider-like identifiers from being invented by analogy.
+If the model's own sandbox cannot launch the helper, the host runs it and supplies the exact JSON to
+the model. A sandbox failure without host lookup returns `ASK`; it never permits manual fallback.
 
 ## Output
 
