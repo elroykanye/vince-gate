@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 
@@ -86,7 +87,7 @@ def main() -> int:
     parser.add_argument("--role", required=True, choices=sorted(AGENT_ROLES))
     args = parser.parse_args()
     decision = resolve(args.profile, args.harness, args.model_class, args.role)
-    print(json.dumps(decision, sort_keys=True))
+    sys.stdout.write(json.dumps(decision, sort_keys=True) + "\n")
     return 0 if decision["status"] == "READY" else 2
 
 
