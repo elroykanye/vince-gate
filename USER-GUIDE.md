@@ -471,6 +471,24 @@ language. Several harnesses read `AGENTS.md`, so that block alone is often enoug
 Three jobs, three skills: **`/vince-doctor`** when something is broken, **`/vince-cleanup`** when
 a session left resources behind, **`/vince-update`** when a newer release exists.
 
+The repository also ships `scripts/vince.py` for compact operational checks:
+
+```bash
+python scripts/vince.py health --profile <profile> --manifest <install.json> --task-root <tasks>
+python scripts/vince.py route-refresh --profile <profile> --harness codex --economy <model> --balanced <model> --frontier <model> --reviewer <model> --explorer-agent <agent> --worker-agent <agent> --reviewer-agent <agent>
+python scripts/vince.py release-check --repo . --expected-version <version> --expected-tag v<version>
+python scripts/vince.py codex-discovery --codex codex
+python scripts/vince.py archive-task --task-root <tasks> --task <task-id>
+```
+
+`health` is the dashboard-style report: install versions per harness, live-verified versus
+render-only status, open or failed tasks, stale route mappings, and the exact next action. Route
+refresh writes only explicit model and agent identifiers supplied by the user or harness; it never
+guesses provider names. The release check verifies `VERSION`, changelog, tag and installed-version
+readiness. `codex-discovery` is the stronger post-install proof for Codex: in live mode it starts
+Codex and confirms the Vince skills are actually discoverable. `archive-task` moves only PASS
+tasks from `active/` to `archive/`; FAIL or open tasks stay put.
+
 ```
 /vince-cleanup     # leaked worktrees, processes holding directories open, stray output
 ```
