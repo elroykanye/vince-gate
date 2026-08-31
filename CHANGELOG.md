@@ -30,7 +30,7 @@ its existing gate architecture.
 
 **Verified**
 
-- The full suite passes with 33 tests and no skips.
+- The full suite passes with 34 tests and no skips.
 - Independent adversarial review passed after mutation-testing CLI boundaries, shipped-skill
   coverage, Windows executable variants, and alternate Markdown representations.
 
