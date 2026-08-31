@@ -211,3 +211,13 @@ files a previous install shipped that the new one does not.
 Keep skill bodies harness-neutral: name the *capability* you need (a browser, a subagent, symbol
 navigation) with examples, and let the runtime substitute. Anything project-specific belongs in
 `.vince/profile.md`, not in a skill.
+
+Before a new or changed skill is installed, run the same scan the installer uses:
+
+```bash
+python scripts/vince.py skill-scan --skills skills --no-external
+```
+
+This mirrors the useful part of NVIDIA SkillSpector for Vince's workflow: scan skills before
+trusting them, use an external `skillspector` binary when present, fall back to Vince's static
+rules when it is not, and suppress only exact accepted fingerprints through a baseline.

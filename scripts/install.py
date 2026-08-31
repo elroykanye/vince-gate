@@ -30,6 +30,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -602,11 +603,34 @@ def cmd_install(args) -> int:
         return 1
     names = skill_names()
     if not names:
-        print(f"error: no skills under {toolkit_root() / 'skills'}", file=sys.stderr)
+        sys.stderr.write(f"error: no skills under {toolkit_root() / 'skills'}\n")
         return 1
 
-    print(f"vince {version_label()} -> {root}  (scope: {scope})")
-    print(f"bindings: {', '.join(chosen)}")
+    if args.skip_skill_scan:
+        sys.stdout.write("skill security scan skipped by explicit flag\n")
+    else:
+        scan_cmd = [
+            sys.executable,
+            str(toolkit_root() / "scripts" / "vince.py"),
+            "skill-scan",
+            "--skills", str(toolkit_root() / "skills"),
+        ]
+        if args.skill_scan_baseline:
+            scan_cmd.extend(["--baseline", args.skill_scan_baseline])
+        if args.no_external_skill_scan:
+            scan_cmd.append("--no-external")
+        scan = subprocess.run(scan_cmd, capture_output=True, text=True, check=False)
+        if scan.returncode != 0:
+            sys.stdout.write("skill security scan failed; install refused\n")
+            if scan.stdout.strip():
+                sys.stdout.write(scan.stdout.strip() + "\n")
+            if scan.stderr.strip():
+                sys.stderr.write(scan.stderr.strip() + "\n")
+            return 1
+        sys.stdout.write("skill security scan passed\n")
+
+    sys.stdout.write(f"vince {version_label()} -> {root}  (scope: {scope})\n")
+    sys.stdout.write(f"bindings: {', '.join(chosen)}\n")
 
     for bid in chosen:
         binding = bindings[bid]
@@ -962,6 +986,12 @@ def main(argv=None) -> int:
     target_args(p)
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--force", action="store_true", help="overwrite files edited in place")
+    p.add_argument("--skip-skill-scan", action="store_true",
+                   help="explicitly bypass the pre-install skill security scan")
+    p.add_argument("--no-external-skill-scan", action="store_true",
+                   help="use Vince's static scanner instead of a local skillspector executable")
+    p.add_argument("--skill-scan-baseline",
+                   help="JSON baseline of accepted finding fingerprints for skill security scan")
     p.set_defaults(func=cmd_install)
 
     p = sub.add_parser("status", help="report installed versions and drift")

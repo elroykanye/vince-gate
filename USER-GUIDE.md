@@ -107,6 +107,24 @@ By default the installer **detects** which harnesses the target uses and install
 them. Force the choice with `--binding claude,cursor` or `--binding all`, and preview with
 `--dry-run`.
 
+Before rendering any harness binding, the installer runs a skill security scan. If NVIDIA
+SkillSpector is available on `PATH`, Vince uses its JSON report; otherwise it falls back to a
+small built-in static scan for high-risk skill patterns such as prompt injection, secret
+exfiltration, broad deletes, privilege escalation, download-and-execute instructions, unsafe
+tool bypasses and suspicious MCP/plugin permission language. A failing scan refuses the install
+before any Claude, Codex, generic or other binding is written.
+
+Useful knobs:
+
+```bash
+python scripts/vince.py skill-scan --skills skills --no-external
+python scripts/vince.py skill-scan --skills skills --baseline .vince/skill-scan-baseline.json
+python scripts/install.py install --scope user --skill-scan-baseline .vince/skill-scan-baseline.json
+python scripts/install.py install --scope user --skip-skill-scan   # explicit escape hatch
+```
+
+A baseline suppresses only exact accepted finding fingerprints. New findings still fail the scan.
+
 Verify:
 
 ```bash
