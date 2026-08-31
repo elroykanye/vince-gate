@@ -43,6 +43,14 @@ confirms it.
 Take the highest applicable tier. Never downgrade without the user. Anything user-observable is
 at least T2.
 
+For T1, perform and record all five checks explicitly:
+
+1. The diff contains only the intended change.
+2. The suite is no worse than baseline.
+3. Nothing user-observable changed.
+4. No secret, debug artifact, or stray file is present.
+5. The commit message and version change follow the profile.
+
 ## Phase 0 — Contract extraction
 
 Resolve the profile and task paths; never assume `.vince/` is inside the repository:

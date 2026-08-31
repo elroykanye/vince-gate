@@ -23,10 +23,32 @@ def skill_parts(path: Path) -> tuple[str, str]:
 
 class TokenEfficientSkillTests(unittest.TestCase):
     def test_discovery_descriptions_are_compact(self):
+        descriptions = {}
         for path in sorted(SKILLS.glob("*/SKILL.md")):
             description, _ = skill_parts(path)
+            descriptions[path.parent.name] = description
             with self.subTest(skill=path.parent.name):
                 self.assertLessEqual(len(description), 320)
+
+        self.assertEqual(len(descriptions), len(set(descriptions.values())))
+        trigger_matrix = {
+            "vince-cleanup": ("cleanup", "worktree", "stray processes"),
+            "vince-doctor": ("broken bindings", "profiles", "health check"),
+            "vince-document": ("completion documentation", "publish", "handoffs"),
+            "vince-implement": ("features", "fixes", "refactors", "changes code"),
+            "vince-intake": ("vague", "unsafe", "actionable contract", "refusal"),
+            "vince-learn": ("review findings", "lessons", "known traps", "PASS"),
+            "vince-review": ("Adversarially review", "PASS", "FAIL", "done"),
+            "vince-route": ("model", "agent role", "planning", "review"),
+            "vince-setup": ("profile", "onboarding", "missing profiles", "drift"),
+            "vince-update": ("upgrade", "roll back", "version", "outdated"),
+        }
+        self.assertEqual(set(descriptions), set(trigger_matrix))
+        for skill, triggers in trigger_matrix.items():
+            with self.subTest(skill=skill):
+                lowered = descriptions[skill].lower()
+                for trigger in triggers:
+                    self.assertIn(trigger.lower(), lowered)
 
     def test_primary_workflows_fit_activation_budget(self):
         for name in ("vince-implement", "vince-review"):
@@ -75,6 +97,31 @@ class TokenEfficientSkillTests(unittest.TestCase):
                 combined += ref_path.read_text(encoding="utf-8")
             for term in required[skill]:
                 self.assertIn(term, combined)
+
+    def test_implement_activation_preserves_non_negotiable_behavior(self):
+        _, body = skill_parts(SKILLS / "vince-implement" / "SKILL.md")
+        required_clauses = (
+            "No implementation before a test fails for the expected reason.",
+            "No completion claim before `vince-review` writes a PASS verdict.",
+            "No claim such as “verified” or “tests pass” without the command and observed result.",
+            "Never weaken RED, GREEN, TAMPER, regression, wire proof, or independent review to save tokens.",
+            "The diff contains only the intended change.",
+            "The suite is no worse than baseline.",
+            "Nothing user-observable changed.",
+            "No secret, debug artifact, or stray file is present.",
+            "The commit message and version change follow the profile.",
+        )
+        for clause in required_clauses:
+            self.assertIn(clause, body)
+
+    def test_review_verdict_contract_supports_learning_and_closure(self):
+        text = (SKILLS / "vince-review" / "reference" / "verdict-and-rereview.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("[caught: <attack>]", text)
+        self.assertIn("Reviewer verdict", text)
+        self.assertIn("review-verdict.md", text)
+        self.assertIn("verification ledger", text.lower())
 
     def test_gemini_uses_native_agent_skills(self):
         binding = json.loads((ROOT / "bindings" / "gemini.json").read_text(encoding="utf-8"))
@@ -130,7 +177,24 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertIn("progressive disclosure", combined.lower())
         self.assertNotIn("TOML commands for Gemini CLI", combined)
         self.assertNotIn("Gemini CLI | TOML custom commands", combined)
-        self.assertIn("unverified", combined.lower())
+        self.assertIn(
+            "Gemini CLI and GitHub Copilot follow their\n"
+            "documented native skill paths but remain `unverified`",
+            readme,
+        )
+        self.assertIn(
+            "Both bindings follow current vendor documentation and are render-tested, but\n"
+            "remain `unverified`",
+            guide,
+        )
+        self.assertIn(
+            "| `gemini` | Gemini CLI | `.gemini/skills/<skill>/SKILL.md` (user: `~/.gemini/skills/`) | native Agent Skill, YAML frontmatter | unverified |",
+            harnesses,
+        )
+        self.assertIn(
+            "| `copilot` | GitHub Copilot | `.github/skills/<skill>/SKILL.md` (user: `~/.copilot/skills/`) | native Agent Skill, YAML frontmatter | unverified |",
+            harnesses,
+        )
 
 
 if __name__ == "__main__":
