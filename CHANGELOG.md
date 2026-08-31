@@ -6,6 +6,37 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.12.0 — 2026-08-31
+
+Vince adopts progressive disclosure across its primary workflows and adds native Agent Skills
+bindings for current Gemini CLI and GitHub Copilot layouts.
+
+**Changed**
+
+- `vince-implement` and `vince-review` keep their proof floor in compact primary instructions;
+  phase-specific contract, TDD, wire-proof, attack, verdict, and handoff details now load from
+  focused references only when needed.
+- Shared voice and token-discipline references are conditional instead of mandatory on every skill
+  activation, while their essential safety and efficiency rules remain inline.
+- Discovery descriptions are distinct and capped by regression tests, and both primary workflows
+  stay below a conservative approximate 5,000-token activation budget.
+
+**Harnesses**
+
+- Gemini CLI now renders native skills to `.gemini/skills/` and `~/.gemini/skills/` instead of
+  legacy TOML custom commands.
+- GitHub Copilot gains native `.github/skills/` and `~/.copilot/skills/` bindings without sharing
+  Codex's install directories.
+- Both new/changed bindings remain explicitly unverified until live discovery and invocation probes
+  pass in their runtimes.
+
+**Verified**
+
+- Token, reference, description, binding, documentation, and disposable-install regression tests
+  cover the progressive-disclosure contract.
+- Existing routing, intake, Codex compatibility, external security boundary, and Stop-hook tests
+  remain in the full suite.
+
 ## v0.11.2 — 2026-08-31
 
 Vince adds bounded operational helpers and hardens shipped skill instructions while preserving

@@ -1,6 +1,6 @@
 ---
 name: vince-doctor
-description: Diagnose and repair a broken or drifted Vince setup - checks the install across every harness binding, validates the project profile against the repo it describes (commands that no longer run, branches that no longer resolve, paths that no longer exist), finds orphaned task dirs and unreviewed work, and fixes what is safely fixable. Run when something about Vince behaves oddly, after a big refactor, or when a skill references something that is not there. Triggers on "vince is broken", "vince doctor", "profile is wrong", "skills not loading", "check the vince setup".
+description: Diagnose and safely repair Vince install drift, broken bindings, stale profiles, missing paths, orphaned tasks, and undiscoverable skills. Use when Vince behaves incorrectly, after major repository changes, or for a Vince health check.
 ---
 
 # Vince — Doctor
@@ -14,19 +14,11 @@ fix. A profile field you "corrected" without running the new command is a new li
 old one.
 
 
-## Voice
+## Communication and efficiency
 
-Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
-never assuming the reader knows the jargon — keep the precise term, add the plain-English
-translation. Jokes never carry information, and they switch off entirely for anything
-destructive, any security or data finding, and any time you were wrong.
-A health report can be dry and funny. The moment you are about to change or delete something, it goes flat.
-
-
-Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
-narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
-subagent only when a fresh context is the point, and lean on the ledger so you can reset context
-rather than carrying it.
+State repairs and uncertainty plainly. Load `reference/voice.md` only for a difficult user-facing
+report. Load `reference/token-discipline.md` only when the health inventory grows large; prefer the
+compact health scripts over repeated raw commands.
 
 ## 1. The install
 

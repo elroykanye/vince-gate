@@ -1,6 +1,6 @@
 ---
 name: vince-update
-description: Move a vince-gate install to a newer (or older) release safely - finds the toolkit, compares the installed version against available tags, reads the changelog between them, refuses to trample skills edited in place, reinstalls at the recorded scope and bindings, and then migrates the project's .vince config so the new version's fields actually exist rather than being silently absent. Triggers on "update vince", "upgrade vince-gate", "is vince up to date", "roll back vince", "what version of vince am I on".
+description: Safely upgrade or roll back Vince at the recorded scope and bindings, preserving in-place edits and migrating new profile fields honestly. Use to update Vince, check its version, repair an outdated install, or pin a release.
 ---
 
 # Vince — Update
@@ -16,19 +16,12 @@ config value while migrating**; a new field arrives `unknown` or `blocked` until
 actually run.
 
 
-## Voice
+## Communication and efficiency
 
-Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
-never assuming the reader knows the jargon — keep the precise term, add the plain-English
-translation. Jokes never carry information, and they switch off entirely for anything
-destructive, any security or data finding, and any time you were wrong.
-Version moves are boring and that is fine. Go flat before anything that discards work — an in-place edit, a rollback, a force.
-
-
-Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
-narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
-subagent only when a fresh context is the point, and lean on the ledger so you can reset context
-rather than carrying it.
+Version movement and any risk of discarded edits are reported literally. Load
+`reference/voice.md` only for a longer user-facing release summary. Load
+`reference/token-discipline.md` only across many skipped releases or projects; inspect only the
+intervening changelog and affected profiles.
 
 ## 1. Locate and orient
 

@@ -3,13 +3,12 @@
   "label": "Gemini CLI",
   "status": "unverified",
   "detect": [".gemini", "GEMINI.md"],
-  "project_dir": ".gemini/commands/vince",
-  "user_dir": "~/.gemini/commands/vince",
-  "layout": "flat",
-  "extension": ".toml",
-  "prefix": "",
-  "frontmatter": "toml-command",
-  "index": "GEMINI.md",
-  "invocation": "/vince:{skill}",
-  "notes": "Gemini CLI custom commands are TOML files with description and prompt fields; the skill body becomes the prompt. Reference docs are written as sibling plain-markdown files and links are rewritten. Verify the commands directory and TOML schema against your Gemini CLI version."
+  "project_dir": ".gemini/skills",
+  "user_dir": "~/.gemini/skills",
+  "layout": "dir",
+  "entry": "SKILL.md",
+  "frontmatter": "yaml",
+  "index": null,
+  "invocation": "describe the task; Gemini activates the matching skill after consent",
+  "notes": "Native Agent Skills with progressive disclosure. Gemini CLI documents workspace discovery at .gemini/skills (and the .agents/skills alias), user discovery at ~/.gemini/skills, YAML SKILL.md frontmatter, model-selected activation, and conditional resource access. The binding follows that documented contract but still requires a live Gemini verification before status can become verified."
 }

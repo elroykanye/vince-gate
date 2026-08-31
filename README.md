@@ -39,21 +39,23 @@ the **[user guide](USER-GUIDE.md)** covers using it.
 
 ## Works with any harness
 
-The skills are plain markdown; a **binding** renders them into the shape a runtime wants — a
-directory per skill with YAML frontmatter for Claude Code, flat `.mdc` files for Cursor, TOML
-commands for Gemini CLI, plain markdown plus an `AGENTS.md` pointer block for anything else.
+The canonical format is the open Agent Skills layout: one `SKILL.md` plus conditional
+`reference/` resources. Claude Code, Codex, Gemini CLI, and GitHub Copilot receive native YAML
+skills with progressive disclosure; Cursor and Windsurf receive conditional rules; the generic
+binding writes plain markdown plus a small `AGENTS.md` pointer block.
 
 ```bash
-python scripts/install.py bindings          # claude, cursor, windsurf, codex, gemini, generic
+python scripts/install.py bindings          # claude, codex, gemini, copilot, cursor, windsurf, generic
 ```
 
-`claude` and `generic` are verified; the rest follow each runtime's documented convention and are
-marked `unverified` until someone confirms them against a live install. Adding a runtime is a
-12-line JSON file.
+`claude`, `codex`, and `generic` are live-verified. Gemini CLI and GitHub Copilot follow their
+documented native skill paths but remain `unverified` until a real runtime discovers and invokes
+them. Cursor and Windsurf are also render-tested only. Adding a runtime is a small JSON binding.
 
 The compatibility question that actually matters is not whether the files install, but whether
 the harness can give the reviewer a **fresh context**. Claude Code and Codex both can, natively.
-Cursor, Windsurf and Gemini CLI cannot, so the review becomes a second chat you open yourself —
+Cursor, Windsurf, Gemini CLI, and GitHub Copilot may require a second session depending on the
+runtime surface, so the review becomes a second chat you open yourself —
 same rigour, one manual step, easier to skip. [docs/harnesses.md](docs/harnesses.md) has the
 per-harness table.
 

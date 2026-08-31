@@ -427,9 +427,10 @@ known gap with an unblock, and `vince-doctor` will keep surfacing it until it cl
 
 ## Working across harnesses and with a team
 
-The skills are plain markdown. A **binding** renders them into the shape a given harness wants:
-a directory per skill with YAML frontmatter for Claude Code, flat `.mdc` files for Cursor, TOML
-commands for Gemini CLI, plain markdown plus an `AGENTS.md` pointer block for anything else.
+Vince uses the open Agent Skills format: a compact `SKILL.md` plus references loaded only at the
+phase that needs them. Claude Code, Codex, Gemini CLI, and GitHub Copilot receive native skills with
+progressive disclosure. Cursor and Windsurf receive conditional rules; the generic binding writes
+plain markdown plus an `AGENTS.md` pointer block.
 
 ```bash
 python scripts/install.py bindings                      # what is available, and its status
@@ -452,6 +453,11 @@ This named-agent path was live-verified through a persisted Vince verdict. Curso
 `.mdc` rules, but has no subagent mechanism, so the fresh-context review becomes a second chat you
 open and paste the handoff into. That is the same rigour with one manual step, and the isolation
 is if anything cleaner — but it is easier to skip, so the discipline has to come from you.
+
+Gemini installs to `.gemini/skills/<skill>/SKILL.md`; GitHub Copilot installs to
+`.github/skills/<skill>/SKILL.md`. Their user paths are `~/.gemini/skills` and
+`~/.copilot/skills`. Both bindings follow current vendor documentation and are render-tested, but
+remain `unverified` until Vince completes a live discovery and invocation probe in each runtime.
 
 `check.py` and `resume.py` are plain Python and the ledger is a file, so those work identically
 everywhere. See [docs/harnesses.md](docs/harnesses.md) for the per-harness table.

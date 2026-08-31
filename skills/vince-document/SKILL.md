@@ -1,6 +1,6 @@
 ---
 name: vince-document
-description: Use when a task is completed or in progress and needs completion documentation written to the task dir as completion-documentation.md, and for publishing that doc to whatever destination the project profile names (wiki, docs site, PR description). Triggers on requests like "document this task", "write completion docs", "create task documentation", "publish the docs", or after finishing implementation work.
+description: Write or publish factual task completion documentation from the contract, diff, evidence, and deployment state. Use for completion-documentation.md, task documentation, release handoffs, or publishing to the profile’s configured destination.
 ---
 
 # Vince — Document
@@ -12,19 +12,11 @@ Generate professional completion documentation for an implementation task. Outpu
 The local markdown is the source of truth. Anything published elsewhere is a copy.
 
 
-## Voice
+## Communication and efficiency
 
-Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
-never assuming the reader knows the jargon — keep the precise term, add the plain-English
-translation. Jokes never carry information, and they switch off entirely for anything
-destructive, any security or data finding, and any time you were wrong.
-Completion documentation is outward-facing and outlives the branch. Write it plainly; save the personality for telling the user what you wrote.
-
-
-Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
-narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
-subagent only when a fresh context is the point, and lean on the ledger so you can reset context
-rather than carrying it.
+The artifact is plain and professional. Load `reference/voice.md` only if the user-facing handoff
+needs tone guidance. Load `reference/token-discipline.md` only for unusually large diffs or ledgers;
+cite evidence paths rather than copying the same output twice.
 
 ## Inputs required
 

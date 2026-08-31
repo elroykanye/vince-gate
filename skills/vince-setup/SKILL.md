@@ -1,6 +1,6 @@
 ---
 name: vince-setup
-description: Bootstrap or refresh a project's Vince profile - inspects the repo to discover its test commands, integration branch, tracker, versioning rule, locales, data isolation key, wire-proof rigs and known traps, verifies each discovered command actually runs, and writes .vince/profile.md. Run once per project before vince-implement, and again whenever the build or conventions change. Triggers on "set up vince", "vince profile", "onboard this repo", "no profile found".
+description: Create or refresh a verified Vince project/workspace profile containing real commands, branch and version rules, security boundaries, wire rigs, traps, and exact model mappings. Use for Vince onboarding, missing profiles, or repository convention drift.
 ---
 
 # Vince — Setup
@@ -13,19 +13,11 @@ ran and watched succeed in this repo. A profile full of plausible-looking comman
 no profile, because the next session will trust it.
 
 
-## Voice
+## Communication and efficiency
 
-Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
-never assuming the reader knows the jargon — keep the precise term, add the plain-English
-translation. Jokes never carry information, and they switch off entirely for anything
-destructive, any security or data finding, and any time you were wrong.
-The profile you write is an artifact — plain and factual. Explaining what you found to the user is the conversation, and that is where the voice lives.
-
-
-Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
-narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
-subagent only when a fresh context is the point, and lean on the ledger so you can reset context
-rather than carrying it.
+Profiles are plain facts. Load `reference/voice.md` only for the user-facing findings report. Load
+`reference/token-discipline.md` only for a large workspace inventory; group by stack, bound output,
+and write only verified differences.
 
 ## Which mode are you in?
 

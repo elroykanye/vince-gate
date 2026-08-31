@@ -1,0 +1,17 @@
+{
+  "id": "copilot",
+  "label": "GitHub Copilot",
+  "status": "unverified",
+  "detect": [
+    ".github/copilot-instructions.md",
+    ".github/skills"
+  ],
+  "project_dir": ".github/skills",
+  "user_dir": "~/.copilot/skills",
+  "layout": "dir",
+  "entry": "SKILL.md",
+  "frontmatter": "yaml",
+  "index": null,
+  "invocation": "describe the task or invoke /{skill}; Copilot loads the matching skill",
+  "notes": "Native Agent Skills with progressive disclosure. GitHub documents .github/skills for project skills and ~/.copilot/skills for personal skills. These paths avoid collisions with Codex's shared .agents/skills install. Render-tested only until exercised in a live Copilot agent."
+}

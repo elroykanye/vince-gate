@@ -1,6 +1,6 @@
 ---
 name: vince-cleanup
-description: Recover a workspace after a session ended without tearing down - finds leaked git worktrees, processes still holding directories open, background jobs nobody stopped, and stray build or scratch output, attributes each to a task where it can, and removes only what is provably safe. Diagnoses which process is locking a directory when a remove or delete fails. Triggers on "clean up", "vince cleanup", "directory in use", "cannot remove worktree", "something is holding this folder", "stray processes", "disk filling up".
+description: Safely clean leaked worktrees, attributable processes, background jobs, and regenerable output after a task. Use for cleanup, locked directories, failed worktree removal, stray processes, or unexplained workspace disk use.
 ---
 
 # Vince — Cleanup
@@ -14,19 +14,11 @@ output hides real diffs.
 happen — the session crashed, was interrupted, or predates the rule.
 
 
-## Voice
+## Communication and efficiency
 
-Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
-never assuming the reader knows the jargon — keep the precise term, add the plain-English
-translation. Jokes never carry information, and they switch off entirely for anything
-destructive, any security or data finding, and any time you were wrong.
-This skill kills processes and deletes directories. Explaining the inventory can be light. Everything from 'here is what I am about to remove' onwards is flat, literal and specific.
-
-
-Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
-narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
-subagent only when a fresh context is the point, and lean on the ledger so you can reset context
-rather than carrying it.
+Be literal and calm before destructive actions. Load `reference/voice.md` only if a report needs
+tone guidance. Load `reference/token-discipline.md` only when inventory output or context becomes
+large; otherwise keep commands bounded and never spawn a helper for mechanical discovery.
 
 ## Stance: this is the most destructive skill here
 

@@ -18,7 +18,8 @@ substitution to the runtime.
 | `cursor` | Cursor | `.cursor/rules/<skill>.mdc`, refs in `.cursor/vince/` | flat, MDC frontmatter (`alwaysApply: false`) | unverified |
 | `windsurf` | Windsurf | `.windsurf/rules/<skill>.md`, refs in `.windsurf/vince/` | flat, `trigger: model_decision` | unverified |
 | `codex` | Codex CLI | `.agents/skills/<skill>/SKILL.md` (user: `~/.agents/skills/`) | dir per skill, YAML frontmatter | verified |
-| `gemini` | Gemini CLI | `.gemini/commands/vince/<skill>.toml` | flat, TOML command (`description` + `prompt`) | unverified |
+| `gemini` | Gemini CLI | `.gemini/skills/<skill>/SKILL.md` (user: `~/.gemini/skills/`) | native Agent Skill, YAML frontmatter | unverified |
+| `copilot` | GitHub Copilot | `.github/skills/<skill>/SKILL.md` (user: `~/.copilot/skills/`) | native Agent Skill, YAML frontmatter | unverified |
 
 **`verified`** means installed and confirmed working on a real runtime. **`unverified`** means
 the paths follow that runtime's documented convention but were not confirmed against a live
@@ -37,7 +38,8 @@ well a harness supports that is the real compatibility question.
 | **Codex CLI** | native skills from `.agents/skills/` | native subagents (TOML in `.codex/agents/`), and the definition can pin the model | full, and the model pinning is better than Claude Code's |
 | **Cursor** | `.mdc` rules, attach on description match | **no subagent mechanism** — you open a second chat yourself and paste the handoff | works, one manual step |
 | **Windsurf** | rules with `trigger: model_decision` | same as Cursor | works, one manual step |
-| **Gemini CLI** | TOML custom commands, invoked explicitly | no subagent — manual second session | works, two manual steps |
+| **Gemini CLI** | native Agent Skills, activated by description after consent | runtime-dependent subagents; use a fresh session when unavailable | progressive loading; review may be manual |
+| **GitHub Copilot** | native Agent Skills, automatic or slash invocation | surface-dependent; use a fresh session when unavailable | progressive loading; review may be manual |
 | **Anything reading AGENTS.md** | you tell it to read the file | manual | works, fully manual |
 
 **The manual review is not a downgrade in rigour**, only in convenience: open a new chat, paste
@@ -58,8 +60,17 @@ rewritten to `../vince/…`, so the rules directory contains only real rules and
 still readable when the skill asks for them.
 
 The entry files use `description` + empty `globs` + `alwaysApply: false`, which is Cursor's
-agent-requested shape: the model attaches the rule when the description matches. Note the skills
-are large — `vince-implement` is ~7.6k tokens — so watch how your rule budget behaves.
+agent-requested shape: the model attaches the rule when the description matches. Vince keeps the
+primary workflows under a conservative activation budget and loads phase references conditionally.
+
+### Gemini and GitHub Copilot specifics
+
+Gemini discovers workspace skills at `.gemini/skills/` and personal skills at
+`~/.gemini/skills/`; it initially exposes only metadata and activates the full body after a match
+and user consent. GitHub Copilot uses `.github/skills/` for project skills and
+`~/.copilot/skills/` for personal skills, loading a matching `SKILL.md` on demand. Vince uses
+separate vendor-native paths so installing either binding cannot overwrite Codex's
+`.agents/skills/` files. Both bindings remain unverified until a live runtime probe succeeds.
 
 ### Codex specifics
 

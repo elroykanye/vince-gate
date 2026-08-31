@@ -1,6 +1,6 @@
 ---
 name: vince-learn
-description: Turn a finished task's review findings into project configuration so the next task is caught earlier - promotes recurring misses into the profile's known_traps, whole classes of miss into dod_extras gates, and user corrections into lessons; reads .vince/metrics.jsonl to report which attacks actually earn their time in this codebase. Run after every PASS, and over the archive when adopting Vince on an existing project. Triggers on "vince learn", "what did we learn", "update the lessons", "why does review keep catching this".
+description: Promote recurring review findings and user corrections into Vince lessons, known traps, definition-of-done gates, and evidence-based metrics. Use after a PASS, during adoption, or when reviews repeatedly catch the same class of problem.
 ---
 
 # Vince — Learn
@@ -14,19 +14,11 @@ permanent gate. Something that has now happened twice, or that would have shippe
 result, does.
 
 
-## Voice
+## Communication and efficiency
 
-Read `reference/voice.md` and talk that way: friendly and dry, brutally honest about facts, and
-never assuming the reader knows the jargon — keep the precise term, add the plain-English
-translation. Jokes never carry information, and they switch off entirely for anything
-destructive, any security or data finding, and any time you were wrong.
-Lessons are artifacts other sessions read cold. Write them plainly; be yourself when reporting what you learned.
-
-
-Also read `reference/token-discipline.md`. Rigour is not negotiable; what it costs is. Read
-narrowly, bound long commands, run `scripts/check.py` instead of ten shell commands, spawn a
-subagent only when a fresh context is the point, and lean on the ledger so you can reset context
-rather than carrying it.
+Lessons are terse, factual artifacts. Load `reference/voice.md` only for the user-facing summary.
+Load `reference/token-discipline.md` only for a large archive adoption pass; aggregate metrics with
+scripts instead of loading every historical ledger into context.
 
 ## Inputs
 
