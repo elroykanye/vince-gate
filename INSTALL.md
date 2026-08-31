@@ -132,14 +132,6 @@ python scripts/install.py status  --scope user      # must say healthy, exit 0
 
 Then in a project: `/vince-setup` once, `/vince-implement` per task.
 
-The installer runs a skill security scan before writing any binding. When NVIDIA SkillSpector is
-installed, Vince uses it; otherwise Vince falls back to its own static scan. To inspect the scan
-directly:
-
-```bash
-python scripts/vince.py skill-scan --skills skills --no-external
-```
-
 | Want | Command |
 |------|---------|
 | Every project on this machine | `install --scope user` |
@@ -147,8 +139,6 @@ python scripts/vince.py skill-scan --skills skills --no-external
 | Specific harnesses | `install --target . --binding claude,cursor` |
 | Everything it supports | `install --target . --binding all` |
 | See it first | add `--dry-run` |
-| Accept known scan findings | add `--skill-scan-baseline <file>` |
-| Explicitly bypass the scan | add `--skip-skill-scan` |
 
 Only the `claude` and `generic` (AGENTS.md) bindings are verified. Cursor, Windsurf, Codex and
 Gemini CLI follow each runtime's documented convention but have not been confirmed against a

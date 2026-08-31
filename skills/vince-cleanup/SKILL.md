@@ -36,8 +36,8 @@ and deletes directories. So it is built to refuse:
 - **Inventory before you touch anything.** Nothing is stopped or deleted until the whole picture
   is on screen and attributed.
 - **Never act on what you cannot attribute.** A `node` process you did not start might be the
-  user's dev server, their editor's language server, or another agent session mid-task. Killing
-  by process *name* is how you kill someone's IDE.
+  user's dev server, their editor's language server, or another agent session mid-task. Stopping
+  processes by *name* can terminate an unrelated editor or dev server.
 - **Unsaved work is never yours to delete.** A dirty worktree or unpushed commits is a STOP and a
   report, not a `--force`.
 - **Regenerable or nothing.** Delete build output, caches and scratch. Never delete source,
@@ -114,7 +114,7 @@ naming it nowhere:
 | Command | Why it hides |
 |---------|--------------|
 | `python -m http.server <port>` | module run; serves **cwd**, which appears in no argument |
-| `npx serve`, `http-server`, `live-server` | serves cwd or a short relative path |
+| project-local `serve`, `http-server`, or `live-server` binary | serves cwd or a short relative path |
 | `php -S localhost:8000`, `ruby -run -e httpd .` | same shape |
 | `node` from a dev server (Vite, Next, Angular) | image is `node`; the project path may only be in cwd |
 | `dotnet watch`, test runners in `--watch` | long-lived, re-spawn children |

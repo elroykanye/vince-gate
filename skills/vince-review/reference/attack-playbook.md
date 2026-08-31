@@ -16,7 +16,7 @@ of mutants.
 
 | Stack | Tool | Diff-scoped run |
 |-------|------|-----------------|
-| JS / TS | StrykerJS | `npx stryker run --incremental` |
+| JS / TS | StrykerJS | `./node_modules/.bin/stryker run --incremental` |
 | .NET | Stryker.NET | `dotnet stryker --since` |
 | Python | mutmut | `mutmut run --paths-to-mutate <changed files>` |
 | Java | PIT | `mvn pitest:mutationCoverage -DwithHistory` |

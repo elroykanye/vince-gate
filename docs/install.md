@@ -20,8 +20,6 @@ python scripts/install.py bindings
 python scripts/install.py list
 python scripts/install.py install   [--target DIR] [--scope project|user]
                                     [--binding auto|all|claude,cursor,...] [--dry-run] [--force]
-                                    [--skill-scan-baseline FILE]
-                                    [--no-external-skill-scan] [--skip-skill-scan]
 python scripts/install.py status    [--target DIR] [--scope project|user]
 python scripts/install.py doctor    [--target DIR] [--scope project|user] [--fix] [--force]
 python scripts/install.py uninstall [--target DIR] [--scope project|user]
@@ -55,41 +53,6 @@ is already installed there, or falls back to `generic` if it finds nothing. See
 
 Nothing else. No hooks, no settings edits, no global state. `.vince/install.json` records absolute
 paths from your machine, so gitignore it in a shared repo.
-
-## Skill security scan
-
-Install is fail-closed: before any binding is rendered, Vince scans the canonical `skills/`
-directory. If a local `skillspector` executable is available, Vince runs it with JSON output. If
-not, Vince uses its built-in static scanner. The built-in scanner is deliberately smaller than
-SkillSpector, but it catches the patterns that should never be quietly installed: prompt
-injection, secret exfiltration, broad recursive deletes, privilege escalation,
-download-and-execute commands, instructions to bypass tool safety and suspicious MCP/plugin
-permission language.
-
-Standalone scan:
-
-```bash
-python scripts/vince.py skill-scan --skills skills
-python scripts/vince.py skill-scan --skills skills --no-external
-python scripts/vince.py skill-scan --skills skills --format terminal
-```
-
-Accepted findings can be suppressed with a baseline file:
-
-```json
-{"accepted": ["<finding fingerprint>"]}
-```
-
-Then pass it to either command:
-
-```bash
-python scripts/vince.py skill-scan --skills skills --baseline .vince/skill-scan-baseline.json
-python scripts/install.py install --scope user --skill-scan-baseline .vince/skill-scan-baseline.json
-```
-
-The baseline is intentionally narrow: it suppresses only matching fingerprints. If the skill text
-changes, or a new risky instruction appears elsewhere, the scan fails again. Use
-`--skip-skill-scan` only as a visible, explicit escape hatch.
 
 ## Versions
 
