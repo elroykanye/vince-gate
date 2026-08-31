@@ -6,6 +6,34 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.11.2 — 2026-08-31
+
+Vince adds bounded operational helpers and hardens shipped skill instructions while preserving
+its existing gate architecture.
+
+**Added**
+
+- **Health reporting.** The operations CLI reports binding, task, route, and next-action health.
+- **Route refresh.** Exact model inventories can refresh routing profiles without guessed IDs.
+- **Release checks.** Version, changelog, tag, and disposable-install consistency can be checked
+  before publishing.
+- **Codex discovery probe and task archiving.** Maintainers can verify live skill discovery and
+  archive only tasks whose current verdict is PASS and whose workspace is clean.
+
+**Security**
+
+- Shipped skill examples use project-local executables instead of unpinned package runners.
+- Regression coverage prevents external audit tooling from becoming an embedded Vince command,
+  installer gate, baseline, or shipped-skill dependency.
+- Shipped skill Markdown rejects package-runner tokens across platform suffixes, paths, wrappers,
+  prose, and Markdown fence styles.
+
+**Verified**
+
+- The full suite passes with 33 tests and no skips.
+- Independent adversarial review passed after mutation-testing CLI boundaries, shipped-skill
+  coverage, Windows executable variants, and alternate Markdown representations.
+
 ## v0.11.1 — 2026-08-23
 
 Vince now routes implementation work to the least expensive capable model class and the narrowest
