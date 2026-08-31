@@ -118,7 +118,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
         text = (SKILLS / "vince-review" / "reference" / "verdict-and-rereview.md").read_text(
             encoding="utf-8"
         )
-        self.assertIn("[caught: <attack>]", text)
+        self.assertGreaterEqual(text.count("[caught: <attack>]"), 2)
         self.assertIn("Reviewer verdict", text)
         self.assertIn("review-verdict.md", text)
         self.assertIn("verification ledger", text.lower())
