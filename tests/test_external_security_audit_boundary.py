@@ -43,12 +43,13 @@ class ExternalSecurityAuditBoundaryTests(unittest.TestCase):
         cleanup = (ROOT / "skills" / "vince-cleanup" / "SKILL.md").read_text(
             encoding="utf-8"
         )
-        attack_playbook = (
-            ROOT / "skills" / "vince-review" / "reference" / "attack-playbook.md"
-        ).read_text(encoding="utf-8")
 
-        self.assertNotIn("`npx serve`", cleanup)
-        self.assertNotIn("`npx stryker run --incremental`", attack_playbook)
+        for skill_doc in (ROOT / "skills").rglob("*.md"):
+            with self.subTest(skill_doc=skill_doc.relative_to(ROOT)):
+                self.assertNotRegex(
+                    skill_doc.read_text(encoding="utf-8"),
+                    r"(?im)(?:`|^)\s*npx(?:\s|`)",
+                )
         self.assertNotIn("kill someone's IDE", cleanup)
 
 
