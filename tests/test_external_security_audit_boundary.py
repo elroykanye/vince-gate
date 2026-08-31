@@ -52,23 +52,34 @@ class ExternalSecurityAuditBoundaryTests(unittest.TestCase):
 
         product_paths = [
             ROOT / "scripts",
+            ROOT / "skills",
             ROOT / "INSTALL.md",
             ROOT / "USER-GUIDE.md",
             ROOT / "docs",
         ]
-        product_text = "\n".join(
-            path.read_text(encoding="utf-8")
-            if path.is_file()
-            else "\n".join(
-                child.read_text(encoding="utf-8")
-                for child in path.rglob("*")
-                if child.is_file() and child.suffix in {".md", ".py"}
-            )
-            for path in product_paths
-        ).lower()
-        self.assertNotIn("skillspector", product_text)
-        self.assertNotIn("skip-skill-scan", product_text)
-        self.assertNotIn("skill-scan-baseline", product_text)
+        product_files = []
+        for path in product_paths:
+            if path.is_file():
+                product_files.append(path)
+            else:
+                product_files.extend(
+                    child
+                    for child in path.rglob("*")
+                    if child.is_file() and child.suffix in {".md", ".py"}
+                )
+
+        for product_file in product_files:
+            product_text = product_file.read_text(encoding="utf-8").lower()
+            with self.subTest(product_file=product_file.relative_to(ROOT)):
+                for forbidden in (
+                    "skillspector",
+                    "skip-skill-scan",
+                    "skill-scan-baseline",
+                ):
+                    self.assertFalse(
+                        forbidden in product_text,
+                        f"{forbidden} found in {product_file.relative_to(ROOT)}",
+                    )
 
     def test_executable_examples_are_pinned_or_project_local(self):
         cleanup = (ROOT / "skills" / "vince-cleanup" / "SKILL.md").read_text(
