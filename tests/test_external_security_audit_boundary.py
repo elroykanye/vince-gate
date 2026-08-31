@@ -1,5 +1,4 @@
 import re
-import shlex
 import subprocess
 import sys
 import unittest
@@ -7,35 +6,11 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-INLINE_CODE = re.compile(r"`([^`\r\n]+)`")
-EXECUTABLE_SUFFIXES = (".cmd", ".exe", ".bat")
-
-
-def executable_name(token):
-    name = token.strip("'\"").replace("\\", "/").rsplit("/", 1)[-1].lower()
-    for suffix in EXECUTABLE_SUFFIXES:
-        if name.endswith(suffix):
-            return name[: -len(suffix)]
-    return name
+NPX_TOKEN = re.compile(r"\bnpx(?:\.(?:cmd|exe|bat))?\b", re.IGNORECASE)
 
 
 def contains_unpinned_npx(markdown):
-    candidates = INLINE_CODE.findall(markdown)
-    in_fence = False
-    for line in markdown.splitlines():
-        if line.strip().startswith("```"):
-            in_fence = not in_fence
-        elif in_fence and line.strip() and not line.lstrip().startswith("#"):
-            candidates.append(line.strip())
-
-    for candidate in candidates:
-        try:
-            tokens = shlex.split(candidate, posix=False)
-        except ValueError:
-            tokens = candidate.split()
-        if any(executable_name(token) == "npx" for token in tokens):
-            return True
-    return False
+    return NPX_TOKEN.search(markdown) is not None
 
 
 class ExternalSecurityAuditBoundaryTests(unittest.TestCase):
@@ -106,6 +81,8 @@ class ExternalSecurityAuditBoundaryTests(unittest.TestCase):
             "`./tools/npx --yes stryker run --incremental`",
             "`cmd /c npx.cmd --yes stryker run --incremental`",
             "`\"C:\\Program Files\\node\\npx.cmd\" --yes stryker`",
+            "~~~bash\nnpx serve\n~~~",
+            "Do not use npx for executable examples.",
         ]
 
         for command in variants:
