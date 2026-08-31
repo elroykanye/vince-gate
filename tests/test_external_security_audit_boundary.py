@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 import unittest
@@ -5,6 +6,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+UNPINNED_NPX_COMMAND = re.compile(r"(?:`|^)\s*npx(?:\s|`)", re.IGNORECASE | re.MULTILINE)
 
 
 class ExternalSecurityAuditBoundaryTests(unittest.TestCase):
@@ -48,9 +50,21 @@ class ExternalSecurityAuditBoundaryTests(unittest.TestCase):
             with self.subTest(skill_doc=skill_doc.relative_to(ROOT)):
                 self.assertNotRegex(
                     skill_doc.read_text(encoding="utf-8"),
-                    r"(?im)(?:`|^)\s*npx(?:\s|`)",
+                    UNPINNED_NPX_COMMAND,
                 )
         self.assertNotIn("kill someone's IDE", cleanup)
+
+    def test_unpinned_npx_variants_are_rejected(self):
+        variants = [
+            "`npx serve`",
+            "`npx --yes serve`",
+            "`npx stryker run --incremental`",
+            "`npx --yes stryker run --incremental`",
+        ]
+
+        for command in variants:
+            with self.subTest(command=command):
+                self.assertRegex(command, UNPINNED_NPX_COMMAND)
 
 
 if __name__ == "__main__":
