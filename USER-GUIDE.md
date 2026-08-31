@@ -478,7 +478,7 @@ python scripts/vince.py health --profile <profile> --manifest <install.json> --t
 python scripts/vince.py route-refresh --profile <profile> --harness codex --economy <model> --balanced <model> --frontier <model> --reviewer <model> --explorer-agent <agent> --worker-agent <agent> --reviewer-agent <agent>
 python scripts/vince.py release-check --repo . --expected-version <version> --expected-tag v<version>
 python scripts/vince.py codex-discovery --codex codex
-python scripts/vince.py archive-task --task-root <tasks> --task <task-id>
+python scripts/vince.py archive-task --task-root <tasks> --task <task-id> --repo <repo>
 ```
 
 `health` is the dashboard-style report: install versions per harness, live-verified versus

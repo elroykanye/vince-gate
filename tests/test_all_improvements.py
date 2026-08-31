@@ -123,6 +123,16 @@ class AllImprovementsTests(unittest.TestCase):
                 "--manifest", str(manifest),
                 "--skip-git-tag",
             )
+            (repo / "VERSION").write_text("9.9.9\n", encoding="utf-8")
+            bad_version = self.run_vince(
+                "release-check",
+                "--repo", str(repo),
+                "--expected-version", "0.11.2",
+                "--expected-tag", "v0.11.2",
+                "--manifest", str(manifest),
+                "--skip-git-tag",
+            )
+            (repo / "VERSION").write_text("0.11.2\n", encoding="utf-8")
             (repo / "CHANGELOG.md").write_text("", encoding="utf-8")
             bad = self.run_vince(
                 "release-check",
@@ -133,8 +143,51 @@ class AllImprovementsTests(unittest.TestCase):
                 "--skip-git-tag",
             )
         self.assertEqual(0, ok.returncode, ok.stdout + ok.stderr)
+        self.assertEqual(1, bad_version.returncode)
+        self.assertIn("VERSION is 9.9.9", bad_version.stdout)
         self.assertEqual(1, bad.returncode)
         self.assertIn("missing changelog heading", bad.stdout)
+
+    def test_release_check_requires_expected_tag_on_head(self):
+        with tempfile.TemporaryDirectory() as raw:
+            repo = Path(raw)
+            subprocess.run(["git", "init", "-q", str(repo)], check=True)
+            subprocess.run(["git", "-C", str(repo), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], check=True)
+            (repo / "VERSION").write_text("0.11.2\n", encoding="utf-8")
+            (repo / "CHANGELOG.md").write_text("## v0.11.2 - 2026-08-31\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(repo), "add", "VERSION", "CHANGELOG.md"], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "old"], check=True)
+            subprocess.run(["git", "-C", str(repo), "tag", "v0.11.2"], check=True)
+            (repo / "release.txt").write_text("release\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(repo), "add", "release.txt"], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "release"], check=True)
+
+            wrong_target = self.run_vince(
+                "release-check",
+                "--repo", str(repo),
+                "--expected-version", "0.11.2",
+                "--expected-tag", "v0.11.2",
+            )
+            wrong_name = self.run_vince(
+                "release-check",
+                "--repo", str(repo),
+                "--expected-version", "0.11.2",
+                "--expected-tag", "release-0.11.2",
+            )
+            subprocess.run(["git", "-C", str(repo), "tag", "-f", "v0.11.2", "HEAD"], check=True)
+            correct = self.run_vince(
+                "release-check",
+                "--repo", str(repo),
+                "--expected-version", "0.11.2",
+                "--expected-tag", "v0.11.2",
+            )
+
+        self.assertEqual(1, wrong_target.returncode)
+        self.assertIn("does not point to HEAD", wrong_target.stdout)
+        self.assertEqual(1, wrong_name.returncode)
+        self.assertIn("expected tag must be v0.11.2", wrong_name.stdout)
+        self.assertEqual(0, correct.returncode, correct.stdout + correct.stderr)
 
     def test_codex_discovery_probe_is_documented_and_callable(self):
         guide = (ROOT / "USER-GUIDE.md").read_text(encoding="utf-8")
@@ -148,11 +201,18 @@ class AllImprovementsTests(unittest.TestCase):
     def test_task_archive_moves_only_passed_clean_tasks(self):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
+            repo = root / "repo"
+            repo.mkdir()
+            subprocess.run(["git", "init", "-q", str(repo)], check=True)
             passed = root / "active" / "passed"
             failed = root / "active" / "failed"
+            dirty = root / "active" / "dirty"
+            unpushed = root / "active" / "unpushed"
             current_fail_with_history = root / "active" / "current-fail"
             passed.mkdir(parents=True)
             failed.mkdir(parents=True)
+            dirty.mkdir(parents=True)
+            unpushed.mkdir(parents=True)
             current_fail_with_history.mkdir(parents=True)
             (passed / "verification-ledger.md").write_text(
                 "Reviewer verdict: PASS\n", encoding="utf-8"
@@ -160,16 +220,39 @@ class AllImprovementsTests(unittest.TestCase):
             (failed / "verification-ledger.md").write_text(
                 "Reviewer verdict: FAIL\n", encoding="utf-8"
             )
+            (dirty / "verification-ledger.md").write_text(
+                "Reviewer verdict: PASS\n", encoding="utf-8"
+            )
+            (unpushed / "verification-ledger.md").write_text(
+                "Reviewer verdict: PASS\n", encoding="utf-8"
+            )
             (current_fail_with_history / "verification-ledger.md").write_text(
                 "Reviewer verdict: FAIL 2026-08-30\n\n"
                 "## History\n"
                 "Older text: Reviewer verdict: PASS 2026-08-29\n",
                 encoding="utf-8",
             )
-            result = self.run_vince("archive-task", "--task-root", str(root), "--task", "passed")
-            refused = self.run_vince("archive-task", "--task-root", str(root), "--task", "failed")
+            result = self.run_vince(
+                "archive-task", "--task-root", str(root), "--task", "passed", "--repo", str(repo)
+            )
+            refused = self.run_vince(
+                "archive-task", "--task-root", str(root), "--task", "failed", "--repo", str(repo)
+            )
             refused_history = self.run_vince(
-                "archive-task", "--task-root", str(root), "--task", "current-fail"
+                "archive-task", "--task-root", str(root), "--task", "current-fail", "--repo", str(repo)
+            )
+            (repo / "uncommitted.txt").write_text("dirty\n", encoding="utf-8")
+            refused_dirty = self.run_vince(
+                "archive-task", "--task-root", str(root), "--task", "dirty", "--repo", str(repo)
+            )
+            (repo / "uncommitted.txt").unlink()
+            subprocess.run(["git", "-C", str(repo), "config", "user.email", "test@example.invalid"], check=True)
+            subprocess.run(["git", "-C", str(repo), "config", "user.name", "Test"], check=True)
+            (repo / "local.txt").write_text("local\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(repo), "add", "local.txt"], check=True)
+            subprocess.run(["git", "-C", str(repo), "commit", "-qm", "local"], check=True)
+            refused_unpushed = self.run_vince(
+                "archive-task", "--task-root", str(root), "--task", "unpushed", "--repo", str(repo)
             )
             self.assertEqual(0, result.returncode, result.stdout + result.stderr)
             self.assertTrue((root / "archive" / "passed").is_dir())
@@ -177,6 +260,12 @@ class AllImprovementsTests(unittest.TestCase):
             self.assertTrue((root / "active" / "failed").is_dir())
             self.assertEqual(1, refused_history.returncode)
             self.assertTrue((root / "active" / "current-fail").is_dir())
+            self.assertEqual(1, refused_dirty.returncode)
+            self.assertIn("repository is not clean", refused_dirty.stdout)
+            self.assertTrue((root / "active" / "dirty").is_dir())
+            self.assertEqual(1, refused_unpushed.returncode)
+            self.assertIn("repository has unpushed commits", refused_unpushed.stdout)
+            self.assertTrue((root / "active" / "unpushed").is_dir())
 
 
 if __name__ == "__main__":

@@ -180,13 +180,25 @@ def cmd_release_check(args) -> int:
         for name, record in sorted(manifest.get("installs", {}).items()):
             if record.get("version") != args.expected_version:
                 problems.append(f"{name} install is {record.get('version')}, expected {args.expected_version}")
+    required_tag = f"v{args.expected_version}"
+    if args.expected_tag != required_tag:
+        problems.append(f"expected tag must be {required_tag}, got {args.expected_tag}")
     if not args.skip_git_tag:
         tag = subprocess.run(
-            ["git", "-C", str(args.repo), "rev-parse", "-q", "--verify", f"refs/tags/{args.expected_tag}"],
+            ["git", "-C", str(args.repo), "rev-parse", "-q", "--verify", f"refs/tags/{args.expected_tag}^{{commit}}"],
             capture_output=True, text=True, check=False,
         )
         if tag.returncode != 0:
             problems.append(f"missing git tag {args.expected_tag}")
+        else:
+            head = subprocess.run(
+                ["git", "-C", str(args.repo), "rev-parse", "HEAD^{commit}"],
+                capture_output=True, text=True, check=False,
+            )
+            if head.returncode != 0:
+                problems.append("cannot resolve repository HEAD")
+            elif tag.stdout.strip() != head.stdout.strip():
+                problems.append(f"git tag {args.expected_tag} does not point to HEAD")
     result = {"status": "FAIL" if problems else "PASS", "problems": problems}
     emit(json.dumps(result, indent=2, sort_keys=True))
     return 1 if problems else 0
@@ -224,6 +236,26 @@ def cmd_archive_task(args) -> int:
         return 1
     if current_reviewer_verdict(ledger) != "PASS":
         emit(f"refused: task {args.task} is not PASS")
+        return 1
+    status = subprocess.run(
+        ["git", "-C", str(args.repo), "status", "--porcelain"],
+        capture_output=True, text=True, check=False,
+    )
+    if status.returncode != 0:
+        emit(f"refused: cannot inspect repository {args.repo}")
+        return 1
+    if status.stdout.strip():
+        emit(f"refused: repository is not clean: {args.repo}")
+        return 1
+    unpushed = subprocess.run(
+        ["git", "-C", str(args.repo), "log", "--branches", "--not", "--remotes", "--oneline"],
+        capture_output=True, text=True, check=False,
+    )
+    if unpushed.returncode not in (0, 128):
+        emit(f"refused: cannot inspect unpushed commits in {args.repo}")
+        return 1
+    if unpushed.stdout.strip():
+        emit(f"refused: repository has unpushed commits: {args.repo}")
         return 1
     if archive.exists():
         emit(f"refused: archive target already exists: {archive}")
@@ -274,6 +306,7 @@ def main(argv: list[str] | None = None) -> int:
     archive = sub.add_parser("archive-task")
     archive.add_argument("--task-root", required=True, type=Path)
     archive.add_argument("--task", required=True)
+    archive.add_argument("--repo", required=True, type=Path)
     archive.set_defaults(func=cmd_archive_task)
 
     args = parser.parse_args(argv)
