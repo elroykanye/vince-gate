@@ -1,10 +1,12 @@
 import json
+import hashlib
 import re
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from collections import Counter
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,7 +26,7 @@ def skill_parts(path: Path) -> tuple[str, str]:
 
 class TokenEfficientSkillTests(unittest.TestCase):
     def complete_manifest(self):
-        return {
+        data = {
             "task": "T",
             "frozen_before_ledger": True,
             "discovery_complete": True,
@@ -38,7 +40,16 @@ class TokenEfficientSkillTests(unittest.TestCase):
                     "status": "PROVEN",
                     "evidence": ["command => result"],
                     "attacks": ["mutation killed"],
-                }
+                },
+                {
+                    "id": "CLAIM-1",
+                    "kind": "material-claim",
+                    "claim": "documented result",
+                    "source": "completion documentation",
+                    "status": "PROVEN",
+                    "evidence": ["document compared with branch"],
+                    "attacks": ["claim reconciliation"],
+                },
             ],
             "attack_passes": {
                 f"A{i}": {"status": "PROVEN", "evidence": ["attack recorded"]}
@@ -48,6 +59,18 @@ class TokenEfficientSkillTests(unittest.TestCase):
             "adjacent_variants": ["semantic reversal"],
             "untouched_surfaces": ["none — all manifest items terminal"],
         }
+        normalized = [
+            {field: item[field] for field in ("id", "kind", "claim", "source")}
+            for item in data["items"]
+        ]
+        payload = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        kinds = ("acceptance", "definition-of-done", "dependent", "entry-point", "material-claim")
+        data["inventory"] = {
+            "item_count": len(data["items"]),
+            "kind_counts": {kind: sum(item["kind"] == kind for item in data["items"]) for kind in kinds},
+            "items_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+        }
+        return data
 
     def test_discovery_descriptions_are_compact(self):
         descriptions = {}
@@ -88,6 +111,36 @@ class TokenEfficientSkillTests(unittest.TestCase):
                 overlap = len(left_words & right_words) / len(left_words | right_words)
                 self.assertLessEqual(overlap, 0.35, f"routing descriptions overlap: {left}/{right}")
 
+        frequencies = {
+            skill: Counter(re.findall(r"[a-z0-9]+", description.lower()))
+            for skill, description in descriptions.items()
+        }
+        for left, left_counts in frequencies.items():
+            for right, right_counts in frequencies.items():
+                if left >= right:
+                    continue
+                terms = set(left_counts) | set(right_counts)
+                weighted = sum(min(left_counts[t], right_counts[t]) for t in terms) / sum(
+                    max(left_counts[t], right_counts[t]) for t in terms
+                )
+                self.assertLessEqual(weighted, 0.35, f"frequency overlap: {left}/{right}")
+
+        repeated = {
+            skill: Counter(re.findall(r"[a-z0-9]+", (("review " * 15) + " ".join(triggers)).lower()))
+            for skill, triggers in trigger_matrix.items()
+        }
+        synthetic_overlaps = []
+        for left, left_counts in repeated.items():
+            for right, right_counts in repeated.items():
+                if left >= right:
+                    continue
+                terms = set(left_counts) | set(right_counts)
+                synthetic_overlaps.append(
+                    sum(min(left_counts[t], right_counts[t]) for t in terms)
+                    / sum(max(left_counts[t], right_counts[t]) for t in terms)
+                )
+        self.assertGreater(max(synthetic_overlaps), 0.35)
+
     def test_primary_workflows_fit_activation_budget(self):
         for name in ("vince-implement", "vince-review"):
             _, body = skill_parts(SKILLS / name / "SKILL.md")
@@ -121,6 +174,16 @@ class TokenEfficientSkillTests(unittest.TestCase):
             _, body = skill_parts(path)
             with self.subTest(skill=path.parent.name):
                 self.assertIn(rule, body)
+
+    def test_locked_instruction_and_support_content_is_unchanged(self):
+        lock = json.loads((ROOT / "policies" / "content-lock.json").read_text(encoding="utf-8"))
+        expected = {str(path.relative_to(ROOT)).replace("\\", "/") for path in SKILLS.glob("*/SKILL.md")}
+        expected.update(("README.md", "USER-GUIDE.md", "docs/harnesses.md"))
+        self.assertEqual(expected, set(lock))
+        for relative, digest in lock.items():
+            actual = hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
+            with self.subTest(path=relative):
+                self.assertEqual(digest, actual)
 
     def test_progressive_references_preserve_the_gate(self):
         expected = {
@@ -265,6 +328,10 @@ class TokenEfficientSkillTests(unittest.TestCase):
         add("null-pass-evidence", lambda value: value["attack_passes"]["A7"].update(evidence=[None]))
         add("missing-rereview-list", lambda value: value.pop("adjacent_variants"))
         add("blank-untouched-surface", lambda value: value.update(untouched_surfaces=[" "]))
+        add("deleted-item-after-freeze", lambda value: value["items"].pop())
+        add("changed-claim-after-freeze", lambda value: value["items"][0].update(claim="changed claim"))
+        add("wrong-id-type", lambda value: value["items"][0].update(id=[]))
+        add("vacuous-evidence", lambda value: value["items"][0].update(evidence=["x"]))
 
         with tempfile.TemporaryDirectory() as directory:
             for name, mutant in mutations.items():
@@ -282,6 +349,30 @@ class TokenEfficientSkillTests(unittest.TestCase):
             (ROOT / "templates" / "review-coverage.template.json").read_text(encoding="utf-8")
         )
         self.assertEqual({f"A{i}" for i in range(8)}, set(template["attack_passes"]))
+
+    def test_review_manifest_freeze_records_tamper_evident_inventory(self):
+        validator = ROOT / "scripts" / "review_manifest.py"
+        manifest = self.complete_manifest()
+        manifest.pop("inventory")
+        manifest["frozen_before_ledger"] = False
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "coverage.json"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            frozen = subprocess.run(
+                [sys.executable, str(validator), "freeze", str(path)], capture_output=True, text=True
+            )
+            valid = subprocess.run(
+                [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
+            )
+            changed = json.loads(path.read_text(encoding="utf-8"))
+            changed["items"].pop()
+            path.write_text(json.dumps(changed), encoding="utf-8")
+            rejected = subprocess.run(
+                [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
+            )
+        self.assertEqual(0, frozen.returncode, frozen.stderr)
+        self.assertEqual(0, valid.returncode, valid.stderr)
+        self.assertNotEqual(0, rejected.returncode)
 
     def test_gemini_uses_native_agent_skills(self):
         binding = json.loads((ROOT / "bindings" / "gemini.json").read_text(encoding="utf-8"))

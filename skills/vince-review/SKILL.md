@@ -45,6 +45,12 @@ Include numeric counts, “fails closed” claims, documentation, configuration,
 claims rather than inheriting the implementation's chosen evidence boundary. Then open the profile
 and lessons. Only after that may you compare your contract with the ledger.
 
+Freeze the completed blind inventory before ledger exposure:
+
+```bash
+python <toolkit>/scripts/review_manifest.py freeze <task-dir>/review-coverage.json
+```
+
 Load `reference/review-method.md` now. It defines the blind-pass record, contract comparison,
 evidence forensics, attack sequence, and proof requirements.
 

@@ -3,6 +3,11 @@
   "frozen_before_ledger": true,
   "discovery_complete": false,
   "early_exit": false,
+  "inventory": {
+    "item_count": 0,
+    "kind_counts": {},
+    "items_sha256": "freeze after completing the blind inventory"
+  },
   "items": [
     {
       "id": "AC-1",
