@@ -14,6 +14,8 @@ before freezing. The seal covers those plans and cannot be replaced in place. Re
 with method, a procedure that exactly matches the frozen plan, PASS/FAIL/BLOCKED outcome, and a
 specific observation. Commands also require the actual argument vector and an integer exit code
 consistent with the outcome; inspections require the exact subject. Placeholders are not evidence.
+Every observation must name a concrete command result, path, version, count, commit, or identifier;
+generic success prose is not evidence.
 Do not remove an item after reading the
 ledger; append discrepancies as new material-claim items. A review is exhaustive only when every
 item has a terminal status and reproducible evidence or an explicit blocking reason.

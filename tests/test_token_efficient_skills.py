@@ -47,8 +47,8 @@ class TokenEfficientSkillTests(unittest.TestCase):
                     "proof_plan": ["run acceptance proof"],
                     "attack_plan": ["mutate acceptance behavior"],
                     "status": "PROVEN",
-                    "evidence": [{"method": "command", "procedure": "run acceptance proof", "argv": ["python", "proof.py"], "outcome": "PASS", "observed": "acceptance proof passed", "exit_code": 0}],
-                    "attacks": [{"method": "command", "procedure": "mutate acceptance behavior", "argv": ["python", "mutate.py"], "outcome": "FAIL", "observed": "the mutation was killed", "exit_code": 1}],
+                    "evidence": [{"method": "command", "procedure": "run acceptance proof", "argv": ["python", "proof.py"], "outcome": "PASS", "observed": "proof.py exited with 0", "exit_code": 0}],
+                    "attacks": [{"method": "command", "procedure": "mutate acceptance behavior", "argv": ["python", "mutate.py"], "outcome": "FAIL", "observed": "mutate.py exited with 1", "exit_code": 1}],
                 },
                 {
                     "id": "CLAIM-1",
@@ -58,15 +58,15 @@ class TokenEfficientSkillTests(unittest.TestCase):
                     "proof_plan": ["compare document with branch"],
                     "attack_plan": ["reverse documented claim"],
                     "status": "PROVEN",
-                    "evidence": [{"method": "inspection", "procedure": "compare document with branch", "subject": "completion documentation", "outcome": "PASS", "observed": "documented claim matches branch"}],
-                    "attacks": [{"method": "inspection", "procedure": "reverse documented claim", "subject": "completion documentation", "outcome": "PASS", "observed": "reversed mismatch was detected"}],
+                    "evidence": [{"method": "inspection", "procedure": "compare document with branch", "subject": "completion documentation", "outcome": "PASS", "observed": "completion-documentation.md matches branch"}],
+                    "attacks": [{"method": "inspection", "procedure": "reverse documented claim", "subject": "completion documentation", "outcome": "PASS", "observed": "completion-documentation.md mismatch detected"}],
                 },
             ],
             "attack_passes": {
                 f"A{i}": {
                     "plan": [f"execute attack pass A{i}"],
                     "status": "PROVEN",
-                    "evidence": [{"method": "command", "procedure": f"execute attack pass A{i}", "argv": ["python", "attack.py", f"A{i}"], "outcome": "PASS", "observed": "adversarial attack was recorded", "exit_code": 0}],
+                    "evidence": [{"method": "command", "procedure": f"execute attack pass A{i}", "argv": ["python", "attack.py", f"A{i}"], "outcome": "PASS", "observed": f"attack.py A{i} exited 0", "exit_code": 0}],
                 }
                 for i in range(8)
             },
@@ -468,6 +468,9 @@ class TokenEfficientSkillTests(unittest.TestCase):
             manifest["review_history"] = history[:-1]
             manifest["pass_number"] = history[-1]["pass"]
             manifest["new_findings"] = history[-1]["new_findings"]
+            for item in manifest["items"][:manifest["new_findings"]]:
+                item["status"] = "FINDING"
+                item["finding_origin"] = "NEW"
             normalized = {
                 "task": manifest["task"], "review_id": manifest["review_id"],
                 "items": [{field: item[field] for field in ("id", "kind", "claim", "source", "proof_plan", "attack_plan")} for item in manifest["items"]],
@@ -489,7 +492,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
                     [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
                 )
 
-        pass_three = run([{"pass": 1, "new_findings": 8}, {"pass": 2, "new_findings": 8}, {"pass": 3, "new_findings": 8}])
+        pass_three = run([{"pass": 1, "new_findings": 8}, {"pass": 2, "new_findings": 4}, {"pass": 3, "new_findings": 2}])
         declining_four = run([{"pass": 1, "new_findings": 8}, {"pass": 2, "new_findings": 4}, {"pass": 3, "new_findings": 2}, {"pass": 4, "new_findings": 1}])
         flat_four = run([{"pass": 1, "new_findings": 8}, {"pass": 2, "new_findings": 4}, {"pass": 3, "new_findings": 3}, {"pass": 4, "new_findings": 2}])
         self.assertEqual(0, pass_three.returncode, pass_three.stderr)
@@ -508,13 +511,25 @@ class TokenEfficientSkillTests(unittest.TestCase):
             path.write_text(json.dumps(manifest), encoding="utf-8")
             frozen = subprocess.run([sys.executable, str(validator), "freeze", str(path)])
             updated = json.loads(path.read_text(encoding="utf-8"))
-            updated["new_findings"] = 2
+            updated["items"][0]["status"] = "FINDING"
+            updated["items"][0]["finding_origin"] = "NEW"
+            updated["new_findings"] = 1
             path.write_text(json.dumps(updated), encoding="utf-8")
             validated = subprocess.run(
                 [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
             )
         self.assertEqual(0, frozen.returncode)
         self.assertEqual(0, validated.returncode, validated.stderr)
+
+        updated["new_findings"] = 999
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "arbitrary-count.json"
+            path.write_text(json.dumps(updated), encoding="utf-8")
+            arbitrary = subprocess.run(
+                [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
+            )
+        self.assertNotEqual(0, arbitrary.returncode)
+        self.assertIn("classified NEW", arbitrary.stderr)
 
     def test_gemini_uses_native_agent_skills(self):
         binding = json.loads((ROOT / "bindings" / "gemini.json").read_text(encoding="utf-8"))

@@ -12,6 +12,7 @@ TERMINAL = {"PROVEN", "FINDING", "BLOCKED", "UNREVIEWED"}
 KINDS = {"acceptance", "definition-of-done", "material-claim", "entry-point", "dependent"}
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 PLACEHOLDERS = {"xxx", "tbd", "todo", "placeholder", "none", "n/a", "na"}
+CONCRETE = re.compile(r"\d|`[^`]+`|(?:[A-Za-z0-9_-]+[./\\][A-Za-z0-9_.\\/-]+)|(?:[A-Za-z0-9_-]+\.[A-Za-z0-9]{1,10})")
 
 
 def strings(value: object, *, empty: bool = False) -> bool:
@@ -32,6 +33,7 @@ def records(value: object, plans: object) -> bool:
         and len(record["observed"].strip()) >= 12
         and len(record["observed"].split()) >= 3
         and record["observed"].strip().lower() not in PLACEHOLDERS
+        and CONCRETE.search(record["observed"]) is not None
         and (
             record["method"] != "command"
             or (
@@ -135,6 +137,7 @@ def validate(data: object) -> list[str]:
     if expected["kind_counts"]["material-claim"] < 1:
         errors.append("inventory must include at least one material-claim item")
     seen = set()
+    counted_new_findings = 0
     for index, item in enumerate(items):
         label = f"items[{index}]"
         if not isinstance(item, dict):
@@ -157,6 +160,13 @@ def validate(data: object) -> list[str]:
         status = item.get("status")
         if status not in TERMINAL:
             errors.append(f"{label}.status must be terminal")
+        if status == "FINDING":
+            if item.get("finding_origin") not in {"NEW", "REPRODUCED"}:
+                errors.append(f"{label}.finding_origin must be NEW or REPRODUCED")
+            elif item["finding_origin"] == "NEW":
+                counted_new_findings += 1
+        elif "finding_origin" in item:
+            errors.append(f"{label}.finding_origin is only valid for FINDING rows")
         if not records(item.get("evidence"), item.get("proof_plan")):
             errors.append(f"{label}.evidence must contain reproducible procedure/outcome/observation records")
         if status in {"PROVEN", "FINDING"} and not records(item.get("attacks"), item.get("attack_plan")):
@@ -182,6 +192,8 @@ def validate(data: object) -> list[str]:
     process_error = convergence_error(data)
     if process_error:
         errors.append(process_error)
+    if isinstance(data.get("new_findings"), int) and data["new_findings"] != counted_new_findings:
+        errors.append("new_findings must equal the number of FINDING rows classified NEW")
     return errors
 
 

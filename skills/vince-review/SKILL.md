@@ -47,7 +47,8 @@ and review ID, never resealing the old file.
 Keep one `review_cycle_id` while remediating the same implementation approach. Before freeze,
 `review_history` contains only completed prior passes and `pass_number` names the current pass.
 After discovery, write the current mutable `new_findings` result without resealing; the next pass
-promotes it into the sealed history. Passes must be contiguous. At pass 4 or later, every one of
+promotes it into the sealed history. Classify each FINDING row as `NEW` or `REPRODUCED`; validation
+derives and checks the new-finding count from those rows. Passes must be contiguous. At pass 4 or later, every one of
 the last three transitions must cut new findings by at least 50%. If not, declare reviewer-process
 failure, stop the cycle, and require a redesigned approach or replacement reviewer before a new cycle.
 Include numeric counts, “fails closed” claims, documentation, configuration, version, and delivery
