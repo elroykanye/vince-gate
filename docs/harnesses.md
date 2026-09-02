@@ -72,6 +72,11 @@ and user consent. GitHub Copilot uses `.github/skills/` for project skills and
 separate vendor-native paths so installing either binding cannot overwrite Codex's
 `.agents/skills/` files. Both bindings remain unverified until a live runtime probe succeeds.
 
+Review behavior travels with the skills. Pass 0 freezes an exhaustive review manifest at
+`<task-dir>/review-coverage.json` before opening the ledger, and
+`scripts/review_manifest.py validate` rejects incomplete A0–A7 coverage before either verdict.
+Finding the first decisive defect never permits a harness to stop discovery.
+
 ### Codex specifics
 
 Codex loads `SKILL.md` from `.agents/skills/` (project) and `~/.agents/skills/` or

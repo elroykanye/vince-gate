@@ -61,6 +61,12 @@ Four rules do most of the work:
    the contract itself, re-runs every claimed proof, and mutation-tests the new tests. It never
    sees your implementer's reasoning, and where you can arrange it, it runs on a different model.
 
+Before reading the ledger, that reviewer freezes `review-coverage.json`.
+It does not stop discovery after finding enough evidence to FAIL: every criterion, definition-of-done item, material claim,
+changed entry point, dependent, and applicable A0–A7 attack ends as proven, finding, blocked, or
+explicitly unreviewed. Unreviewed work prevents PASS. Later passes also cover prior findings,
+adjacent variants, and previously untouched surfaces instead of narrowing to the last patch.
+
 What you get on your side: a ledger with the exact commands and their output, and a verdict file
 with an append-only history. Both are readable in a minute, and both are checkable.
 

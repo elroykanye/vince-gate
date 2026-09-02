@@ -8,7 +8,9 @@ base and not a linter — it is a pair of opposed roles that together make "done
   will hand off.
 - **`vince-review`** is the adversary. It runs in a fresh context, assumes the work is broken,
   re-derives the contract from the original source, re-runs every claimed proof, mutation-tests
-  the new tests to find dead ones, and defaults to **FAIL**.
+  the new tests to find dead ones, and defaults to **FAIL**. Before reading implementation
+  conclusions it freezes `review-coverage.json`; validation blocks a verdict until every criterion,
+  material claim, changed entry point, and A0–A7 attack has a terminal result.
 
 The two rules that make the rest work: **nothing is done without a PASS verdict**, and **no claim
 counts without the command and its output behind it**.
@@ -199,7 +201,7 @@ vince-gate/
   skills/                             the ten skills (+ reference/ docs)
   bindings/*.json                     one per harness; no per-harness code
   hooks/                              opt-in enforcement (Claude Code/Codex Stop hook)
-  templates/                          profile, ledger, verdict, lessons, completion doc
+  templates/                          profile, ledger, review coverage, verdict, lessons, completion doc
   scripts/install.py                  install / status / doctor / uninstall / list / bindings
   docs/                               methodology, skills, profile, harnesses, install
   .claude-plugin/                     plugin + marketplace manifests

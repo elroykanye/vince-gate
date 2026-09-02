@@ -202,11 +202,19 @@ class TokenEfficientSkillTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             bad = Path(directory) / "bad.json"
             good = Path(directory) / "good.json"
+            missing_a7 = Path(directory) / "missing-a7.json"
             bad.write_text(json.dumps(incomplete), encoding="utf-8")
             good.write_text(json.dumps(complete), encoding="utf-8")
+            without_a7 = json.loads(json.dumps(complete))
+            del without_a7["attack_passes"]["A7"]
+            missing_a7.write_text(json.dumps(without_a7), encoding="utf-8")
             rejected = subprocess.run([sys.executable, str(validator), "validate", str(bad)])
             accepted = subprocess.run([sys.executable, str(validator), "validate", str(good)])
+            rejected_a7 = subprocess.run(
+                [sys.executable, str(validator), "validate", str(missing_a7)]
+            )
         self.assertNotEqual(0, rejected.returncode)
+        self.assertNotEqual(0, rejected_a7.returncode)
         self.assertEqual(0, accepted.returncode)
 
     def test_gemini_uses_native_agent_skills(self):
@@ -263,6 +271,9 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertIn(".github/skills", combined)
         self.assertIn(".gemini/skills", combined)
         self.assertIn("progressive disclosure", combined.lower())
+        self.assertIn("review-coverage.json", readme)
+        self.assertIn("does not stop discovery after finding enough evidence to FAIL", guide)
+        self.assertIn("exhaustive review manifest", harnesses.lower())
         self.assertNotIn("TOML commands for Gemini CLI", combined)
         self.assertNotIn("Gemini CLI | TOML custom commands", combined)
         self.assertIn(
