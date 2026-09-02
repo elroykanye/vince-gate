@@ -35,9 +35,13 @@ the implementer to summarize what matters.
 
 ## Pass 0 — Blind
 
-Before opening the ledger, read the original request/specification and the integration diff. Write
-your own criterion list, changed behavior map, and likely failure points. Then open the profile and
-lessons. Only after that may you compare your contract with the ledger.
+Before opening the ledger, read the original request/specification and the integration diff.
+Create and freeze `review-coverage.json` before opening the ledger. Start from
+`templates/review-coverage.template.json` and inventory every acceptance criterion,
+definition-of-done item, material claim, changed entry point, dependent, and applicable attack pass.
+Include numeric counts, “fails closed” claims, documentation, configuration, version, and delivery
+claims rather than inheriting the implementation's chosen evidence boundary. Then open the profile
+and lessons. Only after that may you compare your contract with the ledger.
 
 Load `reference/review-method.md` now. It defines the blind-pass record, contract comparison,
 evidence forensics, attack sequence, and proof requirements.
@@ -83,6 +87,15 @@ Do not label a confirmed behavior defect “non-blocking” because its patch is
 
 ## Verdict
 
+Finding enough evidence for FAIL never ends discovery early.
+Every acceptance criterion, definition-of-done item, material claim, changed entry point, and applicable attack pass must end
+as PROVEN, FINDING, BLOCKED, or UNREVIEWED with evidence or a reason. UNREVIEWED is honest but
+prevents PASS. Validate the frozen inventory before writing either verdict:
+
+```bash
+python <toolkit>/scripts/review_manifest.py validate <task-dir>/review-coverage.json
+```
+
 PASS only when every criterion and applicable definition-of-done gate is proved, mutation attacks
 hold, full regression is no worse than baseline, completion documentation is true, and no open
 CRITICAL or MEDIUM finding remains. Otherwise FAIL. BLOCKED evidence cannot become PASS through
@@ -92,5 +105,7 @@ Load `reference/verdict-and-rereview.md` before writing the verdict. It defines 
 per-criterion table, append-only history, re-review rules, and required evidence summaries.
 
 On re-review, reproduce each previous finding first, inspect only the remediation diff before
-broadening, rerun affected RED/GREEN/TAMPER and regression, then attack for bypasses. Preserve prior
-history below the current verdict. Never silently delete a finding.
+broadening, rerun affected RED/GREEN/TAMPER and regression, then attack for bypasses.
+A later pass must cover previous findings, adjacent variants, and previously untouched surfaces. Preserve prior
+history below the current verdict. Never silently delete a finding or terminate discovery because
+FAIL is already certain.

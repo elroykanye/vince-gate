@@ -8,6 +8,11 @@ Write the contract in your own words, list each observable behavior and negative
 changed entry points and dependents, and name the three most plausible failures. This record must
 precede exposure to the implementer’s evidence.
 
+Freeze that record as `review-coverage.json`. Give every item a stable ID, source, literal claim,
+planned proof, and attacks. Include all A0–A7 passes. Do not remove an item after reading the
+ledger; append discrepancies as new material-claim items. A review is exhaustive only when every
+item has a terminal status and reproducible evidence or an explicit blocking reason.
+
 ## Contract and evidence forensics
 
 Compare the blind criteria with the ledger verbatim. Missing, narrowed, invented, or contradictory
@@ -40,3 +45,11 @@ error states. For packages or CLIs, invoke them as a consumer would.
 Run the full suite and compare baseline counts. Build/run affected dependents when public surfaces
 changed. Confirm merged versus deployed state explicitly. Compare completion documentation with the
 actual diff, tests, configuration, version, and deployment; inaccuracies are findings.
+
+## Completion rule
+
+Complete the whole frozen inventory even after the first finding makes FAIL inevitable. Reconcile
+counts one raw case at a time, map every prose promise to the assertion or attack that enforces it,
+and compare ledger, completion documentation, tracker, published documentation, configuration, and
+live state wherever each is in scope. Record unavailable proof as BLOCKED or UNREVIEWED; neither is
+permission to omit it or claim PASS.

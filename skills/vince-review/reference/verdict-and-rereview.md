@@ -28,8 +28,8 @@ VERDICT: <PASS | FAIL>
 ```
 
 Every finding must carry one `[caught: <attack>]` tag naming the attack that exposed it. This is a
-machine-readable input to `vince-learn`, not optional prose. After persisting the verdict, update
-the verification ledger's `Reviewer verdict` field with PASS or FAIL and a pointer to
+machine-readable input to `vince-learn`, not optional prose. After persisting the verdict, you must
+update the verification ledger's `Reviewer verdict` field with PASS or FAIL and a pointer to
 `review-verdict.md`; a verdict that is not linked from the ledger cannot close the task.
 
 PASS requires every criterion PROVEN, applicable gates satisfied, full regression no worse than

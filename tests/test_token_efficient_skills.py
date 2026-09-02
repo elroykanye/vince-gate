@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -49,6 +50,17 @@ class TokenEfficientSkillTests(unittest.TestCase):
                 lowered = descriptions[skill].lower()
                 for trigger in triggers:
                     self.assertIn(trigger.lower(), lowered)
+
+        words = {
+            skill: set(re.findall(r"[a-z0-9]+", description.lower()))
+            for skill, description in descriptions.items()
+        }
+        for left, left_words in words.items():
+            for right, right_words in words.items():
+                if left >= right:
+                    continue
+                overlap = len(left_words & right_words) / len(left_words | right_words)
+                self.assertLessEqual(overlap, 0.35, f"routing descriptions overlap: {left}/{right}")
 
     def test_primary_workflows_fit_activation_budget(self):
         for name in ("vince-implement", "vince-review"):
@@ -122,6 +134,80 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertIn("Reviewer verdict", text)
         self.assertIn("review-verdict.md", text)
         self.assertIn("verification ledger", text.lower())
+        self.assertIn("Every finding must carry one `[caught: <attack>]` tag", text)
+        self.assertIn("update the verification ledger's `Reviewer verdict` field", text)
+
+    def test_review_requires_exhaustive_manifest_before_any_verdict(self):
+        core = (SKILLS / "vince-review" / "SKILL.md").read_text(encoding="utf-8")
+        method = (SKILLS / "vince-review" / "reference" / "review-method.md").read_text(
+            encoding="utf-8"
+        )
+        combined = core + method
+        required = (
+            "Create and freeze `review-coverage.json` before opening the ledger",
+            "Finding enough evidence for FAIL never ends discovery early.",
+            "Every acceptance criterion, definition-of-done item, material claim, changed entry point, and applicable attack pass",
+            "PROVEN, FINDING, BLOCKED, or UNREVIEWED",
+            "A later pass must cover previous findings, adjacent variants, and previously untouched surfaces.",
+            "python <toolkit>/scripts/review_manifest.py validate",
+        )
+        for clause in required:
+            self.assertIn(clause, combined)
+        self.assertTrue((ROOT / "templates" / "review-coverage.template.json").is_file())
+        self.assertTrue((ROOT / "scripts" / "review_manifest.py").is_file())
+
+    def test_review_manifest_validator_rejects_incomplete_coverage(self):
+        validator = ROOT / "scripts" / "review_manifest.py"
+        incomplete = {
+            "task": "T",
+            "frozen_before_ledger": True,
+            "discovery_complete": True,
+            "early_exit": False,
+            "items": [{"id": "AC-1", "kind": "acceptance", "status": "PROVEN"}],
+            "attack_passes": {},
+        }
+        complete = {
+            "task": "T",
+            "frozen_before_ledger": True,
+            "discovery_complete": True,
+            "early_exit": False,
+            "items": [
+                {
+                    "id": "AC-1",
+                    "kind": "acceptance",
+                    "claim": "observable result",
+                    "source": "original contract",
+                    "status": "PROVEN",
+                    "evidence": ["command => result"],
+                    "attacks": ["mutation killed"],
+                },
+                {
+                    "id": "CLAIM-1",
+                    "kind": "material-claim",
+                    "claim": "nine cases",
+                    "source": "completion documentation",
+                    "status": "FINDING",
+                    "evidence": ["raw cases mapped 1:1"],
+                    "attacks": ["count reconciliation"],
+                },
+            ],
+            "attack_passes": {
+                f"A{i}": {"status": "PROVEN", "evidence": ["attack recorded"]}
+                for i in range(8)
+            },
+            "previous_findings": [],
+            "adjacent_variants": ["semantic reversal"],
+            "untouched_surfaces": ["none — all manifest items terminal"],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            bad = Path(directory) / "bad.json"
+            good = Path(directory) / "good.json"
+            bad.write_text(json.dumps(incomplete), encoding="utf-8")
+            good.write_text(json.dumps(complete), encoding="utf-8")
+            rejected = subprocess.run([sys.executable, str(validator), "validate", str(bad)])
+            accepted = subprocess.run([sys.executable, str(validator), "validate", str(good)])
+        self.assertNotEqual(0, rejected.returncode)
+        self.assertEqual(0, accepted.returncode)
 
     def test_gemini_uses_native_agent_skills(self):
         binding = json.loads((ROOT / "bindings" / "gemini.json").read_text(encoding="utf-8"))
@@ -132,6 +218,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertEqual("SKILL.md", binding["entry"])
         self.assertIsNone(binding["index"])
         self.assertNotIn("command", binding["invocation"].lower())
+        self.assertEqual("unverified", binding["status"])
 
     def test_copilot_has_a_non_colliding_native_binding(self):
         binding = json.loads((ROOT / "bindings" / "copilot.json").read_text(encoding="utf-8"))
@@ -142,6 +229,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
         codex = json.loads((ROOT / "bindings" / "codex.json").read_text(encoding="utf-8"))
         self.assertNotEqual(codex["project_dir"], binding["project_dir"])
         self.assertNotEqual(codex["user_dir"], binding["user_dir"])
+        self.assertEqual("unverified", binding["status"])
 
     def test_every_binding_renders_native_skill_entries(self):
         with tempfile.TemporaryDirectory() as target:
@@ -191,6 +279,12 @@ class TokenEfficientSkillTests(unittest.TestCase):
             "| `gemini` | Gemini CLI | `.gemini/skills/<skill>/SKILL.md` (user: `~/.gemini/skills/`) | native Agent Skill, YAML frontmatter | unverified |",
             harnesses,
         )
+        for name, document in (("README", readme), ("USER-GUIDE", guide), ("harnesses", harnesses)):
+            affirmative = re.findall(
+                r"(?im)^.*(?:Gemini|Copilot).*(?:are|is|status:?)\s+`?(?:live-verified|verified)`?.*$",
+                document,
+            )
+            self.assertEqual([], affirmative, f"false live-verification claim in {name}")
         self.assertIn(
             "| `copilot` | GitHub Copilot | `.github/skills/<skill>/SKILL.md` (user: `~/.copilot/skills/`) | native Agent Skill, YAML frontmatter | unverified |",
             harnesses,

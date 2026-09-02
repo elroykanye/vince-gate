@@ -1,0 +1,30 @@
+{
+  "task": "<task-id>",
+  "frozen_before_ledger": true,
+  "discovery_complete": false,
+  "early_exit": false,
+  "items": [
+    {
+      "id": "AC-1",
+      "kind": "acceptance",
+      "claim": "<literal material claim>",
+      "source": "<original source>",
+      "status": "NOT-REVIEWED",
+      "evidence": [],
+      "attacks": []
+    }
+  ],
+  "attack_passes": {
+    "A0": {"status": "NOT-REVIEWED", "evidence": []},
+    "A1": {"status": "NOT-REVIEWED", "evidence": []},
+    "A2": {"status": "NOT-REVIEWED", "evidence": []},
+    "A3": {"status": "NOT-REVIEWED", "evidence": []},
+    "A4": {"status": "NOT-REVIEWED", "evidence": []},
+    "A5": {"status": "NOT-REVIEWED", "evidence": []},
+    "A6": {"status": "NOT-REVIEWED", "evidence": []},
+    "A7": {"status": "NOT-REVIEWED", "evidence": []}
+  },
+  "previous_findings": [],
+  "adjacent_variants": [],
+  "untouched_surfaces": []
+}
