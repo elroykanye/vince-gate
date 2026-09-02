@@ -12,6 +12,9 @@ from collections import Counter
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Last release whose gemini binding rendered TOML commands under .gemini/commands/vince.
+LEGACY_GEMINI_LAYOUT_TAG = "v0.11.2"
 SKILLS = ROOT / "skills"
 
 
@@ -577,8 +580,12 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertGreaterEqual(result.stdout.count("vince-implement/SKILL.md"), 4)
 
     def test_gemini_upgrade_removes_legacy_managed_layout(self):
+        # Pinned to the last release that actually ships the legacy layout. This used to archive
+        # origin/main, which made the test self-invalidating: main became 0.12.0, 0.12.0 is the
+        # release that REMOVES the legacy layout, so the "old" toolkit stopped being old and the
+        # first assertion started failing the moment the change under test merged.
         archive = subprocess.run(
-            ["git", "archive", "--format=tar", "origin/main"],
+            ["git", "archive", "--format=tar", LEGACY_GEMINI_LAYOUT_TAG],
             cwd=ROOT,
             capture_output=True,
             check=True,
