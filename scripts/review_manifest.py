@@ -20,28 +20,43 @@ def strings(value: object, *, empty: bool = False) -> bool:
     )
 
 
-def records(value: object) -> bool:
+def records(value: object, plans: object) -> bool:
+    allowed = set(plans) if strings(plans) else set()
     return isinstance(value, list) and bool(value) and all(
         isinstance(record, dict)
         and record.get("method") in {"command", "inspection"}
         and record.get("outcome") in {"PASS", "FAIL", "BLOCKED"}
         and isinstance(record.get("procedure"), str)
-        and len(record["procedure"].strip()) >= 12
-        and len(record["procedure"].split()) >= 2
-        and record["procedure"].strip().lower() not in PLACEHOLDERS
+        and record["procedure"] in allowed
         and isinstance(record.get("observed"), str)
         and len(record["observed"].strip()) >= 12
         and len(record["observed"].split()) >= 3
         and record["observed"].strip().lower() not in PLACEHOLDERS
-        and (record["method"] != "command" or isinstance(record.get("exit_code"), int))
+        and (
+            record["method"] != "command"
+            or (
+                isinstance(record.get("argv"), list)
+                and bool(record["argv"])
+                and all(isinstance(arg, str) and bool(arg.strip()) for arg in record["argv"])
+                and record["argv"][0].lower() not in {"run", "execute", "check", "verify", "inspect"}
+                and isinstance(record.get("exit_code"), int)
+                and ((record["outcome"] == "PASS") == (record["exit_code"] == 0))
+            )
+        )
+        and (
+            record["method"] != "inspection"
+            or (isinstance(record.get("subject"), str) and len(record["subject"].strip()) >= 3)
+        )
         for record in value
     )
 
 
 def convergence_error(data: dict[str, object]) -> str | None:
     history = data.get("review_history")
-    if not isinstance(history, list) or not history:
-        return "review_history must record this cycle's pass numbers and new-finding counts"
+    pass_number = data.get("pass_number")
+    current_findings = data.get("new_findings")
+    if not isinstance(history, list):
+        return "review_history must record completed passes in this cycle"
     valid = all(
         isinstance(row, dict)
         and row.get("pass") == index
@@ -51,9 +66,13 @@ def convergence_error(data: dict[str, object]) -> str | None:
     )
     if not valid:
         return "review_history passes must be contiguous with non-negative new_findings"
-    if len(history) < 4:
+    if pass_number != len(history) + 1:
+        return "pass_number must immediately follow review_history"
+    if not isinstance(current_findings, int) or current_findings < 0:
+        return "new_findings must record the current pass result"
+    if pass_number < 4:
         return None
-    recent = [row["new_findings"] for row in history[-4:]]
+    recent = [row["new_findings"] for row in history[-3:]] + [current_findings]
     sharply_declining = all(current * 2 <= previous for previous, current in zip(recent, recent[1:]))
     if not sharply_declining:
         return "review process failed: pass 4+ lacks a continuous >=50% decline; stop and redesign or replace the reviewer"
@@ -87,6 +106,7 @@ def frozen_plan(data: dict[str, object]) -> dict[str, object]:
         "untouched_surfaces": data.get("untouched_surfaces"),
         "review_cycle_id": data.get("review_cycle_id"),
         "review_history": data.get("review_history"),
+        "pass_number": data.get("pass_number"),
     }
     payload = json.dumps(sealed, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return {"item_count": len(items) if isinstance(items, list) else 0, "kind_counts": counts,
@@ -137,9 +157,9 @@ def validate(data: object) -> list[str]:
         status = item.get("status")
         if status not in TERMINAL:
             errors.append(f"{label}.status must be terminal")
-        if not records(item.get("evidence")):
+        if not records(item.get("evidence"), item.get("proof_plan")):
             errors.append(f"{label}.evidence must contain reproducible procedure/outcome/observation records")
-        if status in {"PROVEN", "FINDING"} and not records(item.get("attacks")):
+        if status in {"PROVEN", "FINDING"} and not records(item.get("attacks"), item.get("attack_plan")):
             errors.append(f"{label}.attacks must contain reproducible procedure/outcome/observation records")
     passes = data.get("attack_passes")
     if not isinstance(passes, dict):
@@ -154,7 +174,7 @@ def validate(data: object) -> list[str]:
             errors.append(f"attack_passes.{name}.plan must be frozen before review")
         if attack.get("status") not in TERMINAL:
             errors.append(f"attack_passes.{name} must have a terminal status")
-        if not records(attack.get("evidence")):
+        if not records(attack.get("evidence"), attack.get("plan")):
             errors.append(f"attack_passes.{name}.evidence must contain reproducible outcome records")
     for field in ("previous_findings", "adjacent_variants", "untouched_surfaces"):
         if not strings(data.get(field), empty=field != "untouched_surfaces"):

@@ -11,8 +11,10 @@ precede exposure to the implementer’s evidence.
 Freeze that record as `review-coverage.json` under a new review ID. Give every item a stable ID,
 source, literal claim, proof plan, and attack plan. Plan all A0–A7 passes and the re-review surfaces
 before freezing. The seal covers those plans and cannot be replaced in place. Record each execution
-with method, exact procedure, PASS/FAIL/BLOCKED outcome, specific observation, and integer exit code
-for commands; placeholders are not evidence. Do not remove an item after reading the
+with method, a procedure that exactly matches the frozen plan, PASS/FAIL/BLOCKED outcome, and a
+specific observation. Commands also require the actual argument vector and an integer exit code
+consistent with the outcome; inspections require the exact subject. Placeholders are not evidence.
+Do not remove an item after reading the
 ledger; append discrepancies as new material-claim items. A review is exhaustive only when every
 item has a terminal status and reproducible evidence or an explicit blocking reason.
 
