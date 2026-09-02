@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 
@@ -76,14 +77,14 @@ def main() -> int:
     try:
         data = json.loads(args.manifest.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        print(f"INVALID: {error}")
+        sys.stderr.write(f"INVALID: {error}\n")
         return 2
     errors = validate(data)
     if errors:
         for error in errors:
-            print(f"INVALID: {error}")
+            sys.stderr.write(f"INVALID: {error}\n")
         return 1
-    print("PASS: exhaustive review manifest is complete")
+    sys.stdout.write("PASS: exhaustive review manifest is complete\n")
     return 0
 
 
