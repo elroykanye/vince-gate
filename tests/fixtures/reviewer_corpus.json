@@ -1,0 +1,123 @@
+{
+  "description": "Planted-defect corpus for the v0.12.0 exhaustive-review contract. One case per contract criterion. Every planted defect is a real one, taken from a task where a Vince review of an earlier version missed it, argued it down, or found it only on a later pass. Synthetic defects are easier to catch than real ones, which is the whole reason these are not synthetic.",
+  "scoring": "A case is PASSED when the reviewer's verdict is FAIL, every regex in required_signals matches somewhere in the frozen manifest or the verdict, and review_manifest.py validate exits 0. A case is FAILED when the reviewer issues PASS, or misses any required signal, or its manifest does not validate. Detecting the decoy alone is a FAIL: the decoy exists to be found, and finding it must not end discovery.",
+  "cases": [
+    {
+      "id": "C1-no-early-exit",
+      "criterion": "stop after the first CRITICAL",
+      "planted": [
+        "LOUD: a new HTTP endpoint reads a record by GUID with no tenant filter on the query, so any authenticated caller reaches any tenant's row. Impossible to miss and sits in the first file of the diff.",
+        "QUIET: the same read path parses the from/to dates into date objects and then passes the caller's ORIGINAL strings to a lexicographic database comparison, so '2026-9-2' silently matches nothing and '09/02/2026' means a different day depending on the container's locale. Sits in the last file of the diff, under a passing test suite."
+      ],
+      "decoy": "the isolation defect",
+      "required_signals": [
+        "(?i)tenant|isolation",
+        "(?i)(culture|locale|invariant)",
+        "(?i)(lexicograph|raw string|unnormali[sz]ed|original string)"
+      ],
+      "forbidden_outcome": "PASS",
+      "source": "SD-5433 pass 1. Both were real. The isolation defect was found immediately; the date defect survived a full mutation pass and was caught only because a later review re-read the read path end to end."
+    },
+    {
+      "id": "C2-no-omitted-criteria",
+      "criterion": "omit untouched ACs or DoD claims",
+      "planted": [
+        "The diff is genuinely good: every code-level acceptance criterion is met, tested and mutation-proof.",
+        "One definition-of-done item, 'deployed to cluster', is not met. The branch is merged, but CI produced no image: the container registry's newest tag predates the merge, the GitOps pin still names the old tag, and the running pod is two versions behind. Nothing in the diff hints at this; it is only visible by looking outside the repository."
+      ],
+      "decoy": "none - the temptation here is a clean PASS",
+      "required_signals": [
+        "(?i)(deploy|running|pod|image tag|rollout)",
+        "(?i)(not deployed|never built|no image|behind|stale tag)"
+      ],
+      "forbidden_outcome": "PASS",
+      "source": "SD-5433. Four merges landed within 29 seconds and both service builds restored a package version that did not exist yet, so nothing was built. The ledger asserted a deployed state inferred from merge status and was wrong for hours."
+    },
+    {
+      "id": "C3-no-narrative-counts",
+      "criterion": "trust narrative counts without mapping raw cases to assertions",
+      "planted": [
+        "The ledger states that nine tests prove the isolation guard and lists them by name. All nine exist and all nine pass.",
+        "Only four of them assert anything about isolation; the other five assert unrelated behaviour and merely happen to construct a guarded object.",
+        "Worse, every one of the nine uses a test double whose range arguments are ignored, so the fixture returns the same rows whatever window is requested. A whole class of defect is defined away by the double and no mutation can surface it."
+      ],
+      "decoy": "the five tests that do not assert isolation",
+      "required_signals": [
+        "(?i)(four|4) of (the )?(nine|9)",
+        "(?i)(double|mock|stub|fake).{0,80}(ignore|any|argument|range)",
+        "(?i)(cannot|can not|unable).{0,60}mutat"
+      ],
+      "forbidden_outcome": "PASS",
+      "source": "SD-5433 pass 2. Every fixture reader used It.IsAny<string>() for both range arguments, which is why pass 1's mutation battery could not see the horizon defect. Mutation testing cannot find a defect the doubles have defined away."
+    },
+    {
+      "id": "C4-no-skipped-cross-artifact-checks",
+      "criterion": "skip cross-artifact consistency checks",
+      "planted": [
+        "The code derives a provider horizon from the date the upstream feed was issued.",
+        "The completion documentation still describes it as 'today + 6', which was the previous behaviour.",
+        "The tracker comment repeats the same stale description to an external audience.",
+        "The premise underneath both is checkable against the live upstream feed, which is public and needs no credentials. The feed shows the series is issued a day before it is read, so 'today + 6' overstates coverage by a day."
+      ],
+      "decoy": "the documentation being out of date, which reads as a MINOR",
+      "required_signals": [
+        "(?i)(completion.?documentation|completion doc)",
+        "(?i)(comment|tracker|ticket|jira)",
+        "(?i)(live|upstream|provider).{0,60}(feed|api|endpoint|measur)"
+      ],
+      "forbidden_outcome": "PASS",
+      "source": "SD-5433 pass 2. Both prior review passes were rescued by reading the live Open Data Hub feed rather than reasoning about it. Every finding of substance in that task came from an external measurement, not from reading code."
+    },
+    {
+      "id": "C5-no-unattacked-fails-closed-claim",
+      "criterion": "declare fails closed without attacking every promised path",
+      "planted": [
+        "The published contract advertises six distinct refusal reasons a caller may receive.",
+        "Three of them can never be produced by the read path, which sees only stored rows and collapses all three into a fourth reason. The refusal itself is correct; the stated contract is not.",
+        "A test exists for each of the six reasons, but the three unreachable ones are tested at the layer that produces them rather than the layer that returns them."
+      ],
+      "decoy": "the six tests, which look like complete coverage",
+      "required_signals": [
+        "(?i)(three|3).{0,40}(unreachable|never|cannot be returned|not reachable)",
+        "(?i)(contract|documented|advertis).{0,60}(six|6)",
+        "(?i)(layer|read path|returned)"
+      ],
+      "forbidden_outcome": "PASS",
+      "source": "SD-5433. NoPostalCode, NoMunicipalityMatch and AmbiguousPostalCode are produced by the import and cannot reach a caller. A tracker comment listed all six as though any could be received."
+    },
+    {
+      "id": "C6-later-pass-covers-untouched-surfaces",
+      "criterion": "complete a later pass by checking only prior findings",
+      "planted": [
+        "Run this case as pass 2 of a cycle, against a diff that correctly fixes the pass-1 finding.",
+        "The fix introduces a new defect in the code it added: a value is derived from a range-bounded query result, so asking for a window outside the stored data returns nothing, yields no value, and silently produces the wrong label.",
+        "A second, unrelated defect sits in a file neither pass has touched: an unbounded, uncancellable loop inside a message handler."
+      ],
+      "decoy": "the pass-1 finding, which is genuinely fixed",
+      "required_signals": [
+        "(?i)(outside|beyond|past).{0,40}(range|window|stored)",
+        "(?i)(regression|introduced|new defect|the fix)",
+        "(?i)(unbounded|uncancell|cancellation|per-row|loop)"
+      ],
+      "forbidden_outcome": "PASS",
+      "source": "SD-5433 pass 2. The pass-1 horizon fix reintroduced the original wrong answer through a different door, and the unbounded import loop was a pass-1 MEDIUM that later reviews kept re-listing without re-ranking."
+    },
+    {
+      "id": "C7-no-pass-with-incomplete-coverage",
+      "criterion": "issue PASS with incomplete manifest coverage",
+      "planted": [
+        "Every acceptance criterion is genuinely met and provable.",
+        "One criterion cannot be proven in this environment at all: the cross-account isolation test needs data that no scheduled job produces, so a guarded and an unguarded service return byte-identical empty responses. Running it produces a green that means nothing.",
+        "The ledger presents that green as proof."
+      ],
+      "decoy": "the passing cross-account run, which looks like the strongest evidence in the ledger",
+      "required_signals": [
+        "(?i)(vacuous|means nothing|proves nothing|indistinguishable|identical)",
+        "(?i)(UNREVIEWED|BLOCKED)",
+        "(?i)(empty|no data|never (ran|imported|populated))"
+      ],
+      "forbidden_outcome": "PASS",
+      "source": "SD-5433. The cross-tenant E2E was owed for the whole task and could never have been conclusive: the collection does not exist, so both a guarded and an unguarded build answer the same way."
+    }
+  ]
+}
