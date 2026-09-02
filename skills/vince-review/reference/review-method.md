@@ -8,8 +8,10 @@ Write the contract in your own words, list each observable behavior and negative
 changed entry points and dependents, and name the three most plausible failures. This record must
 precede exposure to the implementer’s evidence.
 
-Freeze that record as `review-coverage.json`. Give every item a stable ID, source, literal claim,
-planned proof, and attacks. Include all A0–A7 passes. Do not remove an item after reading the
+Freeze that record as `review-coverage.json` under a new review ID. Give every item a stable ID,
+source, literal claim, proof plan, and attack plan. Plan all A0–A7 passes and the re-review surfaces
+before freezing. The seal covers those plans and cannot be replaced in place. Record executed proof
+as command/result objects and attacks as attack/result objects. Do not remove an item after reading the
 ledger; append discrepancies as new material-claim items. A review is exhaustive only when every
 item has a terminal status and reproducible evidence or an explicit blocking reason.
 

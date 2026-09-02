@@ -1,35 +1,34 @@
 {
   "task": "<task-id>",
-  "frozen_before_ledger": true,
+  "review_id": "<new-unique-review-id>",
+  "frozen_before_ledger": false,
   "discovery_complete": false,
   "early_exit": false,
-  "inventory": {
-    "item_count": 0,
-    "kind_counts": {},
-    "items_sha256": "freeze after completing the blind inventory"
-  },
+  "inventory": null,
   "items": [
     {
       "id": "AC-1",
       "kind": "acceptance",
       "claim": "<literal material claim>",
       "source": "<original source>",
+      "proof_plan": ["<command or inspection that can prove the claim>"],
+      "attack_plan": ["<specific falsification or mutation>"],
       "status": "NOT-REVIEWED",
       "evidence": [],
       "attacks": []
     }
   ],
   "attack_passes": {
-    "A0": {"status": "NOT-REVIEWED", "evidence": []},
-    "A1": {"status": "NOT-REVIEWED", "evidence": []},
-    "A2": {"status": "NOT-REVIEWED", "evidence": []},
-    "A3": {"status": "NOT-REVIEWED", "evidence": []},
-    "A4": {"status": "NOT-REVIEWED", "evidence": []},
-    "A5": {"status": "NOT-REVIEWED", "evidence": []},
-    "A6": {"status": "NOT-REVIEWED", "evidence": []},
-    "A7": {"status": "NOT-REVIEWED", "evidence": []}
+    "A0": {"plan": ["<planned A0 attack>"], "status": "NOT-REVIEWED", "evidence": []},
+    "A1": {"plan": ["<planned A1 attack>"], "status": "NOT-REVIEWED", "evidence": []},
+    "A2": {"plan": ["<planned A2 attack>"], "status": "NOT-REVIEWED", "evidence": []},
+    "A3": {"plan": ["<planned A3 attack>"], "status": "NOT-REVIEWED", "evidence": []},
+    "A4": {"plan": ["<planned A4 attack>"], "status": "NOT-REVIEWED", "evidence": []},
+    "A5": {"plan": ["<planned A5 attack>"], "status": "NOT-REVIEWED", "evidence": []},
+    "A6": {"plan": ["<planned A6 attack>"], "status": "NOT-REVIEWED", "evidence": []},
+    "A7": {"plan": ["<planned A7 attack>"], "status": "NOT-REVIEWED", "evidence": []}
   },
   "previous_findings": [],
-  "adjacent_variants": [],
-  "untouched_surfaces": []
+  "adjacent_variants": ["<variant related to a prior or likely defect>"],
+  "untouched_surfaces": ["<surface deliberately attacked before verdict>"]
 }

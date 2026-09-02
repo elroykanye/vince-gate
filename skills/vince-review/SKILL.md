@@ -41,6 +41,9 @@ Before opening the ledger, read the original request/specification and the integ
 Create and freeze `review-coverage.json` before opening the ledger. Start from
 `templates/review-coverage.template.json` and inventory every acceptance criterion,
 definition-of-done item, material claim, changed entry point, dependent, and applicable attack pass.
+Use a new `review_id` for each review. Record each item's proof plan and attack plan, plus the
+planned A0–A7 attacks, before freezing. Freeze is write-once: a changed plan requires a new manifest
+and review ID, never resealing the old file.
 Include numeric counts, “fails closed” claims, documentation, configuration, version, and delivery
 claims rather than inheriting the implementation's chosen evidence boundary. Then open the profile
 and lessons. Only after that may you compare your contract with the ledger.

@@ -4,6 +4,8 @@ import re
 import subprocess
 import sys
 import tempfile
+import io
+import tarfile
 import unittest
 from pathlib import Path
 from collections import Counter
@@ -27,7 +29,8 @@ def skill_parts(path: Path) -> tuple[str, str]:
 class TokenEfficientSkillTests(unittest.TestCase):
     def complete_manifest(self):
         data = {
-            "task": "T",
+            "task": "Task-001",
+            "review_id": "review-001",
             "frozen_before_ledger": True,
             "discovery_complete": True,
             "early_exit": False,
@@ -37,22 +40,30 @@ class TokenEfficientSkillTests(unittest.TestCase):
                     "kind": "acceptance",
                     "claim": "observable result",
                     "source": "original contract",
+                    "proof_plan": ["run acceptance proof"],
+                    "attack_plan": ["mutate acceptance behavior"],
                     "status": "PROVEN",
-                    "evidence": ["command => result"],
-                    "attacks": ["mutation killed"],
+                    "evidence": [{"command": "run acceptance proof", "result": "proof passed"}],
+                    "attacks": [{"attack": "mutate acceptance behavior", "result": "mutation killed"}],
                 },
                 {
                     "id": "CLAIM-1",
                     "kind": "material-claim",
                     "claim": "documented result",
                     "source": "completion documentation",
+                    "proof_plan": ["compare document with branch"],
+                    "attack_plan": ["reverse documented claim"],
                     "status": "PROVEN",
-                    "evidence": ["document compared with branch"],
-                    "attacks": ["claim reconciliation"],
+                    "evidence": [{"command": "compare document with branch", "result": "claim matches"}],
+                    "attacks": [{"attack": "reverse documented claim", "result": "mismatch detected"}],
                 },
             ],
             "attack_passes": {
-                f"A{i}": {"status": "PROVEN", "evidence": ["attack recorded"]}
+                f"A{i}": {
+                    "plan": [f"execute attack pass A{i}"],
+                    "status": "PROVEN",
+                    "evidence": [{"command": f"execute A{i}", "result": "attack recorded"}],
+                }
                 for i in range(8)
             },
             "previous_findings": [],
@@ -60,15 +71,24 @@ class TokenEfficientSkillTests(unittest.TestCase):
             "untouched_surfaces": ["none — all manifest items terminal"],
         }
         normalized = [
-            {field: item[field] for field in ("id", "kind", "claim", "source")}
+            {field: item[field] for field in ("id", "kind", "claim", "source", "proof_plan", "attack_plan")}
             for item in data["items"]
         ]
-        payload = json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        sealed = {
+            "task": data["task"],
+            "review_id": data["review_id"],
+            "items": normalized,
+            "attack_passes": {name: value["plan"] for name, value in sorted(data["attack_passes"].items())},
+            "previous_findings": data["previous_findings"],
+            "adjacent_variants": data["adjacent_variants"],
+            "untouched_surfaces": data["untouched_surfaces"],
+        }
+        payload = json.dumps(sealed, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         kinds = ("acceptance", "definition-of-done", "dependent", "entry-point", "material-claim")
         data["inventory"] = {
             "item_count": len(data["items"]),
             "kind_counts": {kind: sum(item["kind"] == kind for item in data["items"]) for kind in kinds},
-            "items_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+            "plan_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest(),
         }
         return data
 
@@ -177,7 +197,11 @@ class TokenEfficientSkillTests(unittest.TestCase):
 
     def test_locked_instruction_and_support_content_is_unchanged(self):
         lock = json.loads((ROOT / "policies" / "content-lock.json").read_text(encoding="utf-8"))
-        expected = {str(path.relative_to(ROOT)).replace("\\", "/") for path in SKILLS.glob("*/SKILL.md")}
+        expected = {
+            str(path.relative_to(ROOT)).replace("\\", "/")
+            for path in SKILLS.rglob("*")
+            if path.is_file() and path.suffix in {".md", ".py"}
+        }
         expected.update(("README.md", "USER-GUIDE.md", "docs/harnesses.md"))
         self.assertEqual(expected, set(lock))
         for relative, digest in lock.items():
@@ -330,6 +354,8 @@ class TokenEfficientSkillTests(unittest.TestCase):
         add("blank-untouched-surface", lambda value: value.update(untouched_surfaces=[" "]))
         add("deleted-item-after-freeze", lambda value: value["items"].pop())
         add("changed-claim-after-freeze", lambda value: value["items"][0].update(claim="changed claim"))
+        add("deleted-attack-plan-after-freeze", lambda value: value["items"][0].pop("attack_plan"))
+        add("deleted-adjacent-variant-after-freeze", lambda value: value.update(adjacent_variants=[]))
         add("wrong-id-type", lambda value: value["items"][0].update(id=[]))
         add("vacuous-evidence", lambda value: value["items"][0].update(evidence=["x"]))
 
@@ -361,6 +387,9 @@ class TokenEfficientSkillTests(unittest.TestCase):
             frozen = subprocess.run(
                 [sys.executable, str(validator), "freeze", str(path)], capture_output=True, text=True
             )
+            refrozen = subprocess.run(
+                [sys.executable, str(validator), "freeze", str(path)], capture_output=True, text=True
+            )
             valid = subprocess.run(
                 [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
             )
@@ -371,8 +400,21 @@ class TokenEfficientSkillTests(unittest.TestCase):
                 [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
             )
         self.assertEqual(0, frozen.returncode, frozen.stderr)
+        self.assertNotEqual(0, refrozen.returncode)
         self.assertEqual(0, valid.returncode, valid.stderr)
         self.assertNotEqual(0, rejected.returncode)
+
+    def test_review_manifest_freeze_rejects_non_object_json_without_traceback(self):
+        validator = ROOT / "scripts" / "review_manifest.py"
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "coverage.json"
+            path.write_text("[]", encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(validator), "freeze", str(path)], capture_output=True, text=True
+            )
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("manifest must be a JSON object", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
 
     def test_gemini_uses_native_agent_skills(self):
         binding = json.loads((ROOT / "bindings" / "gemini.json").read_text(encoding="utf-8"))
@@ -418,6 +460,44 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertIn("[gemini]", result.stdout)
         self.assertIn("[copilot]", result.stdout)
         self.assertGreaterEqual(result.stdout.count("vince-implement/SKILL.md"), 4)
+
+    def test_gemini_upgrade_removes_legacy_managed_layout(self):
+        archive = subprocess.run(
+            ["git", "archive", "--format=tar", "origin/main"],
+            cwd=ROOT,
+            capture_output=True,
+            check=True,
+        ).stdout
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            old_toolkit = base / "old"
+            target = base / "target"
+            old_toolkit.mkdir()
+            with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as bundle:
+                bundle.extractall(old_toolkit, filter="data")
+            old = subprocess.run(
+                [sys.executable, str(old_toolkit / "scripts" / "install.py"), "install", "--target", str(target), "--scope", "project", "--binding", "gemini"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, old.returncode, old.stderr)
+            self.assertTrue((target / ".gemini" / "commands" / "vince").is_dir())
+            upgraded = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "install.py"), "install", "--target", str(target), "--scope", "project", "--binding", "gemini"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, upgraded.returncode, upgraded.stderr)
+            self.assertFalse((target / ".gemini" / "commands" / "vince").exists())
+            index = target / "GEMINI.md"
+            self.assertFalse(index.exists() and "BEGIN VINCE GATE" in index.read_text(encoding="utf-8"))
+            status = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "install.py"), "status", "--target", str(target), "--scope", "project"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, status.returncode, status.stdout + status.stderr)
+            self.assertIn("healthy", status.stdout)
 
     def test_docs_describe_progressive_native_bindings_truthfully(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")

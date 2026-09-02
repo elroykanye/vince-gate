@@ -601,6 +601,7 @@ def cmd_install(args) -> int:
     if not chosen:
         return 1
     names = skill_names()
+    prior_indexes = set(manifest.get("indexes", {}))
     if not names:
         print(f"error: no skills under {toolkit_root() / 'skills'}", file=sys.stderr)
         return 1
@@ -613,6 +614,7 @@ def cmd_install(args) -> int:
         bdir = binding_dir(binding, root, scope)
         prior = manifest.get("installs", {}).get(bid, {})
         prior_files = prior.get("files", {})
+        prior_root = Path(prior.get("root") or bdir)
 
         rendered = {}
         for skill in names:
@@ -636,6 +638,18 @@ def cmd_install(args) -> int:
             print("      Copy the edits back into the toolkit, or re-run with --force.")
             return 2
 
+        moved_modified = []
+        if prior_root != bdir:
+            moved_modified = [
+                rel for rel, digest in prior_files.items()
+                if (prior_root / rel).is_file() and sha256_file(prior_root / rel) != digest
+            ]
+        if moved_modified and not args.force:
+            print(f"\n  [{bid}] refused: legacy managed files were edited in place:")
+            for rel in moved_modified:
+                print(f"        {prior_root / rel}")
+            return 2
+
         print(f"\n  [{bid}] {binding['label']} -> {bdir}"
               f"{'  (dry run)' if args.dry_run else ''}")
         written = {}
@@ -648,11 +662,18 @@ def cmd_install(args) -> int:
             print(f"      {rel}")
 
         for rel in [r for r in prior_files if r not in written]:
-            stale = bdir / rel
+            stale = prior_root / rel
             if stale.is_file():
                 print(f"      removing stale {rel}")
                 if not args.dry_run:
                     stale.unlink()
+
+        if prior_root != bdir and not args.dry_run and prior_root.is_dir():
+            for sub in sorted(prior_root.rglob("*"), reverse=True):
+                if sub.is_dir() and not any(sub.iterdir()):
+                    sub.rmdir()
+            if prior_root.is_dir() and not any(prior_root.iterdir()):
+                prior_root.rmdir()
 
         manifest.setdefault("installs", {})[bid] = {
             "version": version(),
@@ -666,6 +687,10 @@ def cmd_install(args) -> int:
     # One merged pointer block per index file, covering every binding installed here that
     # declares it - several harnesses commonly share AGENTS.md.
     if scope == "project":
+        current_indexes = set(index_groups(manifest))
+        for name in sorted(prior_indexes - current_indexes):
+            if strip_index(root / name, args.dry_run):
+                print(f"\n  {name}: removed obsolete pointer block")
         manifest["indexes"] = write_indexes(root, manifest, args.dry_run)
     elif any(bindings[b].get("index") for b in chosen):
         print("\n  note: index blocks are project-scope only, skipped for user scope")
