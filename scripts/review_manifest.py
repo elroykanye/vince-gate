@@ -11,6 +11,7 @@ from pathlib import Path
 TERMINAL = {"PROVEN", "FINDING", "BLOCKED", "UNREVIEWED"}
 KINDS = {"acceptance", "definition-of-done", "material-claim", "entry-point", "dependent"}
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
+PLACEHOLDERS = {"xxx", "tbd", "todo", "placeholder", "none", "n/a", "na"}
 
 
 def strings(value: object, *, empty: bool = False) -> bool:
@@ -19,13 +20,44 @@ def strings(value: object, *, empty: bool = False) -> bool:
     )
 
 
-def records(value: object, fields: tuple[str, str]) -> bool:
+def records(value: object) -> bool:
     return isinstance(value, list) and bool(value) and all(
-        isinstance(record, dict) and all(
-            isinstance(record.get(field), str) and len(record[field].strip()) >= 3
-            for field in fields
-        ) for record in value
+        isinstance(record, dict)
+        and record.get("method") in {"command", "inspection"}
+        and record.get("outcome") in {"PASS", "FAIL", "BLOCKED"}
+        and isinstance(record.get("procedure"), str)
+        and len(record["procedure"].strip()) >= 12
+        and len(record["procedure"].split()) >= 2
+        and record["procedure"].strip().lower() not in PLACEHOLDERS
+        and isinstance(record.get("observed"), str)
+        and len(record["observed"].strip()) >= 12
+        and len(record["observed"].split()) >= 3
+        and record["observed"].strip().lower() not in PLACEHOLDERS
+        and (record["method"] != "command" or isinstance(record.get("exit_code"), int))
+        for record in value
     )
+
+
+def convergence_error(data: dict[str, object]) -> str | None:
+    history = data.get("review_history")
+    if not isinstance(history, list) or not history:
+        return "review_history must record this cycle's pass numbers and new-finding counts"
+    valid = all(
+        isinstance(row, dict)
+        and row.get("pass") == index
+        and isinstance(row.get("new_findings"), int)
+        and row["new_findings"] >= 0
+        for index, row in enumerate(history, start=1)
+    )
+    if not valid:
+        return "review_history passes must be contiguous with non-negative new_findings"
+    if len(history) < 4:
+        return None
+    recent = [row["new_findings"] for row in history[-4:]]
+    sharply_declining = all(current * 2 <= previous for previous, current in zip(recent, recent[1:]))
+    if not sharply_declining:
+        return "review process failed: pass 4+ lacks a continuous >=50% decline; stop and redesign or replace the reviewer"
+    return None
 
 
 def frozen_plan(data: dict[str, object]) -> dict[str, object]:
@@ -53,6 +85,8 @@ def frozen_plan(data: dict[str, object]) -> dict[str, object]:
         "attack_passes": pass_plans, "previous_findings": data.get("previous_findings"),
         "adjacent_variants": data.get("adjacent_variants"),
         "untouched_surfaces": data.get("untouched_surfaces"),
+        "review_cycle_id": data.get("review_cycle_id"),
+        "review_history": data.get("review_history"),
     }
     payload = json.dumps(sealed, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return {"item_count": len(items) if isinstance(items, list) else 0, "kind_counts": counts,
@@ -63,7 +97,7 @@ def validate(data: object) -> list[str]:
     if not isinstance(data, dict):
         return ["manifest must be a JSON object"]
     errors = []
-    for field in ("task", "review_id"):
+    for field in ("task", "review_id", "review_cycle_id"):
         if not isinstance(data.get(field), str) or len(data[field].strip()) < 3:
             errors.append(f"{field} must be a non-empty identifying string")
     for flag, expected in (("frozen_before_ledger", True), ("discovery_complete", True), ("early_exit", False)):
@@ -103,10 +137,10 @@ def validate(data: object) -> list[str]:
         status = item.get("status")
         if status not in TERMINAL:
             errors.append(f"{label}.status must be terminal")
-        if not records(item.get("evidence"), ("command", "result")):
-            errors.append(f"{label}.evidence must contain command/result records")
-        if status in {"PROVEN", "FINDING"} and not records(item.get("attacks"), ("attack", "result")):
-            errors.append(f"{label}.attacks must contain attack/result records")
+        if not records(item.get("evidence")):
+            errors.append(f"{label}.evidence must contain reproducible procedure/outcome/observation records")
+        if status in {"PROVEN", "FINDING"} and not records(item.get("attacks")):
+            errors.append(f"{label}.attacks must contain reproducible procedure/outcome/observation records")
     passes = data.get("attack_passes")
     if not isinstance(passes, dict):
         errors.append("attack_passes must contain A0 through A7")
@@ -120,11 +154,14 @@ def validate(data: object) -> list[str]:
             errors.append(f"attack_passes.{name}.plan must be frozen before review")
         if attack.get("status") not in TERMINAL:
             errors.append(f"attack_passes.{name} must have a terminal status")
-        if not records(attack.get("evidence"), ("command", "result")):
-            errors.append(f"attack_passes.{name}.evidence must contain command/result records")
+        if not records(attack.get("evidence")):
+            errors.append(f"attack_passes.{name}.evidence must contain reproducible outcome records")
     for field in ("previous_findings", "adjacent_variants", "untouched_surfaces"):
         if not strings(data.get(field), empty=field != "untouched_surfaces"):
             errors.append(f"{field} must be a planned list of non-blank strings")
+    process_error = convergence_error(data)
+    if process_error:
+        errors.append(process_error)
     return errors
 
 

@@ -44,6 +44,10 @@ definition-of-done item, material claim, changed entry point, dependent, and app
 Use a new `review_id` for each review. Record each item's proof plan and attack plan, plus the
 planned A0–A7 attacks, before freezing. Freeze is write-once: a changed plan requires a new manifest
 and review ID, never resealing the old file.
+Keep one `review_cycle_id` while remediating the same implementation approach and append each pass's
+new-finding count to `review_history`. Passes must be contiguous. At pass 4 or later, every one of
+the last three transitions must cut new findings by at least 50%. If not, declare reviewer-process
+failure, stop the cycle, and require a redesigned approach or replacement reviewer before a new cycle.
 Include numeric counts, “fails closed” claims, documentation, configuration, version, and delivery
 claims rather than inheriting the implementation's chosen evidence boundary. Then open the profile
 and lessons. Only after that may you compare your contract with the ledger.

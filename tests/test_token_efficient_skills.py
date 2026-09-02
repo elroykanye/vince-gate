@@ -31,6 +31,8 @@ class TokenEfficientSkillTests(unittest.TestCase):
         data = {
             "task": "Task-001",
             "review_id": "review-001",
+            "review_cycle_id": "cycle-001",
+            "review_history": [{"pass": 1, "new_findings": 0}],
             "frozen_before_ledger": True,
             "discovery_complete": True,
             "early_exit": False,
@@ -43,8 +45,8 @@ class TokenEfficientSkillTests(unittest.TestCase):
                     "proof_plan": ["run acceptance proof"],
                     "attack_plan": ["mutate acceptance behavior"],
                     "status": "PROVEN",
-                    "evidence": [{"command": "run acceptance proof", "result": "proof passed"}],
-                    "attacks": [{"attack": "mutate acceptance behavior", "result": "mutation killed"}],
+                    "evidence": [{"method": "command", "procedure": "run acceptance proof", "outcome": "PASS", "observed": "acceptance proof passed", "exit_code": 0}],
+                    "attacks": [{"method": "command", "procedure": "mutate acceptance behavior", "outcome": "PASS", "observed": "the mutation was killed", "exit_code": 1}],
                 },
                 {
                     "id": "CLAIM-1",
@@ -54,15 +56,15 @@ class TokenEfficientSkillTests(unittest.TestCase):
                     "proof_plan": ["compare document with branch"],
                     "attack_plan": ["reverse documented claim"],
                     "status": "PROVEN",
-                    "evidence": [{"command": "compare document with branch", "result": "claim matches"}],
-                    "attacks": [{"attack": "reverse documented claim", "result": "mismatch detected"}],
+                    "evidence": [{"method": "inspection", "procedure": "compare document with branch", "outcome": "PASS", "observed": "documented claim matches branch"}],
+                    "attacks": [{"method": "inspection", "procedure": "reverse the documented claim", "outcome": "PASS", "observed": "reversed mismatch was detected"}],
                 },
             ],
             "attack_passes": {
                 f"A{i}": {
                     "plan": [f"execute attack pass A{i}"],
                     "status": "PROVEN",
-                    "evidence": [{"command": f"execute A{i}", "result": "attack recorded"}],
+                    "evidence": [{"method": "command", "procedure": f"execute attack pass A{i}", "outcome": "PASS", "observed": "adversarial attack was recorded", "exit_code": 0}],
                 }
                 for i in range(8)
             },
@@ -82,6 +84,8 @@ class TokenEfficientSkillTests(unittest.TestCase):
             "previous_findings": data["previous_findings"],
             "adjacent_variants": data["adjacent_variants"],
             "untouched_surfaces": data["untouched_surfaces"],
+            "review_cycle_id": data["review_cycle_id"],
+            "review_history": data["review_history"],
         }
         payload = json.dumps(sealed, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
         kinds = ("acceptance", "definition-of-done", "dependent", "entry-point", "material-claim")
@@ -280,6 +284,10 @@ class TokenEfficientSkillTests(unittest.TestCase):
             "Every acceptance criterion, definition-of-done item, material claim, changed entry point, and applicable attack pass",
             "PROVEN, FINDING, BLOCKED, or UNREVIEWED",
             "A later pass must cover previous findings, adjacent variants, and previously untouched surfaces.",
+            "At pass 4 or later, every one of",
+            "the last three transitions must cut new findings by at least 50%.",
+            "declare reviewer-process",
+            "failure, stop the cycle",
             "python <toolkit>/scripts/review_manifest.py validate",
         )
         for clause in required:
@@ -415,6 +423,57 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("manifest must be a JSON object", result.stderr)
         self.assertNotIn("Traceback", result.stderr)
+
+    def test_review_manifest_rejects_vacuous_structured_evidence(self):
+        validator = ROOT / "scripts" / "review_manifest.py"
+        manifest = self.complete_manifest()
+        empty = {"method": "command", "procedure": "xxx", "outcome": "PASS", "observed": "xxx", "exit_code": 0}
+        for item in manifest["items"]:
+            item["evidence"] = [dict(empty)]
+            item["attacks"] = [dict(empty)]
+        for attack in manifest["attack_passes"].values():
+            attack["evidence"] = [dict(empty)]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "coverage.json"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
+            )
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("reproducible", result.stderr)
+
+    def test_review_manifest_enforces_pass_four_convergence_boundary(self):
+        validator = ROOT / "scripts" / "review_manifest.py"
+
+        def run(history):
+            manifest = self.complete_manifest()
+            manifest["review_history"] = history
+            normalized = {
+                "task": manifest["task"], "review_id": manifest["review_id"],
+                "items": [{field: item[field] for field in ("id", "kind", "claim", "source", "proof_plan", "attack_plan")} for item in manifest["items"]],
+                "attack_passes": {name: value["plan"] for name, value in sorted(manifest["attack_passes"].items())},
+                "previous_findings": manifest["previous_findings"],
+                "adjacent_variants": manifest["adjacent_variants"],
+                "untouched_surfaces": manifest["untouched_surfaces"],
+                "review_cycle_id": manifest["review_cycle_id"], "review_history": history,
+            }
+            manifest["inventory"]["plan_sha256"] = hashlib.sha256(
+                json.dumps(normalized, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+            ).hexdigest()
+            with tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "coverage.json"
+                path.write_text(json.dumps(manifest), encoding="utf-8")
+                return subprocess.run(
+                    [sys.executable, str(validator), "validate", str(path)], capture_output=True, text=True
+                )
+
+        pass_three = run([{"pass": 1, "new_findings": 8}, {"pass": 2, "new_findings": 8}, {"pass": 3, "new_findings": 8}])
+        declining_four = run([{"pass": 1, "new_findings": 8}, {"pass": 2, "new_findings": 4}, {"pass": 3, "new_findings": 2}, {"pass": 4, "new_findings": 1}])
+        flat_four = run([{"pass": 1, "new_findings": 8}, {"pass": 2, "new_findings": 4}, {"pass": 3, "new_findings": 3}, {"pass": 4, "new_findings": 2}])
+        self.assertEqual(0, pass_three.returncode, pass_three.stderr)
+        self.assertEqual(0, declining_four.returncode, declining_four.stderr)
+        self.assertNotEqual(0, flat_four.returncode)
+        self.assertIn("review process failed", flat_four.stderr)
 
     def test_gemini_uses_native_agent_skills(self):
         binding = json.loads((ROOT / "bindings" / "gemini.json").read_text(encoding="utf-8"))

@@ -1,6 +1,10 @@
 {
   "task": "<task-id>",
   "review_id": "<new-unique-review-id>",
+  "review_cycle_id": "<stable ID for this review cycle>",
+  "review_history": [
+    {"pass": 1, "new_findings": 0}
+  ],
   "frozen_before_ledger": false,
   "discovery_complete": false,
   "early_exit": false,
@@ -14,7 +18,9 @@
       "proof_plan": ["<command or inspection that can prove the claim>"],
       "attack_plan": ["<specific falsification or mutation>"],
       "status": "NOT-REVIEWED",
-      "evidence": [],
+      "evidence": [
+        {"method": "command", "procedure": "<exact command or inspection procedure>", "outcome": "PASS", "observed": "<specific observed result>", "exit_code": 0}
+      ],
       "attacks": []
     }
   ],
