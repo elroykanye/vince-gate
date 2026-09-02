@@ -15,6 +15,9 @@ base and not a linter — it is a pair of opposed roles that together make "done
 The two rules that make the rest work: **nothing is done without a PASS verdict**, and **no claim
 counts without the command and its output behind it**.
 
+Vince keeps chat output deliberately small: `Result`, an optional `Problem`, and `Next`. Full test,
+mutation, and review evidence stays in the task artifacts instead of being poured into chat.
+
 Spec-driven frameworks — OpenSpec, Spec Kit, Superpowers, BMAD, GSD — enforce *process*: phases,
 gates, personas, the order you do things in. None of them verify that the work is what it claims
 to be. vince-gate enforces *evidence*: a contract copied verbatim, tests proven able to fail,

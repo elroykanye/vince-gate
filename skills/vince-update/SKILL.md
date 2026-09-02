@@ -5,6 +5,8 @@ description: Safely upgrade or roll back Vince at the recorded scope and binding
 
 # Vince — Update
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 Upgrading the files is the easy half and `install.py` already does it. The half that gets
 missed: **a new release reads config fields that an older profile does not have.** Nothing errors
 — the skills just quietly fall back, and the capability the user upgraded for never switches on.

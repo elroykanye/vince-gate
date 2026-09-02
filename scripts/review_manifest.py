@@ -11,10 +11,20 @@ TERMINAL = {"PROVEN", "FINDING", "BLOCKED", "UNREVIEWED"}
 KINDS = {"acceptance", "definition-of-done", "material-claim", "entry-point", "dependent"}
 
 
+def nonblank_strings(value: object, *, allow_empty: bool = False) -> bool:
+    return (
+        isinstance(value, list)
+        and (allow_empty or bool(value))
+        and all(isinstance(item, str) and item.strip() for item in value)
+    )
+
+
 def validate(data: object) -> list[str]:
     if not isinstance(data, dict):
         return ["manifest must be a JSON object"]
     errors = []
+    if not isinstance(data.get("task"), str) or not data["task"].strip():
+        errors.append("task must be a non-empty string")
     for flag, expected in (
         ("frozen_before_ledger", True),
         ("discovery_complete", True),
@@ -46,10 +56,10 @@ def validate(data: object) -> list[str]:
         if status not in TERMINAL:
             errors.append(f"{label}.status must be terminal")
         evidence = item.get("evidence")
-        if not isinstance(evidence, list) or not evidence:
+        if not nonblank_strings(evidence):
             errors.append(f"{label}.evidence must record proof or the blocking reason")
         attacks = item.get("attacks")
-        if status in {"PROVEN", "FINDING"} and (not isinstance(attacks, list) or not attacks):
+        if status in {"PROVEN", "FINDING"} and not nonblank_strings(attacks):
             errors.append(f"{label}.attacks must record an adversarial check")
 
     passes = data.get("attack_passes")
@@ -60,12 +70,13 @@ def validate(data: object) -> list[str]:
         attack = passes.get(name)
         if not isinstance(attack, dict) or attack.get("status") not in TERMINAL:
             errors.append(f"attack_passes.{name} must have a terminal status")
-        elif not isinstance(attack.get("evidence"), list) or not attack["evidence"]:
+        elif not nonblank_strings(attack.get("evidence")):
             errors.append(f"attack_passes.{name}.evidence is required")
 
     for field in ("previous_findings", "adjacent_variants", "untouched_surfaces"):
-        if not isinstance(data.get(field), list):
-            errors.append(f"{field} must be a list")
+        value = data.get(field)
+        if not nonblank_strings(value, allow_empty=field != "untouched_surfaces"):
+            errors.append(f"{field} must be a list of non-blank strings")
     return errors
 
 

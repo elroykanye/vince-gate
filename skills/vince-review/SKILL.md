@@ -5,6 +5,8 @@ description: Adversarially review an implementation in a fresh context by re-der
 
 # Vince — Review
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 Assume the implementation is broken and try to prove it. The reviewer is independent: do not fix
 source code, negotiate severity down, or inherit the implementer’s conclusions.
 

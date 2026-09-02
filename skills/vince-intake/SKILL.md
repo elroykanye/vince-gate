@@ -5,6 +5,8 @@ description: Turn vague, contradictory, impossible, unsafe, unauthorized, or unb
 
 # Vince — Intake
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 Classify the request before any implementation work. The purpose is not to formalize the user's
 wording. It is to detect whether an agent can act without guessing what product to build, claiming
 an impossible guarantee, or taking authority the user did not grant.

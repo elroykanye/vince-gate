@@ -23,6 +23,32 @@ def skill_parts(path: Path) -> tuple[str, str]:
 
 
 class TokenEfficientSkillTests(unittest.TestCase):
+    def complete_manifest(self):
+        return {
+            "task": "T",
+            "frozen_before_ledger": True,
+            "discovery_complete": True,
+            "early_exit": False,
+            "items": [
+                {
+                    "id": "AC-1",
+                    "kind": "acceptance",
+                    "claim": "observable result",
+                    "source": "original contract",
+                    "status": "PROVEN",
+                    "evidence": ["command => result"],
+                    "attacks": ["mutation killed"],
+                }
+            ],
+            "attack_passes": {
+                f"A{i}": {"status": "PROVEN", "evidence": ["attack recorded"]}
+                for i in range(8)
+            },
+            "previous_findings": [],
+            "adjacent_variants": ["semantic reversal"],
+            "untouched_surfaces": ["none — all manifest items terminal"],
+        }
+
     def test_discovery_descriptions_are_compact(self):
         descriptions = {}
         for path in sorted(SKILLS.glob("*/SKILL.md")):
@@ -78,10 +104,23 @@ class TokenEfficientSkillTests(unittest.TestCase):
             with self.subTest(skill=path.parent.name):
                 self.assertNotIn("Read `reference/voice.md`", body)
                 self.assertNotIn("Also read `reference/token-discipline.md`", body)
+                self.assertIsNone(
+                    re.search(r"(?i)always load.{0,80}reference/(?:voice|token-discipline)\.md", body)
+                )
 
         implement = (SKILLS / "vince-implement" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("Load `reference/token-discipline.md` only", implement)
         self.assertIn("Load `reference/voice.md` only", implement)
+
+    def test_every_skill_reports_concisely(self):
+        rule = (
+            "End user-facing updates with three short lines: `Result:`, `Problem:` (omit when "
+            "none), and `Next:`. Keep detailed evidence in task artifacts, not chat."
+        )
+        for path in sorted(SKILLS.glob("*/SKILL.md")):
+            _, body = skill_parts(path)
+            with self.subTest(skill=path.parent.name):
+                self.assertIn(rule, body)
 
     def test_progressive_references_preserve_the_gate(self):
         expected = {
@@ -125,6 +164,11 @@ class TokenEfficientSkillTests(unittest.TestCase):
         )
         for clause in required_clauses:
             self.assertIn(clause, body)
+        self.assertIn("Name the three likeliest production failures and test them.", body)
+        self.assertIsNone(re.search(r"(?i)(?:skip|omit|do not perform).{0,60}self-attack", body))
+        self.assertIsNone(
+            re.search(r"(?i)(?:permit|allow).{0,80}shared.{0,40}write.{0,40}(?:without|bypass)", body)
+        )
 
     def test_review_verdict_contract_supports_learning_and_closure(self):
         text = (SKILLS / "vince-review" / "reference" / "verdict-and-rereview.md").read_text(
@@ -153,6 +197,12 @@ class TokenEfficientSkillTests(unittest.TestCase):
         )
         for clause in required:
             self.assertIn(clause, combined)
+        self.assertIsNone(
+            re.search(r"(?i)(?:stop|end|terminate).{0,80}(?:first|decisive).{0,40}(?:finding|defect)", combined)
+        )
+        self.assertIsNone(
+            re.search(r"(?i)(?:permit|allow).{0,80}shared.{0,40}write.{0,40}(?:without|bypass)", combined)
+        )
         self.assertTrue((ROOT / "templates" / "review-coverage.template.json").is_file())
         self.assertTrue((ROOT / "scripts" / "review_manifest.py").is_file())
 
@@ -166,39 +216,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
             "items": [{"id": "AC-1", "kind": "acceptance", "status": "PROVEN"}],
             "attack_passes": {},
         }
-        complete = {
-            "task": "T",
-            "frozen_before_ledger": True,
-            "discovery_complete": True,
-            "early_exit": False,
-            "items": [
-                {
-                    "id": "AC-1",
-                    "kind": "acceptance",
-                    "claim": "observable result",
-                    "source": "original contract",
-                    "status": "PROVEN",
-                    "evidence": ["command => result"],
-                    "attacks": ["mutation killed"],
-                },
-                {
-                    "id": "CLAIM-1",
-                    "kind": "material-claim",
-                    "claim": "nine cases",
-                    "source": "completion documentation",
-                    "status": "FINDING",
-                    "evidence": ["raw cases mapped 1:1"],
-                    "attacks": ["count reconciliation"],
-                },
-            ],
-            "attack_passes": {
-                f"A{i}": {"status": "PROVEN", "evidence": ["attack recorded"]}
-                for i in range(8)
-            },
-            "previous_findings": [],
-            "adjacent_variants": ["semantic reversal"],
-            "untouched_surfaces": ["none — all manifest items terminal"],
-        }
+        complete = self.complete_manifest()
         with tempfile.TemporaryDirectory() as directory:
             bad = Path(directory) / "bad.json"
             good = Path(directory) / "good.json"
@@ -216,6 +234,54 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertNotEqual(0, rejected.returncode)
         self.assertNotEqual(0, rejected_a7.returncode)
         self.assertEqual(0, accepted.returncode)
+
+    def test_review_manifest_rejects_each_broken_rule_independently(self):
+        validator = ROOT / "scripts" / "review_manifest.py"
+        mutations = {}
+        base = self.complete_manifest()
+
+        def add(name, change):
+            mutant = json.loads(json.dumps(base))
+            change(mutant)
+            mutations[name] = mutant
+
+        add("missing-task", lambda value: value.pop("task"))
+        add("blank-task", lambda value: value.update(task=" "))
+        add("not-frozen", lambda value: value.update(frozen_before_ledger=False))
+        add("discovery-incomplete", lambda value: value.update(discovery_complete=False))
+        add("early-exit", lambda value: value.update(early_exit=True))
+        add("empty-items", lambda value: value.update(items=[]))
+        add("duplicate-id", lambda value: value["items"].append(dict(value["items"][0])))
+        add("bad-kind", lambda value: value["items"][0].update(kind="other"))
+        add("blank-claim", lambda value: value["items"][0].update(claim=""))
+        add("blank-source", lambda value: value["items"][0].update(source=" "))
+        add("nonterminal-item", lambda value: value["items"][0].update(status="NOT-REVIEWED"))
+        add("blank-evidence", lambda value: value["items"][0].update(evidence=[" "]))
+        add("null-evidence", lambda value: value["items"][0].update(evidence=[None]))
+        add("blank-attack", lambda value: value["items"][0].update(attacks=[""]))
+        add("missing-pass", lambda value: value["attack_passes"].pop("A4"))
+        add("nonterminal-pass", lambda value: value["attack_passes"]["A2"].update(status="NOT-REVIEWED"))
+        add("blank-pass-evidence", lambda value: value["attack_passes"]["A6"].update(evidence=[" "]))
+        add("null-pass-evidence", lambda value: value["attack_passes"]["A7"].update(evidence=[None]))
+        add("missing-rereview-list", lambda value: value.pop("adjacent_variants"))
+        add("blank-untouched-surface", lambda value: value.update(untouched_surfaces=[" "]))
+
+        with tempfile.TemporaryDirectory() as directory:
+            for name, mutant in mutations.items():
+                path = Path(directory) / f"{name}.json"
+                path.write_text(json.dumps(mutant), encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(validator), "validate", str(path)],
+                    capture_output=True,
+                    text=True,
+                )
+                with self.subTest(rule=name):
+                    self.assertNotEqual(0, result.returncode, result.stdout)
+
+        template = json.loads(
+            (ROOT / "templates" / "review-coverage.template.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual({f"A{i}" for i in range(8)}, set(template["attack_passes"]))
 
     def test_gemini_uses_native_agent_skills(self):
         binding = json.loads((ROOT / "bindings" / "gemini.json").read_text(encoding="utf-8"))
@@ -292,7 +358,9 @@ class TokenEfficientSkillTests(unittest.TestCase):
         )
         for name, document in (("README", readme), ("USER-GUIDE", guide), ("harnesses", harnesses)):
             affirmative = re.findall(
-                r"(?im)^.*(?:Gemini|Copilot).*(?:are|is|status:?)\s+`?(?:live-verified|verified)`?.*$",
+                r"(?im)^.*(?:Gemini|Copilot).*(?:(?:are|is|status:?)\s+`?(?:live-verified|verified)`?|"
+                r"production runtime.{0,30}(?:succeed|exercis)|proven live|"
+                r"runtime support.{0,30}(?:proven|confirmed)|exercised successfully).*$",
                 document,
             )
             self.assertEqual([], affirmative, f"false live-verification claim in {name}")

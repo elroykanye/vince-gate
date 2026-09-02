@@ -5,6 +5,8 @@ description: Execute repository features, fixes, and refactors with contract con
 
 # Vince — Implement
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 An implementation is failing until reproducible evidence proves otherwise.
 
 ## Core rules

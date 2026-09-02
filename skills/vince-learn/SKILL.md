@@ -5,6 +5,8 @@ description: Promote recurring review findings and user corrections into Vince l
 
 # Vince — Learn
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 The reviewer finds the same class of bug in the same codebase over and over, because nothing
 carries the finding forward. This skill is that carrier: it converts findings into
 configuration, so the *next* task is stopped at the gate rather than caught at review.

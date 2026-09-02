@@ -5,6 +5,8 @@ description: Choose the least expensive capable model and narrowest useful agent
 
 # Vince — Route
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 Choose enough intelligence for the work and no more. Token economy changes the model, context,
 and delegation shape; it never removes required evidence.
 

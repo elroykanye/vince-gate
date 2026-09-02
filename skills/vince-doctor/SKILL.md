@@ -5,6 +5,8 @@ description: Diagnose and safely repair Vince install drift, broken bindings, st
 
 # Vince — Doctor
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 Vince degrades quietly. A renamed test script, a retired branch, a skills directory that a
 harness update moved — none of these announce themselves, and each one makes the next task's
 evidence a little more fictional. This skill finds that decay and repairs what it safely can.

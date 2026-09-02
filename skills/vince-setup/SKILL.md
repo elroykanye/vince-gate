@@ -5,6 +5,8 @@ description: Create or refresh a verified Vince project/workspace profile contai
 
 # Vince — Setup
 
+End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+
 `vince-implement` and `vince-review` are deliberately project-agnostic. Everything specific to
 a codebase lives in one file: **`.vince/profile.md`** at the project root. This skill writes it.
 

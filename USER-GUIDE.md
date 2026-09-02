@@ -70,6 +70,9 @@ adjacent variants, and previously untouched surfaces instead of narrowing to the
 What you get on your side: a ledger with the exact commands and their output, and a verdict file
 with an append-only history. Both are readable in a minute, and both are checkable.
 
+What the agent says in chat is shorter: `Result`, `Problem` when one exists, and `Next`. If you
+need the receipts, open the ledger or verdict; Vince does not make the agent repeat them at you.
+
 What it costs: real time and tokens per task. A standard task runs meaningfully longer than an
 ungated one. That is the trade — and [tiers](#tiers-not-everything-is-a-payment-flow) exist so
 you do not pay it for a typo.

@@ -13,6 +13,10 @@ bindings for current Gemini CLI and GitHub Copilot layouts.
 
 **Changed**
 
+- Every Vince skill ends user-facing work with concise `Result`, optional `Problem`, and `Next`
+  lines; detailed proof remains in task artifacts.
+- Review Pass 0 freezes a validated exhaustive coverage manifest, and discovery continues across
+  all material claims and A0–A7 attacks even after FAIL is certain.
 - `vince-implement` and `vince-review` keep their proof floor in compact primary instructions;
   phase-specific contract, TDD, wire-proof, attack, verdict, and handoff details now load from
   focused references only when needed.
