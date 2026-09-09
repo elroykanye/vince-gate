@@ -6,6 +6,13 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.13.0 — 2026-09-09
+
+- Profiles and lessons now use compact, budgeted rule formats to reduce context cost.
+- `doctor --fix` sanitizes every discovered Vince workspace/repo, preserves custom content,
+  creates content-addressed backups, and is idempotent.
+- Vince Learn writes operational one-line lessons instead of narrative review prose.
+
 ## v0.12.0 — 2026-08-31
 
 Vince adopts progressive disclosure across its primary workflows and adds native Agent Skills

@@ -33,6 +33,8 @@ import re
 import sys
 from pathlib import Path
 
+import sanitize
+
 MANIFEST_REL = Path(".vince") / "install.json"
 LEGACY_MANIFEST_REL = Path(".claude") / ".vince-install.json"
 MANIFEST_VERSION = 2
@@ -846,16 +848,38 @@ def cmd_doctor(args) -> int:
     manifest = load_manifest(root, scope)
     rc = _print_report(root, scope, manifest)
 
+    report = inspect(root, scope, manifest)
+    foreign = {b: e["foreign"] for b, e in report.items() if e.get("foreign")}
+    documents = sanitize.discover_documents(store_root())
+    config = resolve_config(root)
+    for candidate in (config["profile"], config["lessons"]):
+        if candidate.is_file() and candidate.resolve() not in documents:
+            documents.append(candidate.resolve())
+    documents.sort()
+    sanitation = [sanitize.sanitize_file(p, p.stem, fix=args.fix) for p in documents]
+    pending = [result for result in sanitation if result.changed]
+    over_budget = [result for result in sanitation if result.over_budget]
+
+    if pending:
+        verb = "sanitized" if args.fix else "need sanitation:"
+        print(f"\n{verb} {len(pending)} document(s)")
+        for result in pending:
+            saved = result.before_chars - result.after_chars
+            suffix = f"; backup: {result.backup}" if result.backup else ""
+            print(f"  {result.path} ({saved:+d} chars saved){suffix}")
+    else:
+        print("\nsanitation: clean (0 document(s) changed)")
+    if over_budget:
+        print(f"warning: {len(over_budget)} document(s) exceed the compact budget; custom content was preserved")
+
     if not manifest.get("installs"):
-        print("\ndiagnosis: nothing installed here. Run:")
+        print("\ndiagnosis: documents checked, but nothing is installed at this target. Run:")
         print(f"  python {Path(__file__).name} install --target {root}")
         return 1
 
-    report = inspect(root, scope, manifest)
-    foreign = {b: e["foreign"] for b, e in report.items() if e.get("foreign")}
     if rc == 0:
         print("\ndiagnosis: healthy - every installed file matches the toolkit.")
-        return 0
+        return 0 if args.fix or not pending else 1
 
     print("\ndiagnosis:")
     for bid, entry in sorted(report.items()):

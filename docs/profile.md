@@ -12,6 +12,11 @@ It has two companions in the same directory: `.vince/lessons.md` (what reviews h
 read before designing) and `.vince/metrics.jsonl` (one line per completed task). Both are written
 by `vince-learn`.
 
+Profiles use `compact-v1` with a 12,000-character budget; lessons use one-line `RULE`, `SOURCE`,
+`GATE`, and `NOTE` fields with an 8,000-character budget. Run `install.py doctor --fix` after an
+upgrade to sanitize every discovered workspace and repo. Known Vince prose is compressed; unknown
+or custom text is retained. Originals are recoverable from adjacent `.vince-backups/` files.
+
 Start from [`templates/profile.template.md`](../templates/profile.template.md), or
 [`templates/workspace-profile.template.md`](../templates/workspace-profile.template.md) for a
 hub.

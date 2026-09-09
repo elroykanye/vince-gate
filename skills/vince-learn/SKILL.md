@@ -68,22 +68,17 @@ for every repo of that stack — a wrong default costs each of them a first-touc
 
 ## The lessons file
 
-The resolved `lessons.md` (`install.py where --repo <repo>` — it is in the store, not the repo,
-unless the repo carries its own `.vince/`), newest first. Each entry is small and actionable:
+The resolved `lessons.md` (`install.py where --repo <repo>`), newest first. Write one strict,
+operational line per lesson:
 
 ```markdown
-## <YYYY-MM-DD> — <one-line lesson>
-
-**Seen in:** <task-id> (<severity>, caught by <attack>) — and <task-id> if a repeat
-**What happened:** <one or two sentences, concrete>
-**Why it happened:** <the root cause, not the symptom>
-**How to avoid it:** <what a future implementer does differently — a check, a pattern, a command>
-**Promoted to:** known_traps | dod_extras gate `<name>` | nothing (single incident, watching)
+- <YYYY-MM-DD> | RULE=<imperative check/pattern/command> | SOURCE=<task-id, severity, attack> | GATE=<known_traps|dod_extras:name|watch> | NOTE=<short context>
 ```
 
-Keep it under about 30 entries. When it gets longer, merge entries that share a root cause and
-drop ones whose gate now catches them automatically — a gate makes its own lesson redundant, and
-that is the file working as intended.
+Maximum 30 rules and 8,000 characters. Merge the same root cause; remove a lesson once an enforced
+gate covers it. Do not store verdict narrative, analysis, or repeated evidence here; those stay in
+task artifacts. Preserve user-authored/custom sections. Run `install.py doctor --fix` to migrate
+older narrative entries safely.
 
 ## Reading the metrics
 

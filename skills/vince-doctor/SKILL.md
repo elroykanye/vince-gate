@@ -45,6 +45,11 @@ version is behind.
 
 ## 2. The profile
 
+First run `install.py doctor --fix`. It sanitizes every discovered workspace/repo profile and
+lessons file into compact-v1, preserves unknown/custom content, and writes content-addressed
+copies under `.vince-backups/`. A second run must report zero changes. Over-budget custom content
+is reported, never truncated.
+
 Resolve it first — `install.py where --repo <repo>` — because per-repo config lives outside the
 repo by default. A doctor that validates a path nobody uses reports a healthy fiction.
 
