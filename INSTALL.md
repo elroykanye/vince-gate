@@ -249,12 +249,16 @@ Update vince-gate for me.
 
 ```bash
 python scripts/install.py doctor --scope user          # diagnose
-python scripts/install.py doctor --scope user --fix    # repair all but in-place edits
+python scripts/install.py doctor --scope user --fix    # repair install + sanitize config safely
 ```
 
 For the layer above the files — is the *profile* still true, are there ledgers that never got
 reviewed, are there leaked worktrees — invoke the `vince-doctor` skill, which validates by
 running things rather than by hashing them.
+
+`--fix` preflights every discovered profile and lessons file before writing. It refuses linked,
+invalid, over-limit, or backup-collision files; no batch write begins on refusal. Changed originals
+are stored under adjacent `.vince-backups/` paths named by their full SHA-256 content digest.
 
 ## Uninstalling
 

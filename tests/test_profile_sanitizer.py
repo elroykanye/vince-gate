@@ -63,6 +63,9 @@ class ProfileSanitizerTests(unittest.TestCase):
         self.assertIn("vince-profile: compact-v1", profile)
         self.assertIn("vince-lessons: compact-v1", lessons)
         self.assertIn("RULE=", lessons)
+        workspace = (ROOT / "templates" / "workspace-profile.template.md").read_text(encoding="utf-8")
+        self.assertIn("vince-profile: compact-v1", workspace)
+        self.assertIn(str(sanitize.PROFILE_MAX_CHARS), workspace)
 
     def test_lessons_become_compact_rules_and_preserve_custom_content(self):
         compact = sanitize.sanitize_lessons(VERBOSE_LESSONS)
@@ -84,6 +87,12 @@ class ProfileSanitizerTests(unittest.TestCase):
         self.assertNotIn("Things that have bitten", compact)
         self.assertIn("Never remove this user-authored sentence.", compact)
         self.assertLessEqual(len(compact), sanitize.PROFILE_MAX_CHARS)
+
+    def test_generated_words_in_custom_sections_are_never_deleted(self):
+        text = "# Profile\n\n## Custom operator policy\n\nWritten by `vince-setup` is user policy.\nThings that have bitten in this codebase before. Keep it.\n"
+        compact = sanitize.sanitize_profile(text)
+        self.assertIn("Written by `vince-setup` is user policy.", compact)
+        self.assertIn("Things that have bitten in this codebase before. Keep it.", compact)
 
     def test_file_update_creates_content_addressed_backup_and_is_idempotent(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -117,6 +126,48 @@ class ProfileSanitizerTests(unittest.TestCase):
             path.write_text(custom, encoding="utf-8")
             result = sanitize.sanitize_file(path, "profile", fix=False)
             self.assertTrue(result.over_budget)
+            with self.assertRaisesRegex(ValueError, "limits exceeded"):
+                sanitize.sanitize_file(path, "profile", fix=True)
+            self.assertEqual(custom, path.read_text(encoding="utf-8"))
+
+    def test_backup_collision_and_links_refuse_without_source_write(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            path = base / "lessons.md"
+            path.write_text(VERBOSE_LESSONS, encoding="utf-8")
+            import hashlib
+            digest = hashlib.sha256(VERBOSE_LESSONS.encode()).hexdigest()
+            backup = base / ".vince-backups" / f"lessons.{digest}.md"
+            backup.parent.mkdir()
+            backup.write_text("wrong", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "backup collision"):
+                sanitize.sanitize_file(path, "lessons", fix=True)
+            self.assertEqual(VERBOSE_LESSONS, path.read_text(encoding="utf-8"))
+            victim = base / "victim.md"
+            victim.write_text(VERBOSE_PROFILE, encoding="utf-8")
+            link = base / "profile.md"
+            try:
+                link.symlink_to(victim)
+            except OSError:
+                return
+            with self.assertRaisesRegex(ValueError, "linked"):
+                sanitize.sanitize_file(link, "profile", fix=True)
+            self.assertEqual(VERBOSE_PROFILE, victim.read_text(encoding="utf-8"))
+
+    def test_lesson_incident_cause_and_rule_limit(self):
+        compact = sanitize.sanitize_lessons(VERBOSE_LESSONS)
+        self.assertIn("INCIDENT=Clean installs passed", compact)
+        self.assertIn("CAUSE=Only the clean path was tested.", compact)
+        text = "# Lessons\n\n" + "\n".join(
+            f"- 2026-09-{i:02d} | RULE=x | SOURCE=y | GATE=watch" for i in range(1, 32)
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "lessons.md"
+            path.write_text(text, encoding="utf-8")
+            self.assertTrue(sanitize.sanitize_file(path, "lessons", fix=False).over_budget)
+            with self.assertRaisesRegex(ValueError, "limits exceeded"):
+                sanitize.sanitize_file(path, "lessons", fix=True)
+            self.assertEqual(text, path.read_text(encoding="utf-8"))
 
     def test_partial_lesson_is_not_destructively_rewritten(self):
         partial = "# Lessons\n\n## 2026-09-09 — Partial\n\n**Seen in:** task-2\nCustom tail.\n"
@@ -186,6 +237,24 @@ class ProfileSanitizerTests(unittest.TestCase):
             self.assertEqual(1, result.returncode)
             self.assertIn("sanitized 1 document(s)", result.stdout)
             self.assertIn("compact-v1", lesson.read_text(encoding="utf-8"))
+
+    def test_doctor_preflight_prevents_partial_write_on_invalid_document(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base, store, target = Path(directory), Path(directory) / "store", Path(directory) / "target"
+            first = store / "repos" / "a" / "profile.md"
+            second = store / "repos" / "b" / "lessons.md"
+            first.parent.mkdir(parents=True)
+            second.parent.mkdir(parents=True)
+            target.mkdir()
+            first.write_text(VERBOSE_PROFILE, encoding="utf-8")
+            second.write_bytes(b"\xff\xfe")
+            run = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "install.py"), "doctor", "--target", str(target), "--scope", "project", "--fix"],
+                capture_output=True, text=True, env={**os.environ, "VINCE_STORE": str(store)},
+            )
+            self.assertEqual(2, run.returncode)
+            self.assertNotIn("Traceback", run.stderr)
+            self.assertEqual(VERBOSE_PROFILE, first.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

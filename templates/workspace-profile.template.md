@@ -1,14 +1,8 @@
+<!-- vince-profile: compact-v1; budget: 12000 chars -->
 # Vince workspace profile — <workspace name>
 
-Written by `vince-setup` on <YYYY-MM-DD>. This is a **hub profile**: it covers what is true
-across the estate, and supplies *defaults* to repos that have no profile of their own.
-
-**The invariant that shapes this whole file: a hub profile cannot verify a command.** Nobody
-runs 100 suites from the hub, and a value nobody ran is not evidence. So every command here is
-`(inferred, unverified)` by construction. Verified commands and observed baselines live in each
-repo's own profile — by default in the store outside the repo, resolved with
-`install.py where --repo <repo>` — written on the first task that touches that repo. Anything in
-this file that claims a verified command or a baseline is a bug in this file.
+RULE: hub commands are always `(inferred, unverified)` and never carry baselines. Verified commands
+and baselines belong in repo profiles resolved by `install.py where --repo <repo>`.
 
 ## Section status
 

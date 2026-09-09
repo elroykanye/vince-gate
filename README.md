@@ -119,7 +119,8 @@ task in a repo is what promotes them. See
 - **Healing.** A stale profile is worse than none, because it is trusted. When a recorded command
   fails mid-task, `vince-implement` re-derives it once, verifies the replacement, repairs the
   profile and records the correction — and stops if a second field is wrong, because that means a
-  full refresh. `install.py doctor --fix` repairs the install layer; `vince-doctor` covers the
+  full refresh. `install.py doctor --fix` repairs the install layer and safely sanitizes compact
+  profiles/lessons (with backups); `vince-doctor` covers the
   profile, the work in flight and leaked worktrees.
 - **Improving.** Every finding carries a `[caught: …]` tag. At PASS, `vince-learn` promotes
   patterns — not incidents — into project config: seen twice becomes a trap, detectable by command

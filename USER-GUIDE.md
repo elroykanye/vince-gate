@@ -533,7 +533,7 @@ evidence a little more fictional.
 
 ```bash
 python scripts/install.py doctor --scope user          # or --target <project>
-python scripts/install.py doctor --target . --fix      # repair everything except in-place edits
+python scripts/install.py doctor --target . --fix      # repair install + sanitize config safely
 ```
 
 ```
@@ -543,6 +543,10 @@ python scripts/install.py doctor --target . --fix      # repair everything excep
 The skill goes further than the script: it validates the **profile against the repo** by running
 the recorded commands, resolving the branch, and checking every path; then it looks for orphaned
 task dirs, work that merged without a review, and leaked worktrees.
+
+The script migrates only known Vince structure to compact-v1. It preserves custom text, rejects
+links/invalid files/limit overflows/backup collisions before any write, and saves originals in
+`.vince-backups/`. A successful second run reports zero changed documents.
 
 **In-place edits are not drift to discard.** If a skill was improved inside `.claude/skills/`,
 that improvement never made it home — copy it into the toolkit's `skills/` and reinstall. The
