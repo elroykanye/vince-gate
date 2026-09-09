@@ -130,6 +130,16 @@ class ProfileSanitizerTests(unittest.TestCase):
                 sanitize.sanitize_file(path, "profile", fix=True)
             self.assertEqual(custom, path.read_text(encoding="utf-8"))
 
+    def test_exact_budget_boundary_is_allowed(self):
+        base = "# custom\n"
+        payload = "x" * (sanitize.PROFILE_MAX_CHARS - len(sanitize.sanitize_profile(base)))
+        text = base.rstrip() + payload + "\n"
+        self.assertEqual(sanitize.PROFILE_MAX_CHARS, len(sanitize.sanitize_profile(text)))
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "profile.md"
+            path.write_text(text, encoding="utf-8")
+            self.assertFalse(sanitize.sanitize_file(path, "profile", fix=False).over_budget)
+
     def test_backup_collision_and_links_refuse_without_source_write(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
