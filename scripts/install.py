@@ -33,6 +33,8 @@ import re
 import sys
 from pathlib import Path
 
+import sanitize
+
 MANIFEST_REL = Path(".vince") / "install.json"
 LEGACY_MANIFEST_REL = Path(".claude") / ".vince-install.json"
 MANIFEST_VERSION = 2
@@ -846,16 +848,58 @@ def cmd_doctor(args) -> int:
     manifest = load_manifest(root, scope)
     rc = _print_report(root, scope, manifest)
 
+    report = inspect(root, scope, manifest)
+    foreign = {b: e["foreign"] for b, e in report.items() if e.get("foreign")}
+    documents = sanitize.discover_documents(store_root())
+    config = resolve_config(root)
+    for candidate in (config["profile"], config["lessons"]):
+        if candidate.is_file() and candidate.absolute() not in documents:
+            documents.append(candidate.absolute())
+    documents.sort()
+    sanitation = []
+    errors = []
+    for path in documents:
+        try:
+            sanitation.append(sanitize.sanitize_file(path, path.stem, fix=False))
+        except (OSError, UnicodeError, ValueError) as error:
+            errors.append((path, str(error)))
+    pending = [result for result in sanitation if result.changed]
+    over_budget = [result for result in sanitation if result.over_budget]
+
+    # Refuse the whole batch before the first write. Install edits and invalid/oversized
+    # documents must not leave a half-migrated estate behind.
+    refused_install = bool(args.fix and foreign and not args.force)
+    applied = False
+    if args.fix and not errors and not over_budget and not refused_install:
+        sanitation = [sanitize.sanitize_file(p, p.stem, fix=True) for p in documents]
+        pending = [result for result in sanitation if result.changed]
+        applied = True
+
+    if pending:
+        verb = "sanitized" if applied else "need sanitation:"
+        print(f"\n{verb} {len(pending)} document(s)")
+        for result in pending:
+            saved = result.before_chars - result.after_chars
+            suffix = f"; backup: {result.backup}" if result.backup else ""
+            delta = f"{saved} chars saved" if saved >= 0 else f"{-saved} chars added"
+            print(f"  {result.path} ({delta}){suffix}")
+    else:
+        print("\nsanitation: clean (0 document(s) changed)")
+    if over_budget:
+        print(f"refused: {len(over_budget)} document(s) exceed compact size/count limits; sources unchanged")
+    for path, error in errors:
+        print(f"refused: {path}: {error}")
+    if errors or over_budget:
+        return 2
+
     if not manifest.get("installs"):
-        print("\ndiagnosis: nothing installed here. Run:")
+        print("\ndiagnosis: documents checked, but nothing is installed at this target. Run:")
         print(f"  python {Path(__file__).name} install --target {root}")
         return 1
 
-    report = inspect(root, scope, manifest)
-    foreign = {b: e["foreign"] for b, e in report.items() if e.get("foreign")}
     if rc == 0:
         print("\ndiagnosis: healthy - every installed file matches the toolkit.")
-        return 0
+        return 0 if args.fix or not pending else 1
 
     print("\ndiagnosis:")
     for bid, entry in sorted(report.items()):
@@ -878,7 +922,7 @@ def cmd_doctor(args) -> int:
         print("\nrun with --fix to repair everything except in-place edits.")
         return rc
 
-    if foreign and not args.force:
+    if refused_install:
         print("\nnot repairing: in-place edits would be lost. Copy them into the toolkit, or "
               "add --force.")
         return 2

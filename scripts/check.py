@@ -155,7 +155,10 @@ def run(repo: Path, base: str) -> dict:
         if TEST_HINT.search(path) and SKIP_MARKERS.search(text):
             add("CRITICAL", "new-skip", "a skipped/disabled test was added", f"{path}:{ln}")
         lang = language_of(path)
-        if lang and not TEST_HINT.search(path) and DEBUG_MARKERS[lang].search(text):
+        # install.py is a deliberately human-readable CLI; its print calls are product output,
+        # not diagnostics accidentally left in library code.
+        cli_output = path.replace("\\", "/") == "scripts/install.py"
+        if lang and not TEST_HINT.search(path) and not cli_output and DEBUG_MARKERS[lang].search(text):
             add("MINOR", "debug-statement", "debug output left in non-test code", f"{path}:{ln}")
         if SECRETS.search(text):
             add("CRITICAL", "possible-secret", "possible hardcoded credential", f"{path}:{ln}")
