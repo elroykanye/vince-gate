@@ -12,6 +12,9 @@ from collections import Counter
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Last release whose Gemini binding rendered TOML commands under .gemini/commands/vince.
+LEGACY_GEMINI_LAYOUT_TAG = "v0.11.2"
 SKILLS = ROOT / "skills"
 
 
@@ -578,7 +581,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
 
     def test_gemini_upgrade_removes_legacy_managed_layout(self):
         archive = subprocess.run(
-            ["git", "archive", "--format=tar", "origin/main"],
+            ["git", "archive", "--format=tar", LEGACY_GEMINI_LAYOUT_TAG],
             cwd=ROOT,
             capture_output=True,
             check=True,
