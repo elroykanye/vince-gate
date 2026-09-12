@@ -540,6 +540,12 @@ python scripts/install.py doctor --target . --fix      # repair install + saniti
 /vince-doctor
 ```
 
+## Brief task updates
+
+`/vince-brief` makes Vince responses action-first for the current task. Use `normal mode` or
+`verbose mode` to stop it. It is a presentation rule only: detailed explanations, evidence, and
+safety confirmations remain complete when needed.
+
 The skill goes further than the script: it validates the **profile against the repo** by running
 the recorded commands, resolving the branch, and checking every path; then it looks for orphaned
 task dirs, work that merged without a review, and leaked worktrees.

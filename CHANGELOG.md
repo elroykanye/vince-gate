@@ -6,6 +6,13 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.14.0 — 2026-09-12
+
+- Adds `vince-brief`: a compact, task-persistent response contract for action-first Vince updates.
+- Every Vince workflow now applies the shared brief contract only when forming its user-facing result.
+- The contract preserves detail on request and never substitutes concise presentation for safety,
+  authorization, evidence, or a known cause.
+
 ## v0.13.0 — 2026-09-09
 
 - Profiles and lessons now use compact, budgeted rule formats to reduce context cost.

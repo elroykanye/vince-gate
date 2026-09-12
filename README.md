@@ -116,6 +116,10 @@ task in a repo is what promotes them. See
 
 ## Self-healing and self-improving
 
+`vince-brief` is the response layer for a Vince task: action/result first, a visible state only
+when work is ongoing, and one concrete next action. Say `normal mode` or `verbose mode` to turn it
+off for the current task. It never shortens required safety or evidence.
+
 - **Healing.** A stale profile is worse than none, because it is trusted. When a recorded command
   fails mid-task, `vince-implement` re-derives it once, verifies the replacement, repairs the
   profile and records the correction — and stops if a second field is wrong, because that means a

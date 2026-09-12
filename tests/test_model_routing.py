@@ -270,7 +270,7 @@ class ModelRoutingTests(unittest.TestCase):
                     self.assertIn("vince-route/reference/route.py", result.stdout)
                 else:
                     self.assertIn("vince-route-route.py", result.stdout)
-            self.assertIn("would install 10 skills", result.stdout)
+        self.assertIn("would install 11 skills", result.stdout)
 
     def test_live_matrix_retains_every_claimed_behavior_case(self):
         rig = (ROOT / "tests" / "live_model_routing.py").read_text(encoding="utf-8")
