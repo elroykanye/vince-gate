@@ -112,6 +112,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
 
         self.assertEqual(len(descriptions), len(set(descriptions.values())))
         trigger_matrix = {
+            "vince-brief": ("shorter", "clearer", "status"),
             "vince-cleanup": ("cleanup", "worktree", "stray processes"),
             "vince-doctor": ("broken bindings", "profiles", "health check"),
             "vince-document": ("completion documentation", "publish", "handoffs"),
@@ -196,10 +197,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertIn("Load `reference/voice.md` only", implement)
 
     def test_every_skill_reports_concisely(self):
-        rule = (
-            "End user-facing updates with three short lines: `Result:`, `Problem:` (omit when "
-            "none), and `Next:`. Keep detailed evidence in task artifacts, not chat."
-        )
+        rule = "Before the final user-facing response, apply `reference/brief.md`."
         for path in sorted(SKILLS.glob("*/SKILL.md")):
             _, body = skill_parts(path)
             with self.subTest(skill=path.parent.name):

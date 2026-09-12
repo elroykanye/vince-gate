@@ -5,7 +5,7 @@ description: Write or publish factual task completion documentation from the con
 
 # Vince — Document
 
-End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+Before the final user-facing response, apply `reference/brief.md`.
 
 Generate professional completion documentation for an implementation task. Output goes to
 `<task dir>/completion-documentation.md` — the same dir that holds the verification ledger

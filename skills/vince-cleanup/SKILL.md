@@ -5,7 +5,7 @@ description: Safely clean leaked worktrees, attributable processes, background j
 
 # Vince — Cleanup
 
-End user-facing updates with three short lines: `Result:`, `Problem:` (omit when none), and `Next:`. Keep detailed evidence in task artifacts, not chat.
+Before the final user-facing response, apply `reference/brief.md`.
 
 A session that ends without teardown leaves three things behind: **git worktrees** full of
 throwaway state, **processes** still holding directories open, and **output** nobody needed. The
