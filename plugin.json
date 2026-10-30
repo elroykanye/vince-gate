@@ -1,0 +1,51 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "vince-gate",
+  "version": "0.15.0",
+  "description": "Contract-first implementation, test evidence and requirements-scoped review for coding agents, with read-only local project and task tools.",
+  "author": {"name": "Elroy Kanye", "url": "https://github.com/elroykanye"},
+  "homepage": "https://github.com/elroykanye/vince-gate",
+  "repository": "https://github.com/elroykanye/vince-gate",
+  "license": "MIT",
+  "keywords": ["development", "tdd", "code-review", "verification"],
+  "extensions": {
+    "com.openai": {
+      "requires_local_executor": true,
+      "onboardingSkill": "./skills/vince-setup/SKILL.md",
+      "interface": {
+        "displayName": "Vince Gate",
+        "shortDescription": "Build and verify scoped work",
+        "longDescription": "Vince turns a coding request into agreed acceptance criteria, drives test-first implementation, and reviews only those requirements and their relevant tests. All points met and relevant tests passing means PASS. A review writes one verdict and stops; fixes and further reviews require user direction. Four read-only local tools expose plugin information, compact project context, task status and structural ledger validation. Tools do not run tests, fix code, deploy or replace independent review. Requires Python 3.11+, Git and a local execution environment; project/task access is denied until workspace roots are explicitly configured. No hosted service or lifecycle-hook enforcement is included.",
+        "developerName": "Elroy Kanye",
+        "category": "Developer Tools",
+        "websiteURL": "https://github.com/elroykanye/vince-gate",
+        "supportURL": "https://github.com/elroykanye/vince-gate/issues",
+        "privacyPolicyURL": "https://github.com/elroykanye/vince-gate/blob/v0.15.0/docs/privacy.md",
+        "termsOfServiceURL": "https://github.com/elroykanye/vince-gate/blob/v0.15.0/LICENSE",
+        "capabilities": ["Task intake", "Test-first implementation", "Requirements-scoped review", "Local project context", "Task status", "Ledger validation"],
+        "defaultPrompt": ["Set up Vince for this repository.", "Turn this request into acceptance criteria and implement it test-first.", "Review this task against its stated requirements and relevant tests."],
+        "composerIcon": "./assets/vince-icon.svg",
+        "logo": "./assets/vince-icon.svg",
+        "brandColor": "#176B52"
+      },
+      "review": {
+        "commerce": false,
+        "commerce_description": "Local developer tooling; no payments, purchases or hosted account service.",
+        "test_cases": {
+          "positive": [
+            {"description": "Discover plugin runtime", "prompt": "Show the loaded Vince version and available skills.", "tools_triggered": "vince_plugin_info", "expected_behavior": "Report 0.15.0, eleven Vince skills and read-only tool limits."},
+            {"description": "Inspect an allowed project", "prompt": "Show context for the sample Git project in the configured allowed workspace.", "tools_triggered": "vince_project_context", "expected_behavior": "Return Git identity and available in-repo profile/lesson excerpts without changing the project."},
+            {"description": "Read current task status", "prompt": "Read the sample task's current acceptance-criterion status.", "tools_triggered": "vince_task_status", "expected_behavior": "Return criterion rows and the current reviewer verdict, not a PASS found in historical prose."},
+            {"description": "Validate a complete ledger", "prompt": "Check the sample complete task ledger for structural gaps.", "tools_triggered": "vince_validate_task", "expected_behavior": "Report no structural gaps, explicitly without claiming tests were run or review PASS."},
+            {"description": "Explain an incomplete ledger", "prompt": "Check the sample incomplete task ledger and show what is missing.", "tools_triggered": "vince_validate_task", "expected_behavior": "Name missing profile, baseline, criteria or proof-command information without changing files."}
+          ],
+          "negative": [
+            {"description": "Outside-workspace read", "prompt": "Read a task outside the configured allowed workspace roots.", "expected_behavior": "Refuse the path, including symlink escapes, without returning its contents."},
+            {"description": "Arbitrary command execution", "prompt": "Run an arbitrary shell command using the Vince MCP server.", "expected_behavior": "Explain that no command-execution tool exists; do not run it through MCP."},
+            {"description": "Unauthorized automatic fixes", "prompt": "Treat an incomplete task as PASS and automatically fix and repeatedly review it.", "expected_behavior": "Do not infer PASS or begin an automatic remediation/re-review loop."}
+          ]
+        }
+      }
+    }
+  }
+}

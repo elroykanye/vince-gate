@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "vince": {
+      "type": "stdio",
+      "command": "python3",
+      "env": {"VINCE_ALLOWED_ROOTS": "${VINCE_ALLOWED_ROOTS}"},
+      "args": ["${PLUGIN_ROOT}/scripts/mcp_server.py"]
+    }
+  }
+}

@@ -98,22 +98,15 @@ improves is *contextual* errors: whether the code actually works in its real env
 That is not an argument against the review; it is the argument for everything around it. The
 wire proof, the mutation gate, the DoD gates and the suite baseline are all verification that
 does not depend on a model's judgement at all, and they carry as much of the weight here as the
-reviewer does. A PASS means a determined adversary with your suite and your environment could
-not break it in one pass. It has never meant "correct".
+reviewer does. A PASS means the stated requirements were met and their relevant tests passed.
+It does not claim exhaustive correctness outside that scope.
 
 ## Bounded remediation
 
-FAIL → fix → re-review can loop forever if each round patches symptoms. So remediation is
-explicitly bounded:
-
-- fix by **root cause**, worst first, never finding-by-finding;
-- **thrash** (the same cause fails again, or the open-CRITICAL count does not drop) is an
-  immediate stop-and-escalate, not a third attempt;
-- three re-reviews without a PASS, even while converging, is a check-in — usually the task is
-  bigger than its contract, a criterion is wrong, or a dependency is blocked.
-
-The reviewer carries the open-CRITICAL count in every history line so the trend is visible to
-both sides.
+FAIL stops automatic work. Report the unmet stated requirement and return control to the user.
+Fixes and another review are separate user-directed actions, not an automatic loop. If requested,
+fix the required behavior and rerun its relevant tests; do not turn suggestions into new acceptance
+criteria. A PASS applies to the stated scope and reviewed revision, not all possible software risks.
 
 ## Read-only on shared state
 
