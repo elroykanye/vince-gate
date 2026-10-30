@@ -18,7 +18,24 @@ FILES = ("plugin.json", "mcp.json", ".mcp.json", ".codex-plugin/plugin.json",
 DIRECTORIES = ("skills", "scripts", "templates", "bindings", "docs", "assets", "policies")
 
 
+def shared_resources(root, sync=False):
+    """Keep native Git installs as complete as ZIP installs; canonical text stays in _shared."""
+    stale = []
+    for skill in sorted((root / "skills").glob("vince-*/SKILL.md")):
+        for source in sorted((root / "skills/_shared").glob("*.md")):
+            destination = skill.parent / "reference" / source.name
+            if not destination.is_file() or destination.read_bytes() != source.read_bytes():
+                if sync:
+                    destination.parent.mkdir(parents=True, exist_ok=True)
+                    destination.write_bytes(source.read_bytes())
+                else:
+                    stale.append(str(destination.relative_to(root)))
+    if stale:
+        raise ValueError("Native shared resources are missing/stale; run python3 scripts/package_plugin.py --sync-shared: " + ", ".join(stale))
+
+
 def validate(root):
+    shared_resources(root)
     version = (root / "VERSION").read_text(encoding="utf-8").strip()
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         raise ValueError("Invalid release version")
@@ -78,9 +95,17 @@ def build(root, output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--output", type=Path)
+    parser.add_argument("--sync-shared", action="store_true", help="Regenerate tracked native skill resources from skills/_shared")
     args = parser.parse_args()
     try:
+        if args.sync_shared:
+            shared_resources(ROOT, sync=True)
+            if not args.output:
+                sys.stdout.write("Native shared resources synchronized\n")
+                return 0
+        if not args.output:
+            parser.error("--output is required unless --sync-shared is used")
         archive = build(ROOT, args.output.resolve())
     except (ValueError, OSError, json.JSONDecodeError) as error:
         sys.stderr.write(str(error) + "\n")

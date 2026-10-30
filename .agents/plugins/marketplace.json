@@ -1,5 +1,10 @@
 {
   "name": "vince-gate",
   "interface": {"displayName": "Vince Gate"},
-  "plugins": [{"name": "vince-gate", "source": {"source": "local", "path": "./"}}]
+  "plugins": [{
+    "name": "vince-gate",
+    "source": {"source": "local", "path": "./"},
+    "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
+    "category": "Developer Tools"
+  }]
 }

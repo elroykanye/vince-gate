@@ -45,7 +45,7 @@ class PluginToolsTests(unittest.TestCase):
                           "vince_validate_task"}, {t["name"] for t in tools})
         self.assertTrue(all(t["annotations"]["readOnlyHint"] for t in tools))
         info = replies[2]["result"]["structuredContent"]
-        self.assertEqual("0.15.0", info["version"])
+        self.assertEqual("0.15.1", info["version"])
         self.assertIn("vince-review", info["skills"])
 
     def test_context_and_status_are_read_only_and_current(self):

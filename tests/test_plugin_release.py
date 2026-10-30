@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class PluginReleaseTests(unittest.TestCase):
     def test_manifests_and_release_identity(self):
         version = (ROOT / "VERSION").read_text().strip()
-        self.assertEqual("0.15.0", version)
+        self.assertEqual("0.15.1", version)
         portable = json.loads((ROOT / "plugin.json").read_text())
         codex = json.loads((ROOT / ".codex-plugin/plugin.json").read_text())
         claude = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
@@ -38,7 +38,7 @@ class PluginReleaseTests(unittest.TestCase):
         server = mcp["mcpServers"]["vince"]
         self.assertEqual("stdio", server["type"])
         self.assertEqual(["${PLUGIN_ROOT}/scripts/mcp_server.py"], server["args"])
-        self.assertIn("## v0.15.0", (ROOT / "CHANGELOG.md").read_text())
+        self.assertIn("## v0.15.1", (ROOT / "CHANGELOG.md").read_text())
 
     def test_build_is_reproducible_and_runs_without_checkout(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -49,20 +49,20 @@ class PluginReleaseTests(unittest.TestCase):
                 run = subprocess.run([sys.executable, str(ROOT / "scripts/package_plugin.py"),
                                       "--output", str(output)], capture_output=True, text=True, timeout=20)
                 self.assertEqual(0, run.returncode, run.stdout + run.stderr)
-                archive = output / "vince-gate-0.15.0.zip"
+                archive = output / "vince-gate-0.15.1.zip"
                 hashes.append(hashlib.sha256(archive.read_bytes()).hexdigest())
                 self.assertIn(hashes[-1], (output / "SHA256SUMS").read_text())
                 self.assertTrue((output / "release-notes.md").is_file())
             self.assertEqual(*hashes)
             unpack = base / "unpacked"
-            with zipfile.ZipFile(base / "a/vince-gate-0.15.0.zip") as archive:
+            with zipfile.ZipFile(base / "a/vince-gate-0.15.1.zip") as archive:
                 names = archive.namelist()
                 self.assertIn("plugin.json", names)
                 self.assertIn("skills/vince-review/SKILL.md", names)
                 self.assertFalse(any("__pycache__" in n or n.startswith(("hooks/", ".git/", "tests/")) for n in names))
                 archive.extractall(unpack)
             info = exchange(unpack, [call("vince_plugin_info")])[0]["result"]["structuredContent"]
-            self.assertEqual("0.15.0", info["version"])
+            self.assertEqual("0.15.1", info["version"])
             for skill in info["skills"]:
                 body = (unpack / "skills" / skill / "SKILL.md").read_text()
                 self.assertTrue(body.startswith("---\n"))

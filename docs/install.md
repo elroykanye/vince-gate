@@ -1,5 +1,21 @@
 # The installer CLI
 
+## Native Codex plugin versus the legacy installer
+
+Native plugin installation requires Python 3.11+ and Git. Register once:
+
+```sh
+codex plugin marketplace add elroykanye/vince-gate --ref main
+codex plugin add vince-gate@vince-gate
+```
+
+Upgrade with `codex plugin marketplace upgrade vince-gate`, then
+`codex plugin add vince-gate@vince-gate`. See [plugin.md](plugin.md) for rollback and pinning.
+The CLI documented below is the **legacy/manual flat-skill installer**, not the native plugin
+upgrade mechanism. Its older Python requirement does not describe the native MCP runtime.
+
+## Legacy installer reference
+
 Every flag, every drift state, every exit code. To *get started*, use
 [INSTALL.md](../INSTALL.md) instead — it has a block you paste to your agent and the four-command
 manual equivalent.

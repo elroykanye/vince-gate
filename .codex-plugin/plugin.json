@@ -1,6 +1,6 @@
 {
   "name": "vince-gate",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "Contract-first implementation, test evidence and requirements-scoped review for coding agents, with read-only local project and task tools.",
   "author": {"name": "Elroy Kanye", "url": "https://github.com/elroykanye"},
   "homepage": "https://github.com/elroykanye/vince-gate",
@@ -17,8 +17,8 @@
     "category": "Developer Tools",
     "websiteURL": "https://github.com/elroykanye/vince-gate",
     "supportURL": "https://github.com/elroykanye/vince-gate/issues",
-    "privacyPolicyURL": "https://github.com/elroykanye/vince-gate/blob/v0.15.0/docs/privacy.md",
-    "termsOfServiceURL": "https://github.com/elroykanye/vince-gate/blob/v0.15.0/LICENSE",
+    "privacyPolicyURL": "https://github.com/elroykanye/vince-gate/blob/v0.15.1/docs/privacy.md",
+    "termsOfServiceURL": "https://github.com/elroykanye/vince-gate/blob/v0.15.1/LICENSE",
     "capabilities": ["Task intake", "TDD", "Scoped review", "Local project and task tools"],
     "composerIcon": "./assets/vince-icon.svg",
     "logo": "./assets/vince-icon.svg"

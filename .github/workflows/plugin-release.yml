@@ -2,7 +2,7 @@ name: Plugin release
 on:
   pull_request:
   push:
-    branches: [main, feature/plugin-release]
+    branches: [main, feature/plugin-release, feature/stable-plugin-updates]
     tags: ['v*']
   workflow_dispatch:
 permissions:

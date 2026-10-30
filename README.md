@@ -1,5 +1,19 @@
 # vince-gate
 
+## Native Codex plugin
+
+Requires Python 3.11+ and Git. Register the **one stable marketplace** once:
+
+```sh
+codex plugin marketplace add elroykanye/vince-gate --ref main
+codex plugin add vince-gate@vince-gate
+```
+
+Upgrade that same installation with `codex plugin marketplace upgrade vince-gate`, then
+`codex plugin add vince-gate@vince-gate` and start a fresh chat. For rollback, pinning, migration
+from the 0.15.0 local folder, and tool permissions, see [plugin installation](docs/plugin.md).
+Use the legacy installer only when you deliberately want flat skills or another harness.
+
 A **portable implementer-and-reviewer toolkit** for AI coding agents. Vince is not a knowledge
 base and not a linter — it is a pair of opposed roles that together make "done" mean something:
 
@@ -202,7 +216,7 @@ there is evidence.
 
 ## Desktop plugin
 
-Vince Gate 0.15.0 bundles the skills, executable Python helpers and four read-only local MCP
+Vince Gate 0.15.1 bundles the skills, executable Python helpers and four read-only local MCP
 tools as a native desktop plugin. Start with [plugin installation and tools](docs/plugin.md).
 GitHub releases include a reproducible ZIP, SHA256SUMS and release notes. Public OpenAI directory
 publication is separate and requires approval; this repository does not claim it is listed.

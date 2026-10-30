@@ -1,6 +1,6 @@
 # Vince Gate local-tool data handling
 
-Vince Gate 0.15.0 is MIT-licensed local developer tooling. Its bundled MCP server does not run
+Vince Gate 0.15.1 is MIT-licensed local developer tooling. Its bundled MCP server does not run
 a hosted service, contact a Vince-operated endpoint, collect analytics, or maintain a user account.
 It reads only the project/task paths permitted by the user's configured workspace roots, plus
 its own packaged version/skill metadata. It returns Git identity, bounded project knowledge,

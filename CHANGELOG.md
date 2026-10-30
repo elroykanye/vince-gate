@@ -6,6 +6,19 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.15.1 — 2026-10-30
+
+- Makes the Git source native-install-ready by shipping generated per-skill shared references;
+  the package builder and regression tests reject missing/stale copies of canonical resources.
+- Uses one stable Git-backed `vince-gate` marketplace and `vince-gate@vince-gate` identity.
+  Documents register-once installation, same-marketplace upgrades, tag pinning and rollback.
+- Adds real isolated Codex install/upgrade/rollback proof using two local Git fixture versions;
+  verifies host tool calls, installed resources, exactly one marketplace and preserved project data.
+- Updates README, INSTALL, user guide and CLI/plugin docs together; distinguishes native Python
+  3.11+ requirements from legacy/manual installation and corrects the stale six-skill introduction.
+- Preserves 0.15.0 release assets and normal user configuration; documents migration from its
+  versioned local marketplace source. No new review rules or additional product tools.
+
 ## v0.15.0 — 2026-10-30
 
 - Packages a desktop-first native plugin with portable and Codex compatibility manifests,
