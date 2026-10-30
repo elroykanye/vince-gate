@@ -7,14 +7,11 @@ verification. It does not deploy a hosted service, execute arbitrary shell reque
 through MCP, or use lifecycle hooks to enforce review. Skill workflows use the coding agent's
 normal permission-controlled execution tools.
 
-## Install from the repository marketplace
+## Native installation boundary
 
-After v0.15.0 is published:
-
-```sh
-codex plugin marketplace add elroykanye/vince-gate --ref v0.15.0
-codex plugin add vince-gate@vince-gate
-```
+Use the built release ZIP below, not a raw source checkout as a native marketplace. Packaging
+materializes each skill's shared references; the source tree relies on the legacy installer for
+that step. Registering the unbuilt Git repository directly would omit those per-skill files.
 
 Restart/open a fresh chat after installation. Invoke `$vince-setup` for your project; invoke
 `vince_plugin_info` to confirm version 0.15.0 and the bundled skill list. The native plugin is
