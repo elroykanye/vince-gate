@@ -57,15 +57,13 @@ Four rules do most of the work:
    single most common reason a task passes a review it should not have.
 3. **At least one criterion is proven end to end**, over real transport, with no mocks in the
    path. Unit green is not working software.
-4. **A reviewer that defaults to FAIL** starts from the diff — not from your ledger — re-derives
-   the contract itself, re-runs every claimed proof, and mutation-tests the new tests. It never
-   sees your implementer's reasoning, and where you can arrange it, it runs on a different model.
+4. **A requirements-scoped reviewer** reads the original task, relevant diff and tests independently.
+   All stated requirements met and relevant tests passing means PASS. A missing point or its
+   failing/unverified proof means FAIL. Tests must actually exercise the required behavior.
 
-Before reading the ledger, that reviewer freezes `review-coverage.json`.
-It does not stop discovery after finding enough evidence to FAIL: every criterion, definition-of-done item, material claim,
-changed entry point, dependent, and applicable A0–A7 attack ends as proven, finding, blocked, or
-explicitly unreviewed. Unreviewed work prevents PASS. Later passes also cover prior findings,
-adjacent variants, and previously untouched surfaces instead of narrowing to the last patch.
+The reviewer writes the finite per-requirement verdict and stops: no automatic remediation or re-review.
+Extra audits, mutation campaigns, full-suite requirements and attack catalogs are not default review
+gates. They apply only if the task explicitly requires them. Optional improvements do not block PASS.
 
 What you get on your side: a ledger with the exact commands and their output, and a verdict file
 with an append-only history. Both are readable in a minute, and both are checkable.
@@ -258,17 +256,14 @@ doing most of the work.
 
 ## When it says FAIL
 
-FAIL is the normal first outcome, and it is the system working. The implementer takes over:
-reproduces each finding, builds a fix ledger mapping finding → **root cause** → the single change
-that fixes it, fixes worst-first, re-proves with RED/GREEN/TAMPER, and re-spawns a fresh reviewer.
+FAIL ends automatic work. Vince records the findings, learns from escaped test gaps, and gives you
+control. If you authorize fixes, the implementer reproduces each finding, fixes root cause first,
+and re-proves RED/GREEN/TAMPER. That result is **fixed-but-unreviewed**, not approved.
 
 The guard rails you should know about, because they are where you get pulled in:
 
-- **Thrash** — the same root cause fails again, or the CRITICAL count does not drop between
-  rounds — is an immediate stop and escalation. It means the root-cause model is wrong, and
-  another round of the same patch shape will not help.
-- **Three re-reviews without a PASS**, even while converging, is a check-in. Usually the task is
-  bigger than its contract, a criterion is wrong, or something is blocked.
+- **Review 2+ needs your explicit authorization.** Vince records its date, scope, and your words;
+  renaming a review cycle cannot reset the task budget.
 - **You can overrule a finding**, but not silently. If you think the reviewer is wrong, say so;
   the disagreement is surfaced to you with both arguments rather than resolved by the implementer
   quietly deciding it knows better.
@@ -288,6 +283,8 @@ All inside the project, none in the toolkit:
   tasks/
     active/<task-id>/
       verification-ledger.md        the gate: contract, proof levels, command output
+      context-pack.json              bounded, source-hashed profile and relevant lessons
+      test-plan.json                 frozen pre-code risks, oracles, decisions, and evidence
       implementation-status.md      the narrative: phase, blockers, fix ledger
       review-verdict.md             current verdict + append-only history
       completion-documentation.md   what shipped, validated against the branch
@@ -308,7 +305,7 @@ A gate that costs the same for a typo and a payment flow gets skipped for both. 
   it. Stub ledger, one proof, a five-point self-review. **Never** anything a user can observe.
 - **T2 Standard** — everything else. The full sequence.
 - **T3 Complex** — 2+ repos, a contract change, auth or data isolation, a migration,
-  concurrency. Full sequence plus mandatory plan confirmation and a second reviewer pass.
+  concurrency. Full sequence plus mandatory plan confirmation and stronger pre-code test design.
 
 The tier changes *how much* evidence, never *whether* there is evidence. The agent may move a
 task **up** a tier on its own; moving one **down** requires you. You can narrow or widen the
@@ -567,7 +564,7 @@ rather than patching mid-task.
 
 ## Making it smarter over time
 
-Run after a PASS (`vince-implement` does this itself), or once over the history when adopting
+Run after every terminal PASS or FAIL (`vince-implement` does this itself), or once over the history when adopting
 Vince on an existing project:
 
 ```

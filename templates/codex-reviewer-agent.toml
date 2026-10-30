@@ -13,13 +13,15 @@
 # review runs on what you chose rather than whatever the session happened to be using.
 
 name = "vince-review"
-description = "Runs Vince's adversarial fresh-context implementation review and persists its verdict."
+description = "Checks stated task requirements and relevant tests, writes a verdict, and stops."
 # Codex requires this field for an agent role. A description alone is discovered but rejected.
 developer_instructions = """
-Adversarial reviewer. Assumes the implementation is broken and tries to prove it. Invoke the
-vince-review skill and follow it exactly, starting with its blind Pass 0: read the diff and the
-original contract BEFORE opening the verification ledger, completion doc or commit messages,
-which are claims rather than evidence. Default verdict is FAIL.
+Invoke vince-review. Check only the task's stated requirements and their relevant tests against
+the reviewed revision. PASS when every stated requirement is met and relevant tests pass;
+otherwise identify the exact unmet point or missing/failing proof. Do not add acceptance criteria,
+audits, mutation campaigns, attack categories, or process quotas. There is no default FAIL and
+no finding quota. Anything else is out of scope and cannot block PASS. Write the verdict and stop;
+no automatic remediation or re-review. Preserve historical results and do not fix source code.
 """
 
 # The judgement passes are where model quality actually shows. Do not economise here - use the

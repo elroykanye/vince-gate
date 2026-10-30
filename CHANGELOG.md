@@ -6,6 +6,23 @@ silently claiming to be a release.
 
 See [INSTALL.md](INSTALL.md#versions) for upgrading, pinning and rolling back.
 
+## v0.15.0 — 2026-10-30
+
+- Packages a desktop-first native plugin with portable and Codex compatibility manifests,
+  bundled skills and shared references, scripts, templates, icons and local MCP configuration.
+- Adds four read-only local tools: plugin info, project context, task status and structural
+  ledger validation. Explicit workspace roots, bounded reads and no arbitrary shell executor.
+- Review checks the stated requirements and relevant tests, writes one verdict, and stops.
+  Removes default audit quotas and automatic remediation/re-review from caller instructions.
+- Adds reproducible ZIP/checksum/release-note builds, clean-install smoke tests and release CI.
+- Preserves the legacy installer and Claude plugin. Lifecycle hooks are not included in the
+  native directory ZIP; standalone opt-in hooks remain available from the source repository.
+- Fixes an expired routing-test fixture by supplying its existing deterministic test date.
+- Requires Python 3.11+ and Git. No cloud service; public directory publication is subject to
+  OpenAI publisher verification and desktop-MCP submission eligibility, not this GitHub release.
+- Release baseline is main at 0161e79 plus the scoped review policy ported from 93b0cc2.
+  Historical first-review/readiness experiments and their unresolved review status are not shipped.
+
 ## v0.14.0 — 2026-09-12
 
 - Adds `vince-brief`: a compact, task-persistent response contract for action-first Vince updates.

@@ -96,6 +96,7 @@ class ModelRoutingTests(unittest.TestCase):
                     "--harness", "codex",
                     "--class", "balanced",
                     "--role", "worker",
+                    "--today", "2026-08-23",
                     "--available-model", "eco-17",
                     "--available-model", "balanced-22",
                     "--available-model", "frontier-91",

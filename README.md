@@ -6,11 +6,10 @@ base and not a linter — it is a pair of opposed roles that together make "done
 - **`vince-implement`** drives a task end to end: contract first, test-first TDD, an evidence
   ledger, an end-to-end wire proof, definition-of-done gates, and a self-attack pass before it
   will hand off.
-- **`vince-review`** is the adversary. It runs in a fresh context, assumes the work is broken,
-  re-derives the contract from the original source, re-runs every claimed proof, mutation-tests
-  the new tests to find dead ones, and defaults to **FAIL**. Before reading implementation
-  conclusions it freezes `review-coverage.json`; validation blocks a verdict until every criterion,
-  material claim, changed entry point, and A0–A7 attack has a terminal result.
+- **`vince-review`** checks the task's stated requirements and relevant tests in a fresh context.
+  All stated points met and relevant tests passing means **PASS**. Anything else is out of scope.
+  It writes one verdict and stops: no automatic remediation or re-review. It does not impose
+  attack catalogs, mutation campaigns, or extra process gates unless the task requires them.
 
 The two rules that make the rest work: **nothing is done without a PASS verdict**, and **no claim
 counts without the command and its output behind it**.
@@ -137,7 +136,7 @@ Three design rules exist because measurement says they matter, and the skills sa
 
 - **The reviewer reads the diff before it reads your ledger.** Reviewers handed text asserting
   code is sound miss most of what they would otherwise catch, and autonomous agents are far more
-  susceptible to that framing than people are. Pass 0 is blind by construction.
+  susceptible to that framing than people are. Start from the stated requirements, not success claims.
 - **Mutants, not coverage.** Suites at 100% coverage routinely kill single-digit percentages of
   mutants. TAMPER uses the project's mutation tool diff-scoped where one exists, and surviving
   mutants on changed lines are work, not a score.
@@ -187,7 +186,7 @@ into `skills/` and reinstall — the toolkit is the source of truth.
 3. /vince-route          choose the exact model and narrowest agent for this harness
 4. /vince-implement      for every READY task, before touching code
 5. …it hands off to vince-review in a fresh context and will not report done without PASS
-6. /vince-learn          at PASS — it gets sharper here, not just done
+6. /vince-learn          at every PASS or FAIL — it gets sharper here, not just done
 7. /vince-update         when a new release lands; it migrates your config, not just the files
 ```
 
@@ -197,8 +196,16 @@ the whole method exists to prevent.
 
 Tiering keeps it survivable: **T1** trivial (nothing user-observable) gets a stub ledger and a
 self-review, **T2** is the full sequence, **T3** (multi-repo, contracts, auth, migrations) adds
-plan confirmation and a second review pass. The tier changes how much evidence, never whether
+confirmed, adversarial pre-code test design. Every tier gets at most one automatic review; review
+2+ requires explicit user authorization. The tier changes how much evidence, never whether
 there is evidence.
+
+## Desktop plugin
+
+Vince Gate 0.15.0 bundles the skills, executable Python helpers and four read-only local MCP
+tools as a native desktop plugin. Start with [plugin installation and tools](docs/plugin.md).
+GitHub releases include a reproducible ZIP, SHA256SUMS and release notes. Public OpenAI directory
+publication is separate and requires approval; this repository does not claim it is listed.
 
 ## Layout
 
@@ -206,7 +213,7 @@ there is evidence.
 vince-gate/
   INSTALL.md                          paste-to-your-agent install guide
   USER-GUIDE.md                       start here
-  skills/                             the ten skills (+ reference/ docs)
+  skills/                             the eleven skills (+ reference/ docs)
   bindings/*.json                     one per harness; no per-harness code
   hooks/                              opt-in enforcement (Claude Code/Codex Stop hook)
   templates/                          profile, ledger, review coverage, verdict, lessons, completion doc

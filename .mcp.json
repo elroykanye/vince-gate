@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "vince": {
+      "command": "python3",
+      "env_vars": ["VINCE_ALLOWED_ROOTS"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/mcp_server.py"]
+    }
+  }
+}

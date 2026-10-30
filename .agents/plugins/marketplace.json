@@ -1,0 +1,5 @@
+{
+  "name": "vince-gate",
+  "interface": {"displayName": "Vince Gate"},
+  "plugins": [{"name": "vince-gate", "source": {"source": "local", "path": "./"}}]
+}

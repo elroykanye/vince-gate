@@ -119,7 +119,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
             "vince-implement": ("features", "fixes", "refactors", "changes code"),
             "vince-intake": ("vague", "unsafe", "actionable contract", "refusal"),
             "vince-learn": ("review findings", "lessons", "known traps", "PASS"),
-            "vince-review": ("Adversarially review", "PASS", "FAIL", "done"),
+            "vince-review": ("stated requirements", "PASS", "FAIL", "done"),
             "vince-route": ("model", "agent role", "planning", "review"),
             "vince-setup": ("profile", "onboarding", "missing profiles", "drift"),
             "vince-update": ("upgrade", "roll back", "version", "outdated"),
@@ -231,7 +231,7 @@ class TokenEfficientSkillTests(unittest.TestCase):
         }
         required = {
             "vince-implement": ("RED", "GREEN", "TAMPER", "E2E-WIRE", "vince-review"),
-            "vince-review": ("Pass 0", "mutation", "data boundaries", "PASS", "FAIL"),
+            "vince-review": ("stated requirements", "tests", "PASS", "FAIL"),
         }
         for skill, references in expected.items():
             skill_dir = SKILLS / skill
@@ -269,41 +269,52 @@ class TokenEfficientSkillTests(unittest.TestCase):
         text = (SKILLS / "vince-review" / "reference" / "verdict-and-rereview.md").read_text(
             encoding="utf-8"
         )
-        self.assertGreaterEqual(text.count("[caught: <attack>]"), 2)
         self.assertIn("Reviewer verdict", text)
         self.assertIn("review-verdict.md", text)
         self.assertIn("verification ledger", text.lower())
-        self.assertIn("Every finding must carry one `[caught: <attack>]` tag", text)
         self.assertIn("update the verification ledger's `Reviewer verdict` field", text)
+        self.assertIn("All stated requirements are met and their relevant tests pass", text)
+        self.assertIn("no automatic remediation or re-review", text)
 
-    def test_review_requires_exhaustive_manifest_before_any_verdict(self):
+    def test_review_checks_only_stated_requirements_and_stops(self):
         core = (SKILLS / "vince-review" / "SKILL.md").read_text(encoding="utf-8")
         method = (SKILLS / "vince-review" / "reference" / "review-method.md").read_text(
             encoding="utf-8"
         )
         combined = core + method
         required = (
-            "Create and freeze `review-coverage.json` before opening the ledger",
-            "Finding enough evidence for FAIL never ends discovery early.",
-            "Every acceptance criterion, definition-of-done item, material claim, changed entry point, and applicable attack pass",
-            "PROVEN, FINDING, BLOCKED, or UNREVIEWED",
-            "A later pass must cover previous findings, adjacent variants, and previously untouched surfaces.",
-            "At pass 4 or later, every one of",
-            "the last three transitions must cut new findings by at least 50%.",
-            "declare reviewer-process",
-            "failure, stop the cycle",
-            "python <toolkit>/scripts/review_manifest.py validate",
+            "All stated requirements are met and their relevant tests pass",
+            "Do not add acceptance criteria",
+            "Anything else is out of scope",
+            "Stop after writing the verdict",
+            "no automatic remediation or re-review",
         )
         for clause in required:
             self.assertIn(clause, combined)
-        self.assertIsNone(
-            re.search(r"(?i)(?:stop|end|terminate).{0,80}(?:first|decisive).{0,40}(?:finding|defect)", combined)
-        )
+        self.assertNotIn("planned A0–A7 attacks", combined)
+        self.assertNotIn("At pass 4", combined)
+        self.assertNotIn("scripts/review_manifest.py freeze", combined)
         self.assertIsNone(
             re.search(r"(?i)(?:permit|allow).{0,80}shared.{0,40}write.{0,40}(?:without|bypass)", combined)
         )
         self.assertTrue((ROOT / "templates" / "review-coverage.template.json").is_file())
         self.assertTrue((ROOT / "scripts" / "review_manifest.py").is_file())
+
+    def test_ordinary_review_callers_do_not_require_forensic_manifests(self):
+        core = (SKILLS / "vince-implement" / "SKILL.md").read_text(encoding="utf-8")
+        post_verdict = core.split("PASS closes the task only after", 1)[1].split(
+            "## Live infrastructure and escalation", 1
+        )[0]
+        completion = (
+            SKILLS / "vince-implement" / "reference" / "completion-and-review.md"
+        ).read_text(encoding="utf-8").split("## Fresh review", 1)[1].split(
+            "## Release and closure", 1
+        )[0]
+        for instructions in (post_verdict, completion):
+            with self.subTest(instructions=instructions):
+                self.assertNotIn("manifest", instructions.lower())
+                self.assertIn("user", instructions.lower())
+                self.assertRegex(instructions.lower(), r"(?:ends|stop) automatic work")
 
     def test_review_manifest_validator_rejects_incomplete_coverage(self):
         validator = ROOT / "scripts" / "review_manifest.py"
@@ -624,9 +635,9 @@ class TokenEfficientSkillTests(unittest.TestCase):
         self.assertIn(".github/skills", combined)
         self.assertIn(".gemini/skills", combined)
         self.assertIn("progressive disclosure", combined.lower())
-        self.assertIn("review-coverage.json", readme)
-        self.assertIn("does not stop discovery after finding enough evidence to FAIL", guide)
-        self.assertIn("exhaustive review manifest", harnesses.lower())
+        self.assertIn("stated requirements", readme)
+        self.assertIn("no automatic remediation or re-review", guide)
+        self.assertIn("stated requirements", harnesses.lower())
         self.assertNotIn("TOML commands for Gemini CLI", combined)
         self.assertNotIn("Gemini CLI | TOML custom commands", combined)
         self.assertIn(

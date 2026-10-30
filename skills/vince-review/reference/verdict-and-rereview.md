@@ -1,43 +1,35 @@
-# Verdict and re-review
+# Verdict and stopping
 
-Load this reference only when writing or updating the verdict.
-
-Write `<task-dir>/review-verdict.md` with the newest verdict first:
+Write `<task-dir>/review-verdict.md` with the newest result first:
 
 ```markdown
 # Vince review — <task> — <date>
 
 VERDICT: <PASS | FAIL>
+Reviewed commit: `<revision>`
 
-## Per-criterion verdict
-| ID | Result | Evidence rerun | Attacks |
-|----|--------|----------------|---------|
+## Stated requirements
+| Requirement | MET / NOT MET | Test or other proof and observed result |
+|-------------|---------------|----------------------------------------|
 
-## Findings
-### <SEVERITY>-1: <title> [CONFIRMED | RISK] [caught: <attack>]
-- Location / criterion:
-- Reproduction:
-- Expected / actual:
-- Impact:
-- Required correction:
+## Unmet requirements
+Only for FAIL: exact requirement, reproducible discrepancy or missing proof, and expected/actual result.
 
-## Attacks that held
-## Known review gaps
-## Required before re-review
+## Out-of-scope notes
+Optional; these do not affect the verdict or authorize more work.
+
 ## Review history
+Earlier verdicts, preserved without rewriting them.
 ```
 
-Every finding must carry one `[caught: <attack>]` tag naming the attack that exposed it. This is a
-machine-readable input to `vince-learn`, not optional prose. After persisting the verdict, you must
-update the verification ledger's `Reviewer verdict` field with PASS or FAIL and a pointer to
-`review-verdict.md`; a verdict that is not linked from the ledger cannot close the task.
+All stated requirements are met and their relevant tests pass → PASS. Otherwise FAIL for the
+specific unproved or unmet points. Do not fail a completed task for an optional suggestion,
+attack category, process quota, or extra condition that was never a task requirement.
 
-PASS requires every criterion PROVEN, applicable gates satisfied, full regression no worse than
-baseline, mutation sensitivity on changed behavior, truthful completion documentation, and no open
-CRITICAL or MEDIUM finding. Record blocked attacks as gaps; if they prevent proving a criterion,
-the verdict is FAIL.
+If a verification ledger exists, update the verification ledger's `Reviewer verdict` field
+with the result and a pointer to `review-verdict.md`. This records the verdict; it does not add
+acceptance criteria or change historical results. Extra metrics or learning tags are not PASS gates.
 
-For re-review, reproduce old findings before reading remediation claims, inspect the remediation
-diff, rerun affected proof and full regression, then attempt bypasses and nearby variants. Move the
-previous current verdict into append-only Review history. A finding closes only with reproducible
-evidence; disagreement is recorded, not silently erased.
+Write the verdict once and stop: no automatic remediation or re-review. On FAIL, return the unmet
+points to the user. If the user later requests fixes or another review, keep the same stated
+requirements unless the user changes them; do not broaden the review to find new work.

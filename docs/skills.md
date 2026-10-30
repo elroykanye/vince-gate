@@ -50,7 +50,7 @@ Codex, Claude Code, Gemini, Cursor, Windsurf, and generic rows are verified inde
 
 It classifies the task first — **T1** trivial (nothing user-observable: stub ledger, self-review),
 **T2** standard (the full sequence), **T3** complex (2+ repos, contract/auth/migration/concurrency:
-plus mandatory plan confirmation and a second reviewer pass). The tier changes how much evidence,
+plus mandatory plan confirmation and one requirements-scoped review). The tier changes how much evidence,
 never whether there is evidence; the agent may move up on its own but only the user moves it down.
 
 | Phase | What it does | Artifact |
@@ -62,8 +62,8 @@ never whether there is evidence; the agent may move up on its own but only the u
 | 4 | Wire proof — the real path with real transport, per change type | ledger |
 | 5 | DoD gates — the catalog plus the profile's `dod_extras` | ledger |
 | 6 | Self-attack — the three most likely production failures, actually tested | ledger |
-| 7 | Doc, then hand off to `vince-review` in a fresh context; PASS or go to 8 | `completion-documentation.md` |
-| 8 | Remediation — root cause first, bounded rounds, convergence guard | `implementation-status.md` |
+| 7 | Doc, then one fresh-context `vince-review`; write verdict and stop | `completion-documentation.md` |
+| 8 | Remediation only on user direction; no automatic re-review | `implementation-status.md` |
 | close | `vince-learn` + one metrics line | `.vince/lessons.md`, `.vince/metrics.jsonl` |
 
 Hard rules: no implementation before a failing test; no "done" without a PASS verdict; no
@@ -73,36 +73,13 @@ Reference: [`dod-gates.md`](../skills/vince-implement/reference/dod-gates.md).
 
 ## `vince-review`
 
-**The adversary.** Runs in a **fresh, write-capable context** — never inline in the implementer's,
-and on a **different model** where the profile's `reviewer_model` or the harness allows it. It
-reads `.vince/lessons.md` first and attacks the recorded traps hardest, because a repeat is the
-highest-probability finding there is.
+Checks the original task's stated requirements and relevant tests in a fresh context.
+All points met and tests passing means PASS. FAIL identifies only an unmet point or missing/failing
+proof. Out-of-scope suggestions cannot block PASS. There is no default FAIL, finding quota,
+mandatory attack catalog or mutation campaign. Write `review-verdict.md` once and stop.
+Fixes and further reviews require explicit user direction; preserve earlier verdicts unchanged.
 
-Pass 0 comes before everything: the reviewer writes its findings from the diff and the original
-contract alone, and only then opens the ledger. Reviewers handed a document asserting the work is
-proven miss most of what they would otherwise catch, and the ledger is exactly such a document.
-The verdict records how many findings came blind versus only after reading it — a review that
-found nothing blind is a review that read the answer sheet.
-
-| Pass | Attack |
-|------|--------|
-| **0** | **Blind** — findings derived from the diff and the original contract *before* the ledger, completion doc, commit messages or prior verdict are opened |
-| A0 | Contract re-derivation from the original source; diff against the ledger |
-| A1 | Evidence forensics — re-run every proof; git/commit/version/branch forensics |
-| A2 | Test-quality — mutation (the project's tool, diff-scoped, where one exists), assertion audit, RED history, skip hunt, determinism, coverage of the real path |
-| A3 | Behaviour — empty/huge/null/boundary/unicode/timezone/concurrency inputs |
-| A4 | Isolation, auth and data boundaries |
-| A5 | Trap sweep — generic playbook plus the profile's `known_traps` and `.vince/lessons.md` |
-| A5b | Drive the real UI in a real browser — mandatory for frontend changes |
-| A6 | Blast radius — references to every changed public symbol, contract compatibility |
-| A7 | Completion documentation present, current and true |
-
-Default verdict **FAIL**, with hard FAIL conditions listed in the skill. Output goes back to the
-caller *and* is persisted to `<task dir>/review-verdict.md` with an append-only history, so the
-FAIL → FAIL → PASS trail stays visible and the open-CRITICAL trend is readable. Each finding
-carries a `[caught: …]` tag naming the attack that found it — that is what `vince-learn` reads.
-
-Reference: [`attack-playbook.md`](../skills/vince-review/reference/attack-playbook.md).
+Reference: [`review-method.md`](../skills/vince-review/reference/review-method.md).
 
 ## `vince-doctor`
 

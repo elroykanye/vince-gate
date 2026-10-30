@@ -44,7 +44,7 @@ well a harness supports that is the real compatibility question.
 
 **The manual review is not a downgrade in rigour**, only in convenience: open a new chat, paste
 the handoff prompt (task ID, repo, branch, ledger path, task dir, profile path, and the
-instruction to invoke `vince-review` starting with Pass 0), and let it run. The isolation is
+instruction to invoke `vince-review` against the stated requirements), and let it run. The isolation is
 arguably *better* than a subagent, since nothing at all leaks across. What you lose is it
 happening automatically, which means it is easier to skip — so on those harnesses the discipline
 has to come from you.
@@ -72,10 +72,10 @@ and user consent. GitHub Copilot uses `.github/skills/` for project skills and
 separate vendor-native paths so installing either binding cannot overwrite Codex's
 `.agents/skills/` files. Both bindings remain unverified until a live runtime probe succeeds.
 
-Review behavior travels with the skills. Pass 0 freezes an exhaustive review manifest at
-`<task-dir>/review-coverage.json` before opening the ledger, and
-`scripts/review_manifest.py validate` rejects incomplete A0–A7 coverage before either verdict.
-Finding the first decisive defect never permits a harness to stop discovery.
+Review behavior travels with the skills. Check only the stated requirements and their relevant
+tests; all points met and tests passing means PASS. Write the verdict and stop: no automatic remediation or re-review.
+Legacy forensic review-manifest tooling remains available for explicitly requested audits and
+historical records. It is not an additional acceptance gate for an ordinary requirements review.
 
 ### Codex specifics
 

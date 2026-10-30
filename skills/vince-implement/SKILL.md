@@ -40,7 +40,7 @@ confirms it.
 |------|------------|----------------|
 | T1 | Non-behavioral copy, formatting, or dependency-free configuration | Ledger stub, baseline, proof, and five-point self-review |
 | T2 | Ordinary behavior, fixes, features, and refactors | Full workflow and fresh review |
-| T3 | Multiple repos, public contracts, auth/isolation, migrations, or concurrency | Full workflow, confirmed plan, and two review passes after remediation |
+| T3 | Multiple repos, public contracts, auth/isolation, migrations, or concurrency | Full workflow, confirmed plan, and one requirements-scoped review |
 
 Take the highest applicable tier. Never downgrade without the user. Anything user-observable is
 at least T2.
@@ -141,7 +141,7 @@ python <toolkit>/scripts/check.py --repo <worktree> --base <integration-ref>
 
 Create `completion-documentation.md`, then hand off to `vince-review` in a fresh, write-capable
 context. The prompt contains only the task ID, repo/branch, profile, ledger and task paths, reviewer
-model/role mapping, Pass 0 instruction, and read-only live-infrastructure boundary. Never advocate
+model/role mapping, stated requirements, and read-only live-infrastructure boundary. Never advocate
 for the implementation or paste ledger conclusions into the prompt.
 
 Load `reference/completion-and-review.md` before documentation or handoff. It defines completion
@@ -150,8 +150,8 @@ metrics, learning, and cleanup.
 
 PASS closes the task only after the ledger points at `review-verdict.md`, `vince-learn` runs,
 metrics are appended, any configured docs are published, and session resources are removed. FAIL
-loads `reference/remediation.md`, reproduces findings, fixes root causes, and re-proves affected
-criteria before a fresh re-review. Repeated failure of the same cause is a STOP.
+ends automatic work. Report the unmet stated requirements and stop. Only user direction authorizes
+fixes or a further review; no automatic remediation or re-review.
 
 ## Live infrastructure and escalation
 

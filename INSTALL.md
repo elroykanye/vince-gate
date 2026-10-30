@@ -287,3 +287,7 @@ verify the hook before trusting it.
   not trigger one. Invoke it by name, and add the gate to the project's `CLAUDE.md`/`AGENTS.md` —
   the `generic` binding writes exactly that block for you.
 - **Anything else.** [USER-GUIDE.md](USER-GUIDE.md#troubleshooting) has the longer list.
+# Native desktop plugin (0.15.0+)
+
+For the packaged plugin, use [docs/plugin.md](docs/plugin.md). It includes skills and local tools;
+do not also run the legacy installer for the same harness. Existing manual installs remain supported.

@@ -5,6 +5,9 @@ description: Create or refresh a verified Vince project/workspace profile contai
 
 # Vince — Setup
 
+For a native plugin installation, first read `reference/plugin-tools.md` to locate bundled
+scripts and use the read-only tools without reinstalling global skills.
+
 Before the final user-facing response, apply `reference/brief.md`.
 
 `vince-implement` and `vince-review` are deliberately project-agnostic. Everything specific to
