@@ -1,6 +1,23 @@
 # Install
 
-Three ways: install the Claude Code plugin, hand the block below to your agent and let it do the
+## Native Codex plugin
+
+Requires Python 3.11+ available as `python3` and Git. Add the stable Git marketplace once:
+
+```sh
+codex plugin marketplace add elroykanye/vince-gate --ref main
+codex plugin add vince-gate@vince-gate
+```
+
+Upgrade using `codex plugin marketplace upgrade vince-gate`, then
+`codex plugin add vince-gate@vince-gate`. Restart the chat and check `vince_plugin_info`.
+The marketplace/plugin names do not change per release. See [plugin.md](docs/plugin.md) for
+rollback/pinning, migration from 0.15.0 local sources, offline ZIPs and allowed workspace roots.
+Do not install duplicate flat skills unless you intentionally maintain both routes.
+
+## Legacy installations
+
+For legacy/manual installations: install the Claude Code plugin, hand the block below to your agent and let it do the
 work, or [run four commands yourself](#manual-install).
 
 Requirements: Python 3.8+, git, and an agent harness. No dependencies, no network calls at
@@ -287,7 +304,3 @@ verify the hook before trusting it.
   not trigger one. Invoke it by name, and add the gate to the project's `CLAUDE.md`/`AGENTS.md` —
   the `generic` binding writes exactly that block for you.
 - **Anything else.** [USER-GUIDE.md](USER-GUIDE.md#troubleshooting) has the longer list.
-# Native desktop plugin (0.15.0+)
-
-For the packaged plugin, use [docs/plugin.md](docs/plugin.md). It includes skills and local tools;
-do not also run the legacy installer for the same harness. Existing manual installs remain supported.

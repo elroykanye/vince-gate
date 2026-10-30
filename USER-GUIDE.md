@@ -1,7 +1,8 @@
 # vince-gate — user guide
 
-Vince makes an AI coding agent prove its work instead of asserting it. It is six markdown
-skills and one install script; there is no service, no daemon and no account.
+Vince makes an AI coding agent prove its work instead of asserting it. It ships eleven skills,
+Python helpers and four read-only local MCP tools. There is no Vince-hosted service or account;
+the native plugin host manages the local MCP process while connected.
 
 This guide takes you from nothing to a working gate, then explains what to expect once it is
 running. If you only read one section, read [What Vince actually changes](#what-vince-actually-changes).
@@ -78,6 +79,21 @@ you do not pay it for a typo.
 ---
 
 ## Install
+
+### Native Codex plugin (recommended)
+
+Requires Python 3.11+ available as `python3` and Git:
+
+```sh
+codex plugin marketplace add elroykanye/vince-gate --ref main
+codex plugin add vince-gate@vince-gate
+```
+
+Upgrade the same marketplace with `codex plugin marketplace upgrade vince-gate`, then
+`codex plugin add vince-gate@vince-gate` and restart the chat. See [plugin.md](docs/plugin.md)
+for rollback/pinning and local-folder migration. Project/task data stays separate from the cache.
+
+### Legacy/manual skill installation
 
 Requirements: Python 3.8+, git, and an agent harness. Nothing else.
 
